@@ -3416,18 +3416,7 @@ return PositionGetDouble(POSITION_SWAP);
 }
 double OrderCommission()
 {
-   double commission = 0.0;
-   ulong position_id = (ulong)PositionGetInteger(POSITION_IDENTIFIER);
-   if(position_id == 0 || !HistorySelectByPosition(position_id))
-      return commission;
-
-   for(int i = 0; i < HistoryDealsTotal(); i++)
-   {
-      ulong deal_ticket = HistoryDealGetTicket(i);
-      if(deal_ticket != 0)
-         commission += HistoryDealGetDouble(deal_ticket, DEAL_COMMISSION);
-   }
-   return commission;
+   return PositionGetDouble(POSITION_COMMISSION);
 }
 
 
