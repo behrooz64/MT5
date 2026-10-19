@@ -539,8 +539,8 @@ if (!OnlyEndOfBar || (EndBar < iTime(_Symbol,OrderTimeframe,0)) )
 
       if ( TakeTargetOnAtr )
       {
-      TakeTargetBuy = NormalizeDouble(TakeTargetAtrMultiplier*iatr(_Symbol,TakeTargetAtrTimeframe,TakeTargetAtrPeriod,1),_Digits);
-      TakeTargetSell = NormalizeDouble(TakeTargetAtrMultiplier*iatr(_Symbol,TakeTargetAtrTimeframe,TakeTargetAtrPeriod,1),_Digits);
+      TakeTargetBuy = (int)MathRound(NormalizeDouble(TakeTargetAtrMultiplier*iatr(_Symbol,TakeTargetAtrTimeframe,TakeTargetAtrPeriod,1),_Digits));
+      TakeTargetSell = (int)MathRound(NormalizeDouble(TakeTargetAtrMultiplier*iatr(_Symbol,TakeTargetAtrTimeframe,TakeTargetAtrPeriod,1),_Digits));
       }
       
       
@@ -768,7 +768,7 @@ return true;
       {
          if ( OrderSymbol() == _Symbol && OrderMagicNumber() == MagicNumber )
          continue;
-         if (OrderMagicNumber() < MagicNumber+10 && OrderMagicNumber() > MagicNumber-10 )
+         if ((long)OrderMagicNumber() < (long)MagicNumber+10 && (long)OrderMagicNumber() > (long)MagicNumber-10 )
          return false;
       }
    }
@@ -978,7 +978,7 @@ for(int i=0;i<5;i++)
 void EliminaOrdiniFifo(int Magic,int cmd)
 {
 
-int Ticket[];
+ulong Ticket[];
 ArrayResize(Ticket,PositionsTotal());
 
    for(int i = PositionsTotal()-1; i >= 0; i--)
@@ -997,7 +997,7 @@ ArrayResize(Ticket,PositionsTotal());
 
    for(int i = 0; i < ArraySize(Ticket); i++)
    {
-            if(PositionGetTicket(Ticket[i]))
+            if(PositionSelectByTicket(Ticket[i]))
             EliminaFifo(Ticket[i],OrderLots(),0,clrBlack,OrderType());
    }
 
@@ -1011,7 +1011,7 @@ EliminaOrdini(Magic,cmd);
 void EliminaOrdiniFifo(int Magic)
 {
 
-int Ticket[];
+ulong Ticket[];
 ArrayResize(Ticket,PositionsTotal());
 
    for(int i = PositionsTotal()-1; i >= 0; i--)
@@ -1029,7 +1029,7 @@ ArrayResize(Ticket,PositionsTotal());
 
    for(int i = 0; i < ArraySize(Ticket); i++)
    {
-            if(PositionGetTicket(Ticket[i]))
+            if(PositionSelectByTicket(Ticket[i]))
             EliminaFifo(Ticket[i],OrderLots(),0,clrBlack,OrderType());
    }
 
@@ -1043,7 +1043,7 @@ EliminaOrdini(Magic);
 
 
 
-void EliminaFifo(int Ticket,double Orderlots,int slippage,color colore,int cmd)
+void EliminaFifo(ulong Ticket,double Orderlots,int slippage,color colore,int cmd)
 {
 
 if ( cmd < 1.5)
@@ -1510,7 +1510,7 @@ Trade.price = prezzo;
 Trade.sl = stoploss;
 Trade.tp = takeprofit;
 Trade.deviation = 10;
-Trade.type =  cmd;
+Trade.type = (ENUM_ORDER_TYPE)cmd;
 Trade.type_filling = ORDER_FILLING_IOC;//ORDER_FILLING_IOC; //ORDER_FILLING_IOC
 Trade.comment = comment;
 
@@ -2964,7 +2964,8 @@ bool LabelCreate(const long              chart_ID=0,               // chart's ID
                  const string            font="Arial",             // font
                  const int               font_size=10,             // font size
                  const color             clr=clrRed,               // color
-                 const double            angle=0.0,                // text slope                 const ENUM_ANCHOR_POINT anchor=ANCHOR_LEFT_UPPER, // anchor type
+                 const double            angle=0.0,                // text slope
+                  const ENUM_ANCHOR_POINT anchor=ANCHOR_LEFT_UPPER, // anchor type
                  const bool              back=false,               // in the background
                  const bool              selection=false,          // highlight to move
                  const bool              hidden=true,              // hidden in the object list
@@ -3346,7 +3347,7 @@ bool RectLabelDelete(const long   chart_ID=0,       // chart's ID
 
 bool IsTesting()
 {
-return MQLInfoInteger(MQL_TESTER);
+return MQLInfoInteger(MQL_TESTER) != 0;
 }
 
 
@@ -3389,7 +3390,7 @@ return PositionGetInteger(POSITION_MAGIC);
 
 datetime OrderOpenTime()
 {
-return PositionGetInteger(POSITION_TIME);
+return (datetime)PositionGetInteger(POSITION_TIME);
 }
 
 double OrderLots()
@@ -3410,7 +3411,7 @@ return PositionGetDouble(POSITION_PRICE_OPEN);
 
 int OrderType()
 {
-return PositionGetInteger(POSITION_TYPE);
+return (int)PositionGetInteger(POSITION_TYPE);
 }
 
 ulong OrderTicket()
@@ -3425,7 +3426,18 @@ return PositionGetDouble(POSITION_SWAP);
 }
 double OrderCommission()
 {
-return PositionGetDouble(POSITION_COMMISSION); 
+   double commission = 0.0;
+   ulong position_id = (ulong)PositionGetInteger(POSITION_IDENTIFIER);
+   if(position_id == 0 || !HistorySelectByPosition(position_id))
+      return commission;
+
+   for(int i = 0; i < HistoryDealsTotal(); i++)
+   {
+      ulong deal_ticket = HistoryDealGetTicket(i);
+      if(deal_ticket != 0)
+         commission += HistoryDealGetDouble(deal_ticket, DEAL_COMMISSION);
+   }
+   return commission;
 }
 
 
@@ -3457,12 +3469,12 @@ return (StrutturaTemporale.day_of_week);
 
 bool IsTradeAllowed()
 {
-return MQLInfoInteger(MQL_TRADE_ALLOWED);
+return MQLInfoInteger(MQL_TRADE_ALLOWED) != 0;
 }
 
 bool IsVisualMode()
 {
-return MQLInfoInteger(MQL_VISUAL_MODE);
+return MQLInfoInteger(MQL_VISUAL_MODE) != 0;
 }
 
 
