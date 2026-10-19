@@ -7,16 +7,11 @@
 #property description "Owner : Behzad Shadfar "
 #property link        "https://monexscalp.com"
 #property description "Monex Academy Presentation"
-#define ALLOWED_BROKER "GTCGlobalTrade-Demo"
-#define EXPIRATION_DATE "2026.10.24"
-#define CORRECT_PASSWORD "Monex"
 
 #include <Trade\Trade.mqh>
 CTrade m_trade;
 
 
-input string st ="==Security password=="; // Give Me Code
-input string user_password = "";
 input string Set = "==========Setting Bot=========";
 string KamalEA = "MonexScalp UNLIMITED VERSION";//MonexScalp    // in
 int MagicNumber = 8398;//Magic Number                           // in
@@ -349,33 +344,7 @@ int OnInit()
   {
 //---
 //==================================coder robo ===============================
- string broker_name = AccountInfoString(ACCOUNT_SERVER);
-
-    if (broker_name != ALLOWED_BROKER)
-    {
-        Print("This Expert only works on GTCFX Broker") ;
-        ExpertRemove();
-        return(INIT_FAILED); 
-    }
-
-    Print("Expert is activated. Brokerage is allowed : ", broker_name);
-    
-    
-    
- if (CheckExpiration())
-   {
-      Print("تاریخ انقضای اکسپرت به پایان رسیده است!");
-      ExpertRemove(); // اکسپرت را غیرفعال می‌کند
-      return INIT_FAILED; // خطا در شروع
-   }
-   
-  //  GetTradeInfo();
-    if(user_password != CORRECT_PASSWORD)
-       {
-         Print("رمز عبور اشتباه است! لطفاً رمز عبور صحیح را وارد کنید.");
-         ExpertRemove();
-       }
-        Print(" password is corect ");
+// Security restrictions temporarily disabled in this version.
 //=================================================================================  
 m_trade.SetExpertMagicNumber(MagicNumber);
 
@@ -3659,15 +3628,6 @@ ENUM_ORDER_TYPE tipor = (ENUM_ORDER_TYPE) tipoordine;
    return(margin);
 }
 
-//+------------------------------------------------------------------+
-//|         tabe marboot be EXPIRATION                               |
-//+------------------------------------------------------------------+
-bool CheckExpiration()
-{
-   datetime expiration = StringToTime(EXPIRATION_DATE); // تبدیل تاریخ به datetime
-   datetime current = TimeCurrent(); // زمان فعلی
-   return current > expiration; // اگر زمان فعلی از تاریخ انقضا گذشته باشد، true برمی‌گرداند
-}
 
 
 
