@@ -785,7 +785,7 @@ bool ordiniapertichiusisubarra (int Magic,int AlternanzaBarre = 0)
 if(!OneTradeBar)
 return false;
 
-if ( !HistorySelect(0,TimeCurrent()) )
+if ( !HistorySelect(iTime(Symbol(),OrderTimeframe,AlternanzaBarre),TimeCurrent()) )
 return true;
 int total = HistoryDealsTotal();
 for ( int i = total-1 ; i >= total-100 ; i--)
@@ -834,7 +834,7 @@ bool ordinichiusisubarra(int Magic, int AlternanzaBarre = 0,string IngressoType 
 if(!DoNotOpenOrdersIfThereIsClosedOrderOnBar)
 return false;
 
-if ( !HistorySelect(0,TimeCurrent()) )
+if ( !HistorySelect(iTime(Symbol(),OrderTimeframe,AlternanzaBarre),TimeCurrent()) )
 return true;
 int total = HistoryDealsTotal();
 for ( int i = total-1 ; i >= total-100 ; i--)
@@ -867,7 +867,7 @@ bool ordiniapertichiusisubarragrid (int Magic, int cmd)
 if(!OneTradeBarGrid)
 return false;
 
-if ( !HistorySelect(0,TimeCurrent()) )
+if ( !HistorySelect(iTime(Symbol(),NewOpenPeriod,0),TimeCurrent()) )
 return true;
 int total = HistoryDealsTotal();
 for ( int i = total-1 ; i >= total-100 ; i--)
