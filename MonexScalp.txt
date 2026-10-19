@@ -2468,21 +2468,17 @@ return Risultato;
 
 double isar(int Posizione)
 {
+   double SarArray[];
+   static int SarProprietis = INVALID_HANDLE;
 
-double SarArray[];
+   if(SarProprietis == INVALID_HANDLE)
+      SarProprietis = iSAR(_Symbol,SarTimeframe,SarStep,SarMaxStep);
+   if(SarProprietis == INVALID_HANDLE)
+      return -1;
+   if(CopyBuffer(SarProprietis,0,Posizione,1,SarArray) < 1)
+      return -1;
 
-//proprieta
-int SarProprietis = iSAR(_Symbol,SarTimeframe,SarStep,SarMaxStep);
-// Numero Di Posizione
-if (CopyBuffer(SarProprietis,0,Posizione,1,SarArray) < 1)
-{
-   Sleep(5000);
-   if (CopyBuffer(SarProprietis,0,Posizione,1,SarArray) < 1)
-   return -1;
-}
-
-return SarArray[0];
-
+   return SarArray[0];
 }
 
 
@@ -2492,41 +2488,35 @@ return SarArray[0];
 
 double istoc(int mode, int shift)
 {
+   double StocArray[];
+   static int StocProprietis = INVALID_HANDLE;
 
-double StocArray[];
+   if(StocProprietis == INVALID_HANDLE)
+      StocProprietis = iStochastic(_Symbol,StochasticTimeframe,K_Period,D_Period,Slowing,StochasticMethod,StochasticPrice);
+   if(StocProprietis == INVALID_HANDLE)
+      return -1;
+   if(CopyBuffer(StocProprietis,mode,shift,1,StocArray) < 1)
+      return -1;
 
-//proprieta
-int StocProprietis = iStochastic(_Symbol,StochasticTimeframe,K_Period,D_Period,Slowing,StochasticMethod,StochasticPrice);
-// Numero Di Posizione
-if (CopyBuffer(StocProprietis,mode,shift,1,StocArray) < 1)
-{
-   Sleep(5000);
-   if (CopyBuffer(StocProprietis,mode,shift,1,StocArray) < 1)
-   return -1;
-}
-
-return StocArray[0];
+   return StocArray[0];
 }
 
 
 
 
-double icci( int shift)
+double icci(int shift)
 {
+   double CCIArray[];
+   static int CCIProprietis = INVALID_HANDLE;
 
-double CCIArray[];
+   if(CCIProprietis == INVALID_HANDLE)
+      CCIProprietis = iCCI(_Symbol,CCITimeframe,CCIPeriods,CCIPrice);
+   if(CCIProprietis == INVALID_HANDLE)
+      return -1;
+   if(CopyBuffer(CCIProprietis,0,shift,1,CCIArray) < 1)
+      return -1;
 
-//proprieta
-int CCIProprietis = iCCI(_Symbol,CCITimeframe,CCIPeriods,CCIPrice);
-// Numero Di Posizione
-if (CopyBuffer(CCIProprietis,0,shift,1,CCIArray) < 1)
-{
-   Sleep(5000);
-   if (CopyBuffer(CCIProprietis,0,shift,1,CCIArray) < 1)
-   return -1;
-}
-
-return CCIArray[0];
+   return CCIArray[0];
 }
 
 
@@ -3519,39 +3509,44 @@ return MQLInfoString(MQL_PROGRAM_NAME);
 
 double iatr(string Simbolo, ENUM_TIMEFRAMES AtrTimeframeInt,int AtrPeriodsInt, int Posizione)
 {
+   double AtrArray[];
+   static int AtrProprietis = INVALID_HANDLE;
+   static string AtrSymbol = "";
+   static ENUM_TIMEFRAMES AtrTimeframeCached = PERIOD_CURRENT;
+   static int AtrPeriodCached = 0;
 
-double AtrArray[];
+   if(AtrProprietis == INVALID_HANDLE || AtrSymbol != _Symbol || AtrTimeframeCached != AtrTimeframeInt || AtrPeriodCached != AtrPeriodsInt)
+   {
+      if(AtrProprietis != INVALID_HANDLE)
+         IndicatorRelease(AtrProprietis);
+      AtrProprietis = iATR(_Symbol,AtrTimeframeInt,AtrPeriodsInt);
+      AtrSymbol = _Symbol;
+      AtrTimeframeCached = AtrTimeframeInt;
+      AtrPeriodCached = AtrPeriodsInt;
+   }
+   if(AtrProprietis == INVALID_HANDLE)
+      return -1;
+   if(CopyBuffer(AtrProprietis,0,Posizione,1,AtrArray) < 1)
+      return -1;
 
-//proprieta
-int AtrProprietis = iATR(_Symbol,AtrTimeframeInt,AtrPeriodsInt);
-// Numero Di Posizione
-if (CopyBuffer(AtrProprietis,0,Posizione,1,AtrArray) < 1)
-{
-   Sleep(5000);
-   if (CopyBuffer(AtrProprietis,0,Posizione,1,AtrArray) < 1)
-   return -1;
-}
-
-return AtrArray[0];
+   return AtrArray[0];
 }
 
 
 
 double ibands(int QualeBanda, int MomentoSegnale)
 {
-double BBArray[];
+   double BBArray[];
+   static int BBProprietis = INVALID_HANDLE;
 
-//proprieta
-int BBProprietis = iBands(_Symbol,BollingerBandsTimeframe,BollingerBandsPeriod,0,BollingerBandsDeviations,BollingerBandsPrice);
-// Numero Di Posizione
-if (CopyBuffer(BBProprietis,QualeBanda,MomentoSegnale,1,BBArray) < 1)
-{
-   Sleep(5000);
-   if (CopyBuffer(BBProprietis,QualeBanda,MomentoSegnale,1,BBArray) < 1)
-   return -1;
-}
+   if(BBProprietis == INVALID_HANDLE)
+      BBProprietis = iBands(_Symbol,BollingerBandsTimeframe,BollingerBandsPeriod,0,BollingerBandsDeviations,BollingerBandsPrice);
+   if(BBProprietis == INVALID_HANDLE)
+      return -1;
+   if(CopyBuffer(BBProprietis,QualeBanda,MomentoSegnale,1,BBArray) < 1)
+      return -1;
 
-return BBArray[0];
+   return BBArray[0];
 }
 
 
@@ -3559,19 +3554,17 @@ return BBArray[0];
 
 double iadx(int Posizione)
 {
-double adxArray[];
+   double adxArray[];
+   static int AdxProprietis = INVALID_HANDLE;
 
-//proprieta
-int AdxProprietis = iADX(_Symbol,AdxTimeframe,AdxPeriod);
-// Numero Di Posizione
-if (CopyBuffer(AdxProprietis,0,Posizione,1,adxArray) < 1)
-{
-   Sleep(5000);
-   if (CopyBuffer(AdxProprietis,0,Posizione,1,adxArray) < 1)
-   return -1;
-}
+   if(AdxProprietis == INVALID_HANDLE)
+      AdxProprietis = iADX(_Symbol,AdxTimeframe,AdxPeriod);
+   if(AdxProprietis == INVALID_HANDLE)
+      return -1;
+   if(CopyBuffer(AdxProprietis,0,Posizione,1,adxArray) < 1)
+      return -1;
 
-return adxArray[0];
+   return adxArray[0];
 }
 
 
@@ -3579,36 +3572,33 @@ return adxArray[0];
 
 double imaFast(int Posizione)
 {
-double imaArray[];
+   double imaArray[];
+   static int ImaProprietis = INVALID_HANDLE;
 
-//proprieta
-int ImaProprietis = iMA(_Symbol,MaTimeframe,FastMaPeriod,0,MaMethod,MaPrice);
-// Numero Di Posizione
-if (CopyBuffer(ImaProprietis,0,Posizione,1,imaArray) < 1)
-{
-   Sleep(5000);
-   if (CopyBuffer(ImaProprietis,0,Posizione,1,imaArray) < 1)
-   return -1;
-}
-return imaArray[0];
+   if(ImaProprietis == INVALID_HANDLE)
+      ImaProprietis = iMA(_Symbol,MaTimeframe,FastMaPeriod,0,MaMethod,MaPrice);
+   if(ImaProprietis == INVALID_HANDLE)
+      return -1;
+   if(CopyBuffer(ImaProprietis,0,Posizione,1,imaArray) < 1)
+      return -1;
+
+   return imaArray[0];
 }
 
 
 double imaLow(int Posizione)
 {
-double imaArray[];
+   double imaArray[];
+   static int ImaProprietis = INVALID_HANDLE;
 
-//proprieta
-int ImaProprietis = iMA(_Symbol,MaTimeframe,SlowMaPeriod,0,MaMethod,MaPrice);
-// Numero Di Posizione
-if (CopyBuffer(ImaProprietis,0,Posizione,1,imaArray) < 1)
-{
-   Sleep(5000);
-   if (CopyBuffer(ImaProprietis,0,Posizione,1,imaArray) < 1)
-   return -1;
-}
+   if(ImaProprietis == INVALID_HANDLE)
+      ImaProprietis = iMA(_Symbol,MaTimeframe,SlowMaPeriod,0,MaMethod,MaPrice);
+   if(ImaProprietis == INVALID_HANDLE)
+      return -1;
+   if(CopyBuffer(ImaProprietis,0,Posizione,1,imaArray) < 1)
+      return -1;
 
-return imaArray[0];
+   return imaArray[0];
 }
 
 
