@@ -18,13 +18,13 @@ CTrade m_trade;
 input string st ="==Security password=="; // Give Me Code
 input string user_password = "";
 input string Set = "==========Setting Bot=========";
-string KamalEA = "MonexScalp UNLIMITED VERSION";//MonexScalp    // in
+string KamalEA = "Kia64 UNLIMITED VERSION";//MonexScalp    // in
 int MagicNumber = 8398;//Magic Number                           // in
 int MaxSpread = 500;//Max Spread (for open a trade)             //in
 
 string Separo0="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-string Money = "IF MONEY MANAGEMENT IS FALSE, MonexScalp WORK WITH 'Lots'";//MONEY MANAGEMENT SETTINGS  // in
+string Money = "IF MONEY MANAGEMENT IS FALSE, Kia64 WORK WITH 'Lots'";//MONEY MANAGEMENT SETTINGS  // in
 input double Lots = 0.01;//Lots 
 double LottoDaTradare;
 bool MoneyManagement = false;//Money Management  // in
@@ -317,7 +317,7 @@ int ForcedCloseFridayHour = 23;//Forced Close Friday Hour     // in
 string Separo10="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 string GraphicSettings = "GRAPHIC SETTINGS"; //GRAPHIC SETTINGS // in
 
-string CustomComment = "MonexScalp";//Custom Comment (each order will show this comment in the trades) //in
+string CustomComment = "Kia64";//Custom Comment (each order will show this comment in the trades) //in
 
 bool ShowPanel = true; //Show Panel // in
 bool ShowButton = false;//Show Button  // in
