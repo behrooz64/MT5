@@ -18,7 +18,7 @@ CTrade m_trade;
 input string st ="==Security password=="; // Give Me Code
 input string user_password = "";
 input string Set = "==========Setting Bot=========";
-string KamalEA = "Kia64 UNLIMITED VERSION";//MonexScalp    // in
+string KamalEA = "Kia64 UNLIMITED VERSION"; // in
 int MagicNumber = 8398;//Magic Number                           // in
 int MaxSpread = 500;//Max Spread (for open a trade)             //in
 
