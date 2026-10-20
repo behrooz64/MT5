@@ -372,10 +372,11 @@ int OnInit()
   //  GetTradeInfo();
     if(user_password != CORRECT_PASSWORD)
        {
-         Print("رمز عبور اشتباه است! لطفاً رمز عبور صحیح را وارد کنید.");
-         ExpertRemove();
+          Print("رمز عبور اشتباه است! لطفاً رمز عبور صحیح را وارد کنید.");
+          ExpertRemove();
+          return INIT_FAILED;
        }
-        Print(" password is corect ");
+     Print(" password is corect ");
 //=================================================================================  
 m_trade.SetExpertMagicNumber(MagicNumber);
 
