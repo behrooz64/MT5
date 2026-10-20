@@ -398,12 +398,12 @@ ChartSetInteger(0,CHART_COLOR_BACKGROUND,clrBlack);
 ChartSetInteger(0,CHART_COLOR_FOREGROUND,clrWhiteSmoke);
 ChartSetInteger(0,CHART_SHOW_GRID,0);
 ChartSetInteger(0,CHART_COLOR_GRID,clrWhiteSmoke);
-ChartSetInteger(0,CHART_COLOR_CHART_UP,clrWhiteSmoke);
+ChartSetInteger(0,CHART_COLOR_CHART_UP,clrAqua);
 ChartSetInteger(0,CHART_COLOR_CHART_DOWN,clrRed);
 ChartSetInteger(0,CHART_COLOR_CANDLE_BEAR,clrBlack);
 ChartSetInteger(0,CHART_COLOR_CANDLE_BULL,clrBlack);
 ChartSetInteger(0,CHART_SHOW_ASK_LINE,1);
-ChartSetInteger(0,CHART_COLOR_BID,clrWhiteSmoke);
+ChartSetInteger(0,CHART_COLOR_BID,clrAqua);
 ChartSetInteger(0,CHART_COLOR_ASK,clrRed);
 ChartSetInteger(0,CHART_MODE,CHART_CANDLES);
 }
