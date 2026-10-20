@@ -2663,20 +2663,20 @@ void CommentoInit()
    {
    // Compact Kia64 information panel: right side, below the existing upper-right chart controls.
    RectLabelCreate(0,"RectLabelKevin",0,20,145,280,260,C'10,14,20',2,CORNER_RIGHT_UPPER);
-   LabelCreate(0,"Kevin1",0,32,160,CORNER_RIGHT_UPPER,WindowExpertName(),"Arial Black",11,clrTurquoise,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin1",0,32,160,CORNER_RIGHT_UPPER,WindowExpertName(),"Arial Black",11,clrTurquoise,0,ANCHOR_RIGHT);
    
-   LabelCreate(0,"Kevin2",0,32,188,CORNER_RIGHT_UPPER,"Account Balance: ","Arial",10,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin3",0,32,211,CORNER_RIGHT_UPPER,"Account Equity: ","Arial",10,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin4",0,32,234,CORNER_RIGHT_UPPER,"Account Profit/Loss: ","Arial",10,clrLightSteelBlue,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin2",0,32,188,CORNER_RIGHT_UPPER,"Account Balance: ","Arial",10,clrWhiteSmoke,0,ANCHOR_RIGHT);
+   LabelCreate(0,"Kevin3",0,32,211,CORNER_RIGHT_UPPER,"Account Equity: ","Arial",10,clrWhiteSmoke,0,ANCHOR_RIGHT);
+   LabelCreate(0,"Kevin4",0,32,234,CORNER_RIGHT_UPPER,"Account Profit/Loss: ","Arial",10,clrLightSteelBlue,0,ANCHOR_RIGHT);
    
    string Simbolo = StringSubstr(_Symbol,1,5); StringToLower(Simbolo); Simbolo = StringSubstr(_Symbol,0,1)+Simbolo;
-   LabelCreate(0,"Kevin5",0,32,257,CORNER_RIGHT_UPPER,Simbolo+" Profit/Loss: ","Arial",10,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin6",0,32,280,CORNER_RIGHT_UPPER,"MagicN Profit/Loss: ","Arial",10,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin7",0,32,303,CORNER_RIGHT_UPPER,"Chart Profit/Loss: ","Arial",10,clrWhiteSmoke,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin5",0,32,257,CORNER_RIGHT_UPPER,Simbolo+" Profit/Loss: ","Arial",10,clrWhiteSmoke,0,ANCHOR_RIGHT);
+   LabelCreate(0,"Kevin6",0,32,280,CORNER_RIGHT_UPPER,"MagicN Profit/Loss: ","Arial",10,clrWhiteSmoke,0,ANCHOR_RIGHT);
+   LabelCreate(0,"Kevin7",0,32,303,CORNER_RIGHT_UPPER,"Chart Profit/Loss: ","Arial",10,clrWhiteSmoke,0,ANCHOR_RIGHT);
    
-   LabelCreate(0,"Kevin8",0,32,326,CORNER_RIGHT_UPPER,"Drawdown Percentage: ","Arial",10,clrLightSteelBlue,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin9",0,32,349,CORNER_RIGHT_UPPER,"Spread: ","Arial",10,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin10",0,32,372,CORNER_RIGHT_UPPER,"Start Lot Size: ","Arial",10,clrWhiteSmoke,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin8",0,32,326,CORNER_RIGHT_UPPER,"Drawdown Percentage: ","Arial",10,clrLightSteelBlue,0,ANCHOR_RIGHT);
+   LabelCreate(0,"Kevin9",0,32,349,CORNER_RIGHT_UPPER,"Spread: ","Arial",10,clrWhiteSmoke,0,ANCHOR_RIGHT);
+   LabelCreate(0,"Kevin10",0,32,372,CORNER_RIGHT_UPPER,"Start Lot Size: ","Arial",10,clrWhiteSmoke,0,ANCHOR_RIGHT);
    
    }
 
