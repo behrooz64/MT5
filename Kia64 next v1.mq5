@@ -8,7 +8,7 @@
 #property link        "https://kia64.ir"
 #property description "Kia64 Academy Presentation"
 input string AllowedBroker = "GTCGlobalTrade-Demo"; // Allowed broker server
-#define EXPIRATION_DATE "2026.11.20"
+#define EXPIRATION_DATE "2027.01.20"
 #define CORRECT_PASSWORD "Kia64"
 
 #include <Trade\Trade.mqh>
@@ -400,7 +400,7 @@ ChartSetInteger(0,CHART_COLOR_FOREGROUND,clrWhiteSmoke);
 ChartSetInteger(0,CHART_SHOW_GRID,0);
 ChartSetInteger(0,CHART_COLOR_GRID,clrWhiteSmoke);
 ChartSetInteger(0,CHART_COLOR_CHART_UP,clrAqua);
-ChartSetInteger(0,CHART_COLOR_CHART_DOWN,clrRed);
+ChartSetInteger(0,CHART_COLOR_CHART_DOWN,C'204,102,0');
 ChartSetInteger(0,CHART_COLOR_CANDLE_BEAR,clrDarkOrange);
 ChartSetInteger(0,CHART_COLOR_CANDLE_BULL,clrBlack);
 ChartSetInteger(0,CHART_SHOW_ASK_LINE,1);
@@ -2719,21 +2719,21 @@ void CommentoInit()
    if ( ShowPanel && !SiamoInTestOscuro )
    {
    // Compact Kia64 information panel: right side, below the existing upper-right chart controls.
-   RectLabelCreate(0,"RectLabelKevin",0,20,145,280,260,C'10,14,20',2,CORNER_RIGHT_UPPER);
-   LabelCreate(0,"Kevin1",0,32,160,CORNER_RIGHT_UPPER,WindowExpertName(),"Arial Black",11,clrTurquoise,0,ANCHOR_RIGHT);
+   RectLabelCreate(0,"RectLabelKevin",0,20,145,430,320,C'10,14,20',2,CORNER_LEFT_UPPER);
+   LabelCreate(0,"Kevin1",0,35,160,CORNER_LEFT_UPPER,WindowExpertName(),"Arial Black",16,clrTurquoise,0,ANCHOR_LEFT);
    
-   LabelCreate(0,"Kevin2",0,32,188,CORNER_RIGHT_UPPER,"Account Balance: ","Arial",10,clrWhiteSmoke,0,ANCHOR_RIGHT);
-   LabelCreate(0,"Kevin3",0,32,211,CORNER_RIGHT_UPPER,"Account Equity: ","Arial",10,clrWhiteSmoke,0,ANCHOR_RIGHT);
-   LabelCreate(0,"Kevin4",0,32,234,CORNER_RIGHT_UPPER,"Account Profit/Loss: ","Arial",10,clrLightSteelBlue,0,ANCHOR_RIGHT);
+   LabelCreate(0,"Kevin2",0,35,190,CORNER_LEFT_UPPER,"Account Balance: ","Arial",16,clrWhiteSmoke,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin3",0,35,220,CORNER_LEFT_UPPER,"Account Equity: ","Arial",16,clrWhiteSmoke,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin4",0,35,250,CORNER_LEFT_UPPER,"Account Profit/Loss: ","Arial",16,clrLightSteelBlue,0,ANCHOR_LEFT);
    
    string Simbolo = StringSubstr(_Symbol,1,5); StringToLower(Simbolo); Simbolo = StringSubstr(_Symbol,0,1)+Simbolo;
-   LabelCreate(0,"Kevin5",0,32,257,CORNER_RIGHT_UPPER,Simbolo+" Profit/Loss: ","Arial",10,clrWhiteSmoke,0,ANCHOR_RIGHT);
-   LabelCreate(0,"Kevin6",0,32,280,CORNER_RIGHT_UPPER,"MagicN Profit/Loss: ","Arial",10,clrWhiteSmoke,0,ANCHOR_RIGHT);
-   LabelCreate(0,"Kevin7",0,32,303,CORNER_RIGHT_UPPER,"Chart Profit/Loss: ","Arial",10,clrWhiteSmoke,0,ANCHOR_RIGHT);
+   LabelCreate(0,"Kevin5",0,35,280,CORNER_LEFT_UPPER,Simbolo+" Profit/Loss: ","Arial",16,clrWhiteSmoke,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin6",0,35,310,CORNER_LEFT_UPPER,"MagicN Profit/Loss: ","Arial",16,clrWhiteSmoke,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin7",0,35,340,CORNER_LEFT_UPPER,"Chart Profit/Loss: ","Arial",16,clrWhiteSmoke,0,ANCHOR_LEFT);
    
-   LabelCreate(0,"Kevin8",0,32,326,CORNER_RIGHT_UPPER,"Drawdown Percentage: ","Arial",10,clrLightSteelBlue,0,ANCHOR_RIGHT);
-   LabelCreate(0,"Kevin9",0,32,349,CORNER_RIGHT_UPPER,"Spread: ","Arial",10,clrWhiteSmoke,0,ANCHOR_RIGHT);
-   LabelCreate(0,"Kevin10",0,32,372,CORNER_RIGHT_UPPER,"Start Lot Size: ","Arial",10,clrWhiteSmoke,0,ANCHOR_RIGHT);
+   LabelCreate(0,"Kevin8",0,35,370,CORNER_LEFT_UPPER,"Drawdown Percentage: ","Arial",16,clrLightSteelBlue,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin9",0,35,400,CORNER_LEFT_UPPER,"Spread: ","Arial",16,clrWhiteSmoke,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin10",0,35,430,CORNER_LEFT_UPPER,"Start Lot Size: ","Arial",16,clrWhiteSmoke,0,ANCHOR_LEFT);
    
    }
 
