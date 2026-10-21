@@ -1552,6 +1552,20 @@ void Kia64TradeDiagnostic(string message)
       Print("[Kia64 Trade Diagnostic] ",message);
 }
 
+// Independent observer for trade-server transaction outcomes.
+void OnTradeTransaction(const MqlTradeTransaction &trans, const MqlTradeRequest &request, const MqlTradeResult &result)
+{
+   if(KIA64_TRADE_DIAGNOSTICS != 1) return;
+   if(trans.type == TRADE_TRANSACTION_REQUEST)
+      Kia64TradeDiagnostic("Trade transaction; symbol="+request.symbol+
+                           "; type="+IntegerToString((int)request.type)+
+                           "; volume="+DoubleToString(request.volume,2)+
+                           "; retcode="+IntegerToString((int)result.retcode)+
+                           "; comment="+result.comment+
+                           "; order="+IntegerToString((long)result.order)+
+                           "; deal="+IntegerToString((long)result.deal));
+}
+
 int InvioOrdine(string simbolo,int cmd,double lotti, double prezzo, double stoploss, double takeprofit,string comment,int Magic,datetime espirazione,color colore)
 {
    MqlTradeRequest Trade;
