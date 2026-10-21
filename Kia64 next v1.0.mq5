@@ -712,7 +712,10 @@ return;
 
 bool Spread = MaxSpread*_Point >= Ask_-Bid_;
 if (!Spread)
-return;
+{
+   Kia64TradeDiagnostic("Entry blocked: spread filter; current_points="+DoubleToString((Ask_-Bid_)/_Point,1)+"; maximum_points="+DoubleToString(MaxSpread,1));
+   return;
+}
 
 
 if ( EnableAverageTrailingStop )
@@ -728,7 +731,10 @@ if (CloseOutHour && EnableOrari && !OrarioAbilitato)
 EliminaOrdiniFifo(MagicNumber);
 }
 if ( !OrarioAbilitato )
-return;
+{
+   Kia64TradeDiagnostic("Entry blocked: trading-hours filter.");
+   return;
+}
 
 
 
@@ -739,7 +745,10 @@ double Atr = iatr(_Symbol,AtrTimeframe,AtrPeriod,1);
 AtrAbilitato = Atr > AtrMinPoint*_Point && Atr < AtrMaxPoint*_Point;
 }
 if (!AtrAbilitato)
-return;
+{
+   Kia64TradeDiagnostic("Entry blocked: ATR filter.");
+   return;
+}
 
 
 
@@ -755,11 +764,13 @@ LottoDaTradare = NormalizeDouble( LottoDaTradare+ (LottoDaTradare *OrdiniAperti(
 
 
 
-if (  /*Rsi < LowerLevel*/   ordiniapertibuy &&  ExtraIndicatorsBuy && !OrdiniApertiSuBarra(MagicNumber,AlternationOpeningBars) && !ordiniapertichiusisubarra(MagicNumber,AlternationOpeningBars) && !ordinichiusisubarra(MagicNumber,AlternationOpeningBars,"OP BUY") && OrdiniApertiGlobale()  && FifoModality(OP_BUY,ordinibuy,ordinisell) && DayCheck(Oggi) && AllowBuy)
-Ordine(OP_BUY,LottoDaTradare,Ask_,0,0,MagicNumber,0);
+bool Kia64BuyEntryAllowed = ordiniapertibuy && ExtraIndicatorsBuy && !OrdiniApertiSuBarra(MagicNumber,AlternationOpeningBars) && !ordiniapertichiusisubarra(MagicNumber,AlternationOpeningBars) && !ordinichiusisubarra(MagicNumber,AlternationOpeningBars,"OP BUY") && OrdiniApertiGlobale() && FifoModality(OP_BUY,ordinibuy,ordinisell) && DayCheck(Oggi) && AllowBuy;
+if(Kia64BuyEntryAllowed) Ordine(OP_BUY,LottoDaTradare,Ask_,0,0,MagicNumber,0);
+else Kia64TradeDiagnostic("BUY not sent: one or more original entry conditions are false; open_buy="+string(ordiniapertibuy)+"; indicators="+string(ExtraIndicatorsBuy)+"; allowed="+string(AllowBuy));
 
-if (  /*Rsi > UpperLevel*/    ordiniapertisell && ExtraIndicatorsSell && !OrdiniApertiSuBarra(MagicNumber,AlternationOpeningBars) && !ordiniapertichiusisubarra(MagicNumber,AlternationOpeningBars)  && !ordinichiusisubarra(MagicNumber,AlternationOpeningBars, "OP SELL") && OrdiniApertiGlobale()  && FifoModality(OP_SELL,ordinibuy,ordinisell) && DayCheck(Oggi) && AllowSell)
-Ordine(OP_SELL,LottoDaTradare,Bid_,0,0,MagicNumber,0);
+bool Kia64SellEntryAllowed = ordiniapertisell && ExtraIndicatorsSell && !OrdiniApertiSuBarra(MagicNumber,AlternationOpeningBars) && !ordiniapertichiusisubarra(MagicNumber,AlternationOpeningBars) && !ordinichiusisubarra(MagicNumber,AlternationOpeningBars, "OP SELL") && OrdiniApertiGlobale() && FifoModality(OP_SELL,ordinibuy,ordinisell) && DayCheck(Oggi) && AllowSell;
+if(Kia64SellEntryAllowed) Ordine(OP_SELL,LottoDaTradare,Bid_,0,0,MagicNumber,0);
+else Kia64TradeDiagnostic("SELL not sent: one or more original entry conditions are false; open_sell="+string(ordiniapertisell)+"; indicators="+string(ExtraIndicatorsSell)+"; allowed="+string(AllowSell));
 
 
 //Resetto Lotto
