@@ -7,7 +7,7 @@
 #property description "Owner : Kia64 "
 #property link        "https://kia64.ir"
 #property description "Kia64 Academy Presentation"
-input string AllowedBroker = "GTCGlobalTrade-Demo"; // Allowed broker server
+#define ALLOWED_BROKER "GTCGlobalTrade-Demo"
 #define EXPIRATION_DATE "2026.11.20"
 #define CORRECT_PASSWORD "Kia64"
 
@@ -18,13 +18,13 @@ CTrade m_trade;
 input string st ="==Security password=="; // Give Me Code
 input string user_password = "";
 input string Set = "==========Setting Bot=========";
-string KamalEA = "Kia64 UNLIMITED VERSION"; // in
+string KamalEA = "MonexScalp UNLIMITED VERSION";//MonexScalp    // in
 int MagicNumber = 8398;//Magic Number                           // in
 int MaxSpread = 500;//Max Spread (for open a trade)             //in
 
 string Separo0="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-string Money = "IF MONEY MANAGEMENT IS FALSE, Kia64 WORK WITH 'Lots'";//MONEY MANAGEMENT SETTINGS  // in
+string Money = "IF MONEY MANAGEMENT IS FALSE, MonexScalp WORK WITH 'Lots'";//MONEY MANAGEMENT SETTINGS  // in
 input double Lots = 0.01;//Lots 
 double LottoDaTradare;
 bool MoneyManagement = false;//Money Management  // in
@@ -317,7 +317,7 @@ int ForcedCloseFridayHour = 23;//Forced Close Friday Hour     // in
 string Separo10="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 string GraphicSettings = "GRAPHIC SETTINGS"; //GRAPHIC SETTINGS // in
 
-string CustomComment = "Kia64";//Custom Comment (each order will show this comment in the trades) //in
+string CustomComment = "MonexScalp";//Custom Comment (each order will show this comment in the trades) //in
 
 bool ShowPanel = true; //Show Panel // in
 bool ShowButton = false;//Show Button  // in
@@ -351,9 +351,9 @@ int OnInit()
 //==================================coder robo ===============================
  string broker_name = AccountInfoString(ACCOUNT_SERVER);
 
-    if (broker_name != AllowedBroker)
+    if (broker_name != ALLOWED_BROKER)
     {
-        Print("This Expert only works on the selected broker server: ", AllowedBroker);
+        Print("This Expert only works on GTCFX Broker") ;
         ExpertRemove();
         return(INIT_FAILED); 
     }
@@ -372,11 +372,10 @@ int OnInit()
   //  GetTradeInfo();
     if(user_password != CORRECT_PASSWORD)
        {
-          Print("رمز عبور اشتباه است! لطفاً رمز عبور صحیح را وارد کنید.");
-          ExpertRemove();
-          return INIT_FAILED;
+         Print("رمز عبور اشتباه است! لطفاً رمز عبور صحیح را وارد کنید.");
+         ExpertRemove();
        }
-     Print(" password is corect ");
+        Print(" password is corect ");
 //=================================================================================  
 m_trade.SetExpertMagicNumber(MagicNumber);
 
@@ -401,7 +400,7 @@ ChartSetInteger(0,CHART_SHOW_GRID,0);
 ChartSetInteger(0,CHART_COLOR_GRID,clrWhiteSmoke);
 ChartSetInteger(0,CHART_COLOR_CHART_UP,clrAqua);
 ChartSetInteger(0,CHART_COLOR_CHART_DOWN,clrRed);
-ChartSetInteger(0,CHART_COLOR_CANDLE_BEAR,clrDarkOrange);
+ChartSetInteger(0,CHART_COLOR_CANDLE_BEAR,clrBlack);
 ChartSetInteger(0,CHART_COLOR_CANDLE_BULL,clrBlack);
 ChartSetInteger(0,CHART_SHOW_ASK_LINE,1);
 ChartSetInteger(0,CHART_COLOR_BID,clrAqua);
@@ -1525,115 +1524,59 @@ return ticket;
 
 
 
-//==================================================================
-// KIA64 TRADE DIAGNOSTICS
-// Set to 0 to disable diagnostic messages, or remove this section
-// and the Kia64TradeDiagnostic() calls to remove diagnostics entirely.
-// This section only reports trade-request details; it does not decide
-// entry/exit signals or change money-management rules.
-//==================================================================
-#define KIA64_TRADE_DIAGNOSTICS 1
-
-void Kia64TradeDiagnostic(string message)
-{
-   if(KIA64_TRADE_DIAGNOSTICS == 1)
-      Print("[Kia64 Trade Diagnostic] ",message);
-}
-
 int InvioOrdine(string simbolo,int cmd,double lotti, double prezzo, double stoploss, double takeprofit,string comment,int Magic,datetime espirazione,color colore)
 {
-   MqlTradeRequest Trade;
-   ZeroMemory(Trade);
-   MqlTradeResult Risultati;
+
+
+MqlTradeRequest Trade;
+    ZeroMemory(Trade);
+MqlTradeResult Risultati;
+    ZeroMemory(Risultati);
+
+
+Trade.action = TRADE_ACTION_DEAL;
+Trade.magic = Magic;
+Trade.symbol = simbolo;
+Trade.volume = lotti;
+Trade.price = prezzo;
+Trade.sl = stoploss;
+Trade.tp = takeprofit;
+Trade.deviation = 10;
+Trade.type =  cmd;
+Trade.type_filling = ORDER_FILLING_IOC;//ORDER_FILLING_IOC; //ORDER_FILLING_IOC
+Trade.comment = comment;
+
+bool forse = OrderSend(Trade,Risultati);
+
+
+
+if (Risultati.retcode == 10030 )
+{
+   Trade.type_filling = ORDER_FILLING_RETURN;
    ZeroMemory(Risultati);
 
-   Trade.action = TRADE_ACTION_DEAL;
-   Trade.magic = Magic;
-   Trade.symbol = simbolo;
-   Trade.volume = lotti;
-   Trade.price = prezzo;
-   Trade.sl = stoploss;
-   Trade.tp = takeprofit;
-   Trade.deviation = 10;
-   Trade.type = (ENUM_ORDER_TYPE)cmd;
-   Trade.comment = comment;
+   bool ritentoprimo = OrderSend(Trade,Risultati);
 
-   // Select only filling modes supported by this symbol/execution mode.
-   long fillingFlags = 0;
-   long executionMode = 0;
-   if(!SymbolInfoInteger(simbolo,SYMBOL_FILLING_MODE,fillingFlags) ||
-      !SymbolInfoInteger(simbolo,SYMBOL_TRADE_EXEMODE,executionMode))
-   {
-      Kia64TradeDiagnostic("Cannot read filling/execution mode for "+simbolo+
-                           "; last_error="+IntegerToString(GetLastError()));
-      return -1;
-   }
-
-   ENUM_ORDER_TYPE_FILLING fillingModes[3];
-   int fillingCount = 0;
-
-   // IOC first, then FOK, but only if the symbol reports support.
-   if((fillingFlags & SYMBOL_FILLING_IOC) == SYMBOL_FILLING_IOC)
-      fillingModes[fillingCount++] = ORDER_FILLING_IOC;
-   if((fillingFlags & SYMBOL_FILLING_FOK) == SYMBOL_FILLING_FOK)
-      fillingModes[fillingCount++] = ORDER_FILLING_FOK;
-
-   // RETURN is not allowed for Market Execution.
-   if(executionMode != SYMBOL_TRADE_EXECUTION_MARKET)
-      fillingModes[fillingCount++] = ORDER_FILLING_RETURN;
-
-   if(fillingCount == 0)
-   {
-      Kia64TradeDiagnostic("No supported filling mode found for "+simbolo+
-                           "; flags="+IntegerToString((int)fillingFlags)+
-                           "; execution="+IntegerToString((int)executionMode));
-      return -1;
-   }
-
-   Kia64TradeDiagnostic("Request: symbol="+simbolo+
-                        "; side="+string(cmd==ORDER_TYPE_BUY ? "BUY" : "SELL")+
-                        "; volume="+DoubleToString(lotti,2)+
-                        "; filling_flags="+IntegerToString((int)fillingFlags)+
-                        "; execution="+IntegerToString((int)executionMode));
-
-   for(int attempt=0; attempt<fillingCount; attempt++)
-   {
-      Trade.type_filling = fillingModes[attempt];
-      ZeroMemory(Risultati);
-      ResetLastError();
-
-      bool sent = OrderSend(Trade,Risultati);
-
-      Kia64TradeDiagnostic("Attempt "+IntegerToString(attempt+1)+
-                           "; filling="+IntegerToString((int)Trade.type_filling)+
-                           "; OrderSend="+string(sent ? "true" : "false")+
-                           "; retcode="+IntegerToString((int)Risultati.retcode)+
-                           "; comment="+Risultati.comment+
-                           "; last_error="+IntegerToString(GetLastError())+
-                           "; order="+IntegerToString((int)Risultati.order)+
-                           "; deal="+IntegerToString((int)Risultati.deal));
-
-      // Retry with another supported mode only for unsupported filling mode.
-      if(Risultati.retcode == 10030)
-         continue;
-
-      break;
-   }
-
-   if(Risultati.retcode != TRADE_RETCODE_DONE &&
-      Risultati.retcode != TRADE_RETCODE_DONE_PARTIAL &&
-      Risultati.retcode != TRADE_RETCODE_PLACED)
-   {
-      Kia64TradeDiagnostic("Trade request failed; final retcode="+
-                           IntegerToString((int)Risultati.retcode)+
-                           "; comment="+Risultati.comment);
-      return -1;
-   }
-
-   int ticket = (int)Risultati.deal;
-   Sleep(800);
-   return ticket;
+      if (Risultati.retcode == 10030 )
+      {
+      Trade.type_filling = ORDER_FILLING_FOK;
+      ZeroMemory(Risultati);      
+      bool ritentosecondo = OrderSend(Trade,Risultati); 
+      }
 }
+
+
+
+int ticket = (int) Risultati.deal;
+
+Sleep(800);
+
+return ticket;
+}
+
+
+
+
 
 
 
