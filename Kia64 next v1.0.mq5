@@ -1585,10 +1585,32 @@ void Kia64AppendPerformanceRow(string row_type, ulong deal_ticket, datetime deal
    FileClose(handle);
 }
 
+// Suppress repeated identical diagnostic messages for five minutes.
+string Kia64LoggedDiagnosticKeys[128];
+datetime Kia64LoggedDiagnosticTimes[128];
+int Kia64DiagnosticSlot = 0;
+
 void Kia64TradeDiagnostic(string message)
 {
-   if(KIA64_TRADE_DIAGNOSTICS == 1)
-      Kia64AppendCsvRow(KIA64_EVENT_LOG_FILE, "DIAGNOSTIC", message);
+   if(KIA64_TRADE_DIAGNOSTICS != 1) return;
+
+   datetime now = TimeCurrent();
+   for(int i=0; i<128; i++)
+   {
+      if(Kia64LoggedDiagnosticKeys[i] == message)
+      {
+         if(now - Kia64LoggedDiagnosticTimes[i] < 300) return;
+         Kia64LoggedDiagnosticTimes[i] = now;
+         Kia64AppendCsvRow(KIA64_EVENT_LOG_FILE, "DIAGNOSTIC", message);
+         return;
+      }
+   }
+
+   int slot = Kia64DiagnosticSlot;
+   Kia64LoggedDiagnosticKeys[slot] = message;
+   Kia64LoggedDiagnosticTimes[slot] = now;
+   Kia64DiagnosticSlot = (Kia64DiagnosticSlot + 1) % 128;
+   Kia64AppendCsvRow(KIA64_EVENT_LOG_FILE, "DIAGNOSTIC", message);
 }
 
 // Independent observer: request failures and actual deal events are written to files only.
