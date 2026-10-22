@@ -1,4 +1,4 @@
-﻿//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
 //|                                                   Kia64.mq5       |
 //|                        Copyright 2024, MetaQuotes Software Corp. |
 //|                                                                  |
@@ -2831,24 +2831,24 @@ void CommentoInit()
    
    if ( ShowPanel && !SiamoInTestOscuro )
    {
-   // Compact Kia64 information panel: right side, below the existing upper-right chart controls.
-   // Compact panel positioned below the one-click trading controls.
-   RectLabelCreate(0,"RectLabelKevin",0,12,88,310,205,C'10,14,20',1,CORNER_LEFT_UPPER);
-   LabelCreate(0,"Kevin1",0,22,96,CORNER_LEFT_UPPER,WindowExpertName(),"Arial",10,clrTurquoise,0,ANCHOR_LEFT);
-   
-   LabelCreate(0,"Kevin2",0,22,118,CORNER_LEFT_UPPER,"Account Balance: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin3",0,22,137,CORNER_LEFT_UPPER,"Account Equity: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin4",0,22,156,CORNER_LEFT_UPPER,"Account Profit/Loss: ","Arial",9,clrLightSteelBlue,0,ANCHOR_LEFT);
-   
+   // Kia64 panel styling based on sample 6: compact text, dark background and grouped information.
+   // Anchored to the upper-left chart area below the BUY/SELL one-click trading panel.
+   RectLabelCreate(0,"RectLabelKevin",0,10,145,300,286,C'18,22,28',BORDER_FLAT,CORNER_LEFT_UPPER,C'72,82,92',STYLE_SOLID,1,false,false,true,0);
+   LabelCreate(0,"Kevin1",0,20,155,CORNER_LEFT_UPPER,WindowExpertName(),"Arial",10,C'255,165,65',0,ANCHOR_LEFT);
+   LabelCreate(0,"KevinSection1",0,20,179,CORNER_LEFT_UPPER,"ACCOUNT OVERVIEW","Arial",8,C'120,190,220',0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin2",0,20,199,CORNER_LEFT_UPPER,"Account Balance: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin3",0,20,218,CORNER_LEFT_UPPER,"Account Equity: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin4",0,20,237,CORNER_LEFT_UPPER,"Account Profit/Loss: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin8",0,20,256,CORNER_LEFT_UPPER,"Drawdown Percentage: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
+   LabelCreate(0,"KevinSection2",0,20,279,CORNER_LEFT_UPPER,"EA / MARKET INFO","Arial",8,C'120,190,220',0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin9",0,20,299,CORNER_LEFT_UPPER,"Spread: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin10",0,20,318,CORNER_LEFT_UPPER,"Start Lot Size: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin11",0,20,337,CORNER_LEFT_UPPER,"Account DD Protection: INACTIVE","Arial",9,C'255,165,65',0,ANCHOR_LEFT);
+   LabelCreate(0,"KevinSection3",0,20,360,CORNER_LEFT_UPPER,"ADDITIONAL PROFIT / LOSS","Arial",8,C'120,190,220',0,ANCHOR_LEFT);
    string Simbolo = StringSubstr(_Symbol,1,5); StringToLower(Simbolo); Simbolo = StringSubstr(_Symbol,0,1)+Simbolo;
-   LabelCreate(0,"Kevin5",0,22,175,CORNER_LEFT_UPPER,Simbolo+" Profit/Loss: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin6",0,22,194,CORNER_LEFT_UPPER,"MagicN Profit/Loss: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin7",0,22,213,CORNER_LEFT_UPPER,"Chart Profit/Loss: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   
-   LabelCreate(0,"Kevin8",0,22,232,CORNER_LEFT_UPPER,"Drawdown Percentage: ","Arial",9,clrLightSteelBlue,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin9",0,22,251,CORNER_LEFT_UPPER,"Spread: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin10",0,22,270,CORNER_LEFT_UPPER,"Start Lot Size: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   
+   LabelCreate(0,"Kevin5",0,20,380,CORNER_LEFT_UPPER,Simbolo+" Profit/Loss: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin6",0,20,399,CORNER_LEFT_UPPER,"MagicN Profit/Loss: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin7",0,20,418,CORNER_LEFT_UPPER,"Chart Profit/Loss: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
    }
 
 
@@ -2884,7 +2884,18 @@ void Commento()
       LabelTextChange(0,"Kevin8","Drawdown Percentage: "+DoubleToString(100-(AccountEquity()/AccountBalance())*100,2));
       LabelTextChange(0,"Kevin9","Spread: "+DoubleToString(SymbolInfoInteger(_Symbol,SYMBOL_SPREAD),0));
       LabelTextChange(0,"Kevin10","Start Lot Size: "+DoubleToString(LottoDaTradare,2));
+      // This EA does not implement a separate whole-account drawdown protection.
+      LabelTextChange(0,"Kevin11","Account DD Protection: INACTIVE");
       
+      // Visual-only profit/loss coloring; trading calculations and decisions are unchanged.
+      color accountPLColor = (AccountEquity()-AccountBalance() >= 0) ? C'80,210,130' : C'255,95,95';
+      color symbolPLColor = (ProfitSimbol >= 0) ? C'80,210,130' : C'255,95,95';
+      color magicPLColor = (ProfitMagic >= 0) ? C'80,210,130' : C'255,95,95';
+      color chartPLColor = (ProfitChart >= 0) ? C'80,210,130' : C'255,95,95';
+      ObjectSetInteger(0,"Kevin4",OBJPROP_COLOR,accountPLColor);
+      ObjectSetInteger(0,"Kevin5",OBJPROP_COLOR,symbolPLColor);
+      ObjectSetInteger(0,"Kevin6",OBJPROP_COLOR,magicPLColor);
+      ObjectSetInteger(0,"Kevin7",OBJPROP_COLOR,chartPLColor);      
       
       
        }
