@@ -1544,26 +1544,91 @@ return ticket;
 // This section only reports trade-request details; it does not decide
 // entry/exit signals or change money-management rules.
 //==================================================================
+// File-based diagnostics and performance journal. No diagnostic text is sent to Experts.
 #define KIA64_TRADE_DIAGNOSTICS 1
+#define KIA64_EVENT_LOG_FILE "Kia64_TradeHistory.csv"
+#define KIA64_PERFORMANCE_FILE "Kia64_Performance.csv"
+
+void Kia64AppendCsvRow(string file_name, string row_type, string details)
+{
+   int handle = FileOpen(file_name, FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ|FILE_SHARE_WRITE, ';');
+   if(handle == INVALID_HANDLE) return;
+   if(FileSize(handle) == 0)
+   {
+      FileWrite(handle, "timestamp", "event_type", "symbol", "timeframe", "magic", "details");
+   }
+   FileSeek(handle, 0, SEEK_END);
+   FileWrite(handle, TimeToString(TimeCurrent(), TIME_DATE|TIME_SECONDS), row_type, _Symbol,
+             EnumToString((ENUM_TIMEFRAMES)_Period), IntegerToString(MagicNumber), details);
+   FileFlush(handle);
+   FileClose(handle);
+}
+
+void Kia64AppendPerformanceRow(string row_type, ulong deal_ticket, datetime deal_time,
+                               double volume, double price, double profit, double swap,
+                               double commission, string details)
+{
+   int handle = FileOpen(KIA64_PERFORMANCE_FILE, FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ|FILE_SHARE_WRITE, ';');
+   if(handle == INVALID_HANDLE) return;
+   if(FileSize(handle) == 0)
+      FileWrite(handle, "timestamp", "record_type", "deal_ticket", "symbol", "magic", "volume",
+                "price", "profit", "swap", "commission", "net_result", "balance", "equity", "details");
+   FileSeek(handle, 0, SEEK_END);
+   FileWrite(handle, TimeToString(deal_time, TIME_DATE|TIME_SECONDS), row_type,
+             IntegerToString((long)deal_ticket), _Symbol, IntegerToString(MagicNumber),
+             DoubleToString(volume, 2), DoubleToString(price, _Digits),
+             DoubleToString(profit, 2), DoubleToString(swap, 2), DoubleToString(commission, 2),
+             DoubleToString(profit+swap+commission, 2),
+             DoubleToString(AccountInfoDouble(ACCOUNT_BALANCE), 2),
+             DoubleToString(AccountInfoDouble(ACCOUNT_EQUITY), 2), details);
+   FileFlush(handle);
+   FileClose(handle);
+}
 
 void Kia64TradeDiagnostic(string message)
 {
    if(KIA64_TRADE_DIAGNOSTICS == 1)
-      Print("[Kia64 Trade Diagnostic] ",message);
+      Kia64AppendCsvRow(KIA64_EVENT_LOG_FILE, "DIAGNOSTIC", message);
 }
 
-// Independent observer for trade-server transaction outcomes.
+// Independent observer: request failures and actual deal events are written to files only.
 void OnTradeTransaction(const MqlTradeTransaction &trans, const MqlTradeRequest &request, const MqlTradeResult &result)
 {
    if(KIA64_TRADE_DIAGNOSTICS != 1) return;
+
    if(trans.type == TRADE_TRANSACTION_REQUEST)
-      Kia64TradeDiagnostic("Trade transaction; symbol="+request.symbol+
-                           "; type="+IntegerToString((int)request.type)+
+   {
+      bool failed = (result.retcode != TRADE_RETCODE_DONE &&
+                     result.retcode != TRADE_RETCODE_PLACED &&
+                     result.retcode != TRADE_RETCODE_DONE_PARTIAL);
+      if(failed)
+         Kia64AppendCsvRow(KIA64_EVENT_LOG_FILE, "ORDER_REJECTED",
+                           "symbol="+request.symbol+"; type="+IntegerToString((int)request.type)+
                            "; volume="+DoubleToString(request.volume,2)+
                            "; retcode="+IntegerToString((int)result.retcode)+
                            "; comment="+result.comment+
                            "; order="+IntegerToString((long)result.order)+
                            "; deal="+IntegerToString((long)result.deal));
+   }
+
+   if(trans.type == TRADE_TRANSACTION_DEAL_ADD && trans.deal > 0 && HistoryDealSelect(trans.deal))
+   {
+      string deal_symbol = HistoryDealGetString(trans.deal, DEAL_SYMBOL);
+      long deal_magic = HistoryDealGetInteger(trans.deal, DEAL_MAGIC);
+      if(deal_magic == MagicNumber)
+      {
+         datetime deal_time = (datetime)HistoryDealGetInteger(trans.deal, DEAL_TIME);
+         double volume = HistoryDealGetDouble(trans.deal, DEAL_VOLUME);
+         double price = HistoryDealGetDouble(trans.deal, DEAL_PRICE);
+         double profit = HistoryDealGetDouble(trans.deal, DEAL_PROFIT);
+         double swap = HistoryDealGetDouble(trans.deal, DEAL_SWAP);
+         double commission = HistoryDealGetDouble(trans.deal, DEAL_COMMISSION);
+         long entry = HistoryDealGetInteger(trans.deal, DEAL_ENTRY);
+         string kind = (entry == DEAL_ENTRY_OUT || entry == DEAL_ENTRY_OUT_BY) ? "CLOSED_DEAL" : "OPEN_OR_IN_DEAL";
+         Kia64AppendPerformanceRow(kind, trans.deal, deal_time, volume, price, profit, swap,
+                                   commission, "entry="+IntegerToString((int)entry)+"; deal_symbol="+deal_symbol);
+      }
+   }
 }
 
 int InvioOrdine(string simbolo,int cmd,double lotti, double prezzo, double stoploss, double takeprofit,string comment,int Magic,datetime espirazione,color colore)
