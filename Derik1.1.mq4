@@ -20,6 +20,7 @@ string lastStatus = "";
 // --- Derik1.1 observer: isolated file logging; never changes trading decisions.
 datetime observerLastUpArrowTime = 0;
 datetime observerLastDownArrowTime = 0;
+datetime observerStartedAt = 0;
 int observerTrackedTicket = -1;
 double observerMaxFloatingProfit = 0.0;
 double observerMaxFloatingLoss = 0.0;
@@ -180,6 +181,7 @@ void ObserverCheckRecentlyClosed()
    {
       if(!OrderSelect(i,SELECT_BY_POS,MODE_HISTORY)) continue;
       if(OrderSymbol()!=symbol || OrderType()>OP_SELL || OrderCloseTime()<=0) continue;
+      if(observerStartedAt>0 && OrderCloseTime()<observerStartedAt) continue;
       int ticket=OrderTicket();
       string doneGV=ObserverGV("closed",ticket);
       if(GlobalVariableCheck(doneGV)) continue;
@@ -226,6 +228,7 @@ void ObserverCheckRecentlyClosed()
 
 void ObserverTick()
 {
+   if(observerStartedAt==0) observerStartedAt=TimeCurrent();
    ObserverCheckArrows();
    ObserverCaptureOpenTrades();
    ObserverCheckRecentlyClosed();
