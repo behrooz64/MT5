@@ -1,0 +1,322 @@
+//+------------------------------------------------------------------+
+//| Expert: ArrowTradeWithFiboTP                                     |
+//+------------------------------------------------------------------+
+#property strict
+
+// 🔹 Inputs
+input string TradeSymbol     = "XAUUSD";       // namad
+input ENUM_TIMEFRAMES TF     = PERIOD_M1;      // timeframe
+input double LotSize         = 0.1;            // hajm
+input int Slippage           = 3;              // slippage
+input bool UseFiboLevels     = true;           // estefade az fibo baraye TP/SL
+input double CustomTP        = 100;            // TP agar fibo off
+input double CustomSL        = 50;             // SL agar fibo off
+
+// 🔹 Global
+string symbol;
+datetime lastBar = 0;
+string lastStatus = "";
+
+int OnInit()
+{
+   symbol = Symbol();
+   Print("EA shoroo shod rooye " + symbol);
+   SendNotification(" EA shoroo shod rooye " + symbol);
+   return(INIT_SUCCEEDED);
+}
+
+void OnDeinit(const int reason)
+{
+   Print("payan - EA ghat shod rooye " + symbol);
+   SendNotification("payan - EA ghat shod rooye " + symbol);
+}
+
+void OnTick()
+{
+   if (Symbol() != TradeSymbol || Period() != TF) return;
+
+   datetime currentBar = iTime(symbol, 0, 0);
+   if (currentBar == lastBar) return;
+   lastBar = currentBar;
+
+   CheckArrowAndTrade();
+   CheckClosedOrders();
+   ShowFiboLevelsOnChart();
+
+
+}
+
+void CheckArrowAndTrade()
+{
+   double level_0, level_38, level_61;
+   bool fiboOk = GetFiboLevels(level_0, level_38, level_61);
+
+   int total = ObjectsTotal();
+   for (int i = 0; i < total; i++)
+   {
+      string objName = ObjectName(i);
+      if (ObjectType(objName) != OBJ_ARROW) continue;
+
+      string desc = ObjectDescription(objName);
+      if (desc == "Traded")
+      {
+         Print("radshodan: " + objName + " ghablan trade shode");
+         continue;
+      }
+
+      double arrowPrice = ObjectGet(objName, OBJPROP_PRICE);
+
+      if (objName == "UpArrow")
+      {
+         Print("signal: UpArrow peyda shod");
+         if (OrdersTotal() == 0)
+         {
+            if (fiboOk && arrowPrice < level_38)
+            {
+               ExecuteBuy(level_0, level_61);
+               ObjectSetText(objName, "Traded", 0, "Arial", clrNONE);
+               Print("movafagh: Buy ejra shod ba TP/SL az fibo");
+               SendNotification("Buy ejra shod ba TP/SL az fibo");
+               Alert("Buy ejra shod → TP: " + DoubleToString(level_61, Digits));
+            }
+            else if (!UseFiboLevels)
+            {
+               ExecuteBuyCustom();
+               ObjectSetText(objName, "Traded", 0, "Arial", clrNONE);
+               Print("movafagh: Buy ejra shod ba TP/SL custom");
+               SendNotification("Buy ejra shod ba TP/SL custom");
+               Alert("Buy ejra shod → TP: " + DoubleToString(CustomTP, 0));
+            }
+            else
+            {
+               Print("radshodan: shart Buy bargharar nist");
+            }
+         }
+         else
+         {
+            Print("radshodan: moamele baz hast");
+         }
+         return;
+      }
+
+      if (objName == "DownArrow")
+      {
+         Print("signal: DownArrow peyda shod");
+         if (OrdersTotal() == 0)
+         {
+            if (fiboOk && arrowPrice > level_38)
+            {
+               ExecuteSell(level_0, level_61);
+               ObjectSetText(objName, "Traded", 0, "Arial", clrNONE);
+               Print("movafagh: Sell ejra shod ba TP/SL az fibo");
+               SendNotification("Sell ejra shod ba TP/SL az fibo");
+               Alert("Sell ejra shod → TP: " + DoubleToString(level_61, Digits));
+            }
+            else if (!UseFiboLevels)
+            {
+               ExecuteSellCustom();
+               ObjectSetText(objName, "Traded", 0, "Arial", clrNONE);
+               Print("movafagh: Sell ejra shod ba TP/SL custom");
+               SendNotification("Sell ejra shod ba TP/SL custom");
+               Alert("Sell ejra shod ba TP/SL custom");
+               Alert("Sell ejra shod → TP: " + DoubleToString(CustomTP, 0));
+            }
+            else
+            {
+               Print("radshodan: shart Sell bargharar nist");
+            }
+         }
+         else
+         {
+            Print("radshodan: moamele baz hast");
+         }
+         return;
+      }
+   }
+
+   Print("radshodan: hich arrow peyda nashod");
+}
+
+bool GetFiboLevels(double &level0, double &level38, double &level61)
+{
+   string objName = "XIT_FIBO";
+   if (ObjectFind(0, objName) < 0 || ObjectType(objName) != OBJ_FIBO)
+   {
+      Print("hkata: Fibo peyda nashod ya type eshtebah");
+      return false;
+   }
+
+   double price1 = ObjectGet(objName, OBJPROP_PRICE1);
+   double price2 = ObjectGet(objName, OBJPROP_PRICE2);
+   if (price1 == 0 || price2 == 0)
+   {
+      Print("hkata: price1 ya price2 sefr hast");
+      return false;
+   }
+
+   int fiboColor = ObjectGetInteger(0, objName, OBJPROP_COLOR);
+   bool reverse = (fiboColor == clrRed || fiboColor == clrBlue);
+
+
+   level0  = reverse ? price2 : price1;
+   level38 = reverse ? price2 + (price1 - price2) * 0.382 : price1 + (price2 - price1) * 0.382;
+   level61 = reverse ? price2 + (price1 - price2) * 0.618 : price1 + (price2 - price1) * 0.618;
+
+   Print("fibo: level0=" + DoubleToString(level0, Digits) + ", level38=" + DoubleToString(level38, Digits) + ", level61=" + DoubleToString(level61, Digits));
+   return true;
+}
+
+void ExecuteBuy(double sl, double tp)
+{
+   double price = NormalizeDouble(Ask, Digits);
+   int ticket = OrderSend(symbol, OP_BUY, LotSize, price, Slippage, sl, tp, "Buy from UpArrow", 0, 0, clrGreen);
+   if (ticket < 0)
+   {
+      Print("hkata: Buy failed → " + IntegerToString(GetLastError()));
+      SendNotification("hkata: Buy failed → " + IntegerToString(GetLastError()));
+   }
+}
+
+void ExecuteSell(double sl, double tp)
+{
+   double price = NormalizeDouble(Bid, Digits);
+   int ticket = OrderSend(symbol, OP_SELL, LotSize, price, Slippage, sl, tp, "Sell from DownArrow", 0, 0, clrRed);
+   if (ticket < 0)
+   {
+      Print("hkata: Sell failed → " + IntegerToString(GetLastError()));
+      SendNotification("hkata: Sell failed → " + IntegerToString(GetLastError()));
+   }
+}
+
+void ExecuteBuyCustom()
+{
+   double price = NormalizeDouble(Ask, Digits);
+   double tp = price + CustomTP * Point;
+   double sl = price - CustomSL * Point;
+   ExecuteBuy(sl, tp);
+}
+
+void ExecuteSellCustom()
+{
+   double price = NormalizeDouble(Bid, Digits);
+   double tp = price - CustomTP * Point;
+   double sl = price + CustomSL * Point;
+   ExecuteSell(sl, tp);
+}
+
+void CheckClosedOrders()
+{
+   for (int i = OrdersHistoryTotal() - 1; i >= 0; i--)
+   {
+      if (OrderSelect(i, SELECT_BY_POS, MODE_HISTORY))
+      {
+         if (OrderSymbol() == symbol && OrderType() <= OP_SELL)
+         {
+            if (OrderCloseTime() > lastBar)
+            {
+               string reason = "";
+               if (OrderProfit() > 0)
+                  reason = "TP gerefte shod";
+               else if (OrderProfit() < 0)
+                  reason = "SL khorde";
+               else
+                  reason = "manual baste shod";
+
+               string msg = "baste shodan: Ticket# " + IntegerToString(OrderTicket()) + " | " + reason;
+               Print(msg);
+               SendNotification(msg);
+               Alert(msg);
+            }
+         }
+      }
+   }
+}
+
+void UpdateStatus()
+{
+   string currentStatus = "";
+
+   if (OrdersTotal() > 0)
+      currentStatus = "moamele baz hast - entezaar baraye TP ya SL";
+   else
+      currentStatus = "amade baraye signal jadid";
+
+   if (currentStatus != lastStatus)
+   {
+      Print("status: " + currentStatus);
+      SendNotification("status: " + currentStatus);
+      lastStatus = currentStatus;
+  
+   }
+   
+   
+}
+void ShowFiboLevelsOnChart()
+{
+   string objName = "XIT_FIBO";
+   if (ObjectFind(0, objName) < 0 || ObjectType(objName) != OBJ_FIBO)
+      return;
+
+   double price1 = ObjectGet(objName, OBJPROP_PRICE1);
+   double price2 = ObjectGet(objName, OBJPROP_PRICE2);
+   if (price1 == 0 || price2 == 0)
+      return;
+
+   int fiboColor = ObjectGetInteger(0, objName, OBJPROP_COLOR);
+   bool reverseFibo = (fiboColor == clrRed || fiboColor == clrBlue);
+
+   double fiboLevels[] = {0.0, 0.236, 0.333, 0.382, 0.5, 0.618, 0.667, 0.785, 0.886, 1.0};
+   double levels[];
+   ArrayResize(levels, ArraySize(fiboLevels));
+
+   if (reverseFibo)
+   {
+      for (int i = 0; i < ArraySize(fiboLevels); i++)
+         levels[i] = fiboLevels[ArraySize(fiboLevels) - 1 - i];
+   }
+   else
+   {
+      ArrayCopy(levels, fiboLevels);
+   }
+
+   string baseLabel = "FiboRow_";
+   string colorLabel = "FiboColorLabel";
+   int fontSize = 9;
+   int xOffset = 10;
+   int yOffsetStart = 10;
+   int rowHeight = 13;
+   ENUM_BASE_CORNER cornerPosition = CORNER_LEFT_LOWER;
+
+   for (int i = 0; i < ArraySize(levels); i++)
+      ObjectDelete(0, baseLabel + IntegerToString(i));
+   ObjectDelete(0, colorLabel);
+
+   string colorName = (fiboColor == clrRed) ? "Red" : (fiboColor == clrBlue) ? "Blue" : "Custom";
+   ObjectCreate(0, colorLabel, OBJ_LABEL, 0, 0, 0);
+   ObjectSetInteger(0, colorLabel, OBJPROP_CORNER, cornerPosition);
+   ObjectSetInteger(0, colorLabel, OBJPROP_XDISTANCE, xOffset);
+   ObjectSetInteger(0, colorLabel, OBJPROP_YDISTANCE, yOffsetStart);
+   ObjectSetInteger(0, colorLabel, OBJPROP_FONTSIZE, fontSize);
+   ObjectSetInteger(0, colorLabel, OBJPROP_COLOR, clrYellow);
+   ObjectSetString(0, colorLabel, OBJPROP_TEXT, "Fibo Color: " + colorName);
+
+   for (int i = 0; i < ArraySize(levels); i++)
+   {
+      double level = levels[i];
+      double price = reverseFibo
+                     ? price2 + (price1 - price2) * level
+                     : price1 + (price2 - price1) * level;
+
+      string percent = DoubleToString(level * 100.0, 1);
+      string labelText = percent + "% - " + DoubleToString(price, Digits);
+      string labelName = baseLabel + IntegerToString(i);
+
+      ObjectCreate(0, labelName, OBJ_LABEL, 0, 0, 0);
+      ObjectSetInteger(0, labelName, OBJPROP_CORNER, cornerPosition);
+      ObjectSetInteger(0, labelName, OBJPROP_XDISTANCE, xOffset);
+      ObjectSetInteger(0, labelName, OBJPROP_YDISTANCE, yOffsetStart + (i + 1) * rowHeight);
+      ObjectSetInteger(0, labelName, OBJPROP_FONTSIZE, fontSize);
+      ObjectSetInteger(0, labelName, OBJPROP_COLOR, clrWhite);
+      ObjectSetString(0, labelName, OBJPROP_TEXT, labelText);
+   }
+}
