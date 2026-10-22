@@ -118,7 +118,6 @@ void CheckArrowAndTrade()
                ObjectSetText(objName, "Traded", 0, "Arial", clrNONE);
                Print("movafagh: Sell ejra shod ba TP/SL custom");
                SendNotification("Sell ejra shod ba TP/SL custom");
-               Alert("Sell ejra shod ba TP/SL custom");
                Alert("Sell ejra shod → TP: " + DoubleToString(CustomTP, 0));
             }
             else
