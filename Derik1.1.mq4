@@ -293,7 +293,26 @@ void ObserverTrackFiboTouches()
          if(bid>observerLevelMaxAfterTouch[i]) observerLevelMaxAfterTouch[i]=bid;
          if(bid<observerLevelMinAfterTouch[i]) observerLevelMinAfterTouch[i]=bid;
       }
-      if(dist>tolerance*3.0) observerLevelNear[i]=false;
+      if(observerLevelNear[i] && dist>tolerance*3.0 && observerLevelTouchTime[i]>0)
+      {
+         ObserverWriteLevel("fibo_touch_reaction",
+            "level_percent="+DoubleToString(observerRatios[i]*100.0,1)+
+            "; level_price="+DoubleToString(level,Digits)+
+            "; touch_time="+TimeToString(observerLevelTouchTime[i],TIME_DATE|TIME_SECONDS)+
+            "; reaction_time="+TimeToString(TimeCurrent(),TIME_DATE|TIME_SECONDS)+
+            "; elapsed_seconds="+IntegerToString((int)(TimeCurrent()-observerLevelTouchTime[i]))+
+            "; max_price_since_touch="+DoubleToString(observerLevelMaxAfterTouch[i],Digits)+
+            "; min_price_since_touch="+DoubleToString(observerLevelMinAfterTouch[i],Digits)+
+            "; max_favorable_from_level_points="+DoubleToString((observerLevelMaxAfterTouch[i]-level)/point,1)+
+            "; max_adverse_from_level_points="+DoubleToString((observerLevelMinAfterTouch[i]-level)/point,1)+
+            "; current_price="+DoubleToString(bid,Digits)+
+            "; current_distance_from_level_points="+DoubleToString((bid-level)/point,1)+
+            "; reaction_direction="+(bid>level ? "above_level" : "below_level")+
+            "; "+ObserverFiboSnapshot(),TimeCurrent(),bid,-1);
+         observerLevelTouchTime[i]=0;
+         observerLevelNear[i]=false;
+      }
+      else if(dist>tolerance*3.0) observerLevelNear[i]=false;
    }
    observerPreviousBid=bid;
    observerPreviousTickTime=TimeCurrent();
