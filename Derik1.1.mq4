@@ -21,6 +21,14 @@ string lastStatus = "";
 datetime observerLastUpArrowTime = 0;
 datetime observerLastDownArrowTime = 0;
 datetime observerStartedAt = 0;
+double observerPreviousBid = 0.0;
+datetime observerPreviousTickTime = 0;
+bool observerLevelNear[10];
+double observerLevelMaxAfterTouch[10];
+double observerLevelMinAfterTouch[10];
+datetime observerLevelTouchTime[10];
+string ObserverLevelsFile = "Derik1.1\\Observer_Levels.csv";
+string ObserverScenariosFile = "Derik1.1\\Observer_Scenarios.csv";
 int observerTrackedTicket = -1;
 double observerMaxFloatingProfit = 0.0;
 double observerMaxFloatingLoss = 0.0;
@@ -226,11 +234,159 @@ void ObserverCheckRecentlyClosed()
    }
 }
 
+
+double ObserverPointSize()
+{
+   return MarketInfo(symbol, MODE_POINT);
+}
+
+double ObserverPipSize()
+{
+   int digits=(int)MarketInfo(symbol, MODE_DIGITS);
+   double point=ObserverPointSize();
+   if(digits==3 || digits==5) return point*10.0;
+   return point;
+}
+
+void ObserverWriteLevel(string eventType,string detail,datetime at,double price,int ticket)
+{
+   ObserverWrite(ObserverLevelsFile,eventType,detail,ticket,at,price,0.0);
+}
+
+void ObserverTrackFiboTouches()
+{
+   double bid=Bid;
+   double point=ObserverPointSize();
+   if(point<=0 || bid<=0) return;
+   double tolerance=point*2.0;
+   for(int i=0;i<10;i++)
+   {
+      double level=ObserverFiboPrice(observerRatios[i]);
+      if(level<=0) continue;
+      double dist=MathAbs(bid-level);
+      bool crossed=false;
+      if(observerPreviousBid>0)
+      {
+         double lo=MathMin(observerPreviousBid,bid), hi=MathMax(observerPreviousBid,bid);
+         crossed=(level>=lo && level<=hi);
+      }
+      bool near=(dist<=tolerance);
+      if((crossed || (near && !observerLevelNear[i])) && !observerLevelNear[i])
+      {
+         observerLevelTouchTime[i]=TimeCurrent();
+         observerLevelMaxAfterTouch[i]=bid;
+         observerLevelMinAfterTouch[i]=bid;
+         string crossing=(bid>observerPreviousBid ? "upward" : (bid<observerPreviousBid ? "downward" : "near_start"));
+         ObserverWriteLevel("fibo_touch",
+            "level_percent="+DoubleToString(observerRatios[i]*100.0,1)+
+            "; level_price="+DoubleToString(level,Digits)+
+            "; bid="+DoubleToString(bid,Digits)+
+            "; previous_bid="+DoubleToString(observerPreviousBid,Digits)+
+            "; crossing="+crossing+
+            "; gap_points="+DoubleToString(MathAbs(bid-observerPreviousBid)/point,1)+
+            "; tolerance_points=2; tick_time_gap_seconds="+IntegerToString((int)(TimeCurrent()-observerPreviousTickTime))+
+            "; "+ObserverFiboSnapshot(),TimeCurrent(),bid,-1);
+         observerLevelNear[i]=true;
+      }
+      if(observerLevelTouchTime[i]>0)
+      {
+         if(bid>observerLevelMaxAfterTouch[i]) observerLevelMaxAfterTouch[i]=bid;
+         if(bid<observerLevelMinAfterTouch[i]) observerLevelMinAfterTouch[i]=bid;
+      }
+      if(dist>tolerance*3.0) observerLevelNear[i]=false;
+   }
+   observerPreviousBid=bid;
+   observerPreviousTickTime=TimeCurrent();
+}
+
+void ObserverTrackTradePriceExcursions()
+{
+   double point=ObserverPointSize();
+   double pip=ObserverPipSize();
+   if(point<=0 || pip<=0) return;
+   for(int i=OrdersTotal()-1;i>=0;i--)
+   {
+      if(!OrderSelect(i,SELECT_BY_POS,MODE_TRADES)) continue;
+      if(OrderSymbol()!=symbol || OrderType()>OP_SELL) continue;
+      int ticket=OrderTicket();
+      bool isBuy=(OrderType()==OP_BUY);
+      double mark=(isBuy ? Bid : Ask);
+      double signedMove=(isBuy ? mark-OrderOpenPrice() : OrderOpenPrice()-mark);
+      double movePoints=signedMove/point;
+      double movePips=signedMove/pip;
+      string maxFavGV=ObserverGV("mfepts",ticket);
+      string maxAdvGV=ObserverGV("maepts",ticket);
+      bool first=(!GlobalVariableCheck(maxFavGV) || !GlobalVariableCheck(maxAdvGV));
+      double maxFav=GlobalVariableCheck(maxFavGV) ? GlobalVariableGet(maxFavGV) : 0.0;
+      double maxAdv=GlobalVariableCheck(maxAdvGV) ? GlobalVariableGet(maxAdvGV) : 0.0;
+      bool newExtreme=false;
+      if(first || movePoints>maxFav) { maxFav=movePoints; GlobalVariableSet(maxFavGV,maxFav); newExtreme=true; }
+      if(first || movePoints<maxAdv) { maxAdv=movePoints; GlobalVariableSet(maxAdvGV,maxAdv); newExtreme=true; }
+      if(newExtreme)
+      {
+         double net=OrderProfit()+OrderSwap()+OrderCommission();
+         ObserverWriteLevel("trade_price_extreme",
+            "direction="+(isBuy ? "BUY" : "SELL")+
+            "; lots="+DoubleToString(OrderLots(),2)+
+            "; open_price="+DoubleToString(OrderOpenPrice(),Digits)+
+            "; mark_price="+DoubleToString(mark,Digits)+
+            "; move_points_signed="+DoubleToString(movePoints,1)+
+            "; move_pips_signed="+DoubleToString(movePips,1)+
+            "; max_favorable_points="+DoubleToString(maxFav,1)+
+            "; max_adverse_points="+DoubleToString(maxAdv,1)+
+            "; floating_net_money="+DoubleToString(net,2)+
+            "; nearest_fibo="+ObserverNearestFiboText(mark)+
+            "; "+ObserverFiboSnapshot()+
+            "; sampling=every_tick_when_EA_receives_tick",
+            TimeCurrent(),mark,ticket);
+      }
+   }
+}
+
+void ObserverCheckArrowTradeLink()
+{
+   // Associate a newly observed arrow with trades opened within +/- 5 seconds.
+   // This is a time-window association, not proof that the arrow caused the trade.
+   datetime now=TimeCurrent();
+   for(int i=OrdersTotal()-1;i>=0;i--)
+   {
+      if(!OrderSelect(i,SELECT_BY_POS,MODE_TRADES)) continue;
+      if(OrderSymbol()!=symbol || OrderType()>OP_SELL) continue;
+      datetime ot=OrderOpenTime();
+      string linkGV=ObserverGV("arrowlink",OrderTicket());
+      if(GlobalVariableCheck(linkGV)) continue;
+      string matched="none";
+      int matchedDirection=-1;
+      if(observerLastUpArrowTime>0 && MathAbs((double)(ot-observerLastUpArrowTime))<=5.0)
+      { matched="UpArrow"; matchedDirection=OP_BUY; }
+      if(observerLastDownArrowTime>0 && MathAbs((double)(ot-observerLastDownArrowTime))<=5.0)
+      { matched="DownArrow"; matchedDirection=OP_SELL; }
+      string status=(matched=="none" ? "no_arrow_within_5s" :
+                     ((matchedDirection==OrderType()) ? "direction_matches" : "direction_mismatch"));
+      ObserverWrite(ObserverEventsFile,"arrow_trade_association",
+         "arrow_object="+matched+"; association_status="+status+
+         "; trade_open_time="+TimeToString(ot,TIME_DATE|TIME_SECONDS)+
+         "; seconds_from_up_arrow="+(observerLastUpArrowTime>0 ? DoubleToString((double)(ot-observerLastUpArrowTime),0) : "na")+
+         "; seconds_from_down_arrow="+(observerLastDownArrowTime>0 ? DoubleToString((double)(ot-observerLastDownArrowTime),0) : "na"),
+         OrderTicket(),now,OrderOpenPrice(),OrderProfit()+OrderSwap()+OrderCommission());
+      GlobalVariableSet(linkGV,now);
+   }
+}
+
+void ObserverWriteScenarioNote(string detail,int ticket,datetime at,double price)
+{
+   ObserverWrite(ObserverScenariosFile,"scenario_input",detail,ticket,at,price,0.0);
+}
+
+
 void ObserverTick()
 {
    if(observerStartedAt==0) observerStartedAt=TimeCurrent();
    ObserverCheckArrows();
+   ObserverTrackFiboTouches();
    ObserverCaptureOpenTrades();
+   ObserverTrackTradePriceExcursions();
+   ObserverCheckArrowTradeLink();
    ObserverCheckRecentlyClosed();
 }
 
@@ -238,6 +394,14 @@ void ObserverTick()
 int OnInit()
 {
    symbol = Symbol();
+   FolderCreate(ObserverFolder);
+   ObserverWrite(ObserverEventsFile,"observer_started","version=Derik1.1; sampling=every_tick; note=only_ticks_received_while_EA_is_running", -1,TimeCurrent(),Bid,0.0);
+   ObserverWriteLevel("observer_started","point_size="+DoubleToString(MarketInfo(symbol,MODE_POINT),Digits)+
+      "; pip_size="+DoubleToString(ObserverPipSize(),Digits)+
+      "; digits="+IntegerToString((int)MarketInfo(symbol,MODE_DIGITS))+
+      "; tick_value="+DoubleToString(MarketInfo(symbol,MODE_TICKVALUE),2)+
+      "; tick_size="+DoubleToString(MarketInfo(symbol,MODE_TICKSIZE),Digits)+
+      "; account_currency="+AccountCurrency(),TimeCurrent(),Bid,-1);
    Print("EA shoroo shod rooye " + symbol);
    SendNotification(" EA shoroo shod rooye " + symbol);
    return(INIT_SUCCEEDED);
