@@ -20,6 +20,8 @@ string lastStatus = "";
 // --- Derik1.1 observer: isolated file logging; never changes trading decisions.
 datetime observerLastUpArrowTime = 0;
 datetime observerLastDownArrowTime = 0;
+datetime observerLastUpArrowSeenAt = 0;
+datetime observerLastDownArrowSeenAt = 0;
 datetime observerStartedAt = 0;
 double observerPreviousBid = 0.0;
 datetime observerPreviousTickTime = 0;
@@ -128,12 +130,14 @@ void ObserverCheckArrows()
       if(i==0 && at!=observerLastUpArrowTime)
       {
          observerLastUpArrowTime=at;
-         ObserverWrite(ObserverEventsFile,"signal_arrow","direction=BUY; object=UpArrow; "+ObserverNearestFiboText(p)+"; "+ObserverFiboSnapshot(),-1,at,p,0);
+         observerLastUpArrowSeenAt=TimeCurrent();
+         ObserverWrite(ObserverEventsFile,"signal_arrow","direction=BUY; object=UpArrow; object_time="+TimeToString(at,TIME_DATE|TIME_SECONDS)+"; first_observed_time="+TimeToString(observerLastUpArrowSeenAt,TIME_DATE|TIME_SECONDS)+"; "+ObserverNearestFiboText(p)+"; "+ObserverFiboSnapshot(),-1,observerLastUpArrowSeenAt,p,0);
       }
       if(i==1 && at!=observerLastDownArrowTime)
       {
          observerLastDownArrowTime=at;
-         ObserverWrite(ObserverEventsFile,"signal_arrow","direction=SELL; object=DownArrow; "+ObserverNearestFiboText(p)+"; "+ObserverFiboSnapshot(),-1,at,p,0);
+         observerLastDownArrowSeenAt=TimeCurrent();
+         ObserverWrite(ObserverEventsFile,"signal_arrow","direction=SELL; object=DownArrow; object_time="+TimeToString(at,TIME_DATE|TIME_SECONDS)+"; first_observed_time="+TimeToString(observerLastDownArrowSeenAt,TIME_DATE|TIME_SECONDS)+"; "+ObserverNearestFiboText(p)+"; "+ObserverFiboSnapshot(),-1,observerLastDownArrowSeenAt,p,0);
       }
    }
 }
@@ -376,17 +380,18 @@ void ObserverCheckArrowTradeLink()
       if(GlobalVariableCheck(linkGV)) continue;
       string matched="none";
       int matchedDirection=-1;
-      if(observerLastUpArrowTime>0 && MathAbs((double)(ot-observerLastUpArrowTime))<=5.0)
+      if(observerLastUpArrowSeenAt>0 && MathAbs((double)(ot-observerLastUpArrowSeenAt))<=5.0)
       { matched="UpArrow"; matchedDirection=OP_BUY; }
-      if(observerLastDownArrowTime>0 && MathAbs((double)(ot-observerLastDownArrowTime))<=5.0)
+      if(observerLastDownArrowSeenAt>0 && MathAbs((double)(ot-observerLastDownArrowSeenAt))<=5.0)
       { matched="DownArrow"; matchedDirection=OP_SELL; }
+      if(matched=="none" && (TimeCurrent()-ot)<5) continue;
       string status=(matched=="none" ? "no_arrow_within_5s" :
                      ((matchedDirection==OrderType()) ? "direction_matches" : "direction_mismatch"));
       ObserverWrite(ObserverEventsFile,"arrow_trade_association",
          "arrow_object="+matched+"; association_status="+status+
          "; trade_open_time="+TimeToString(ot,TIME_DATE|TIME_SECONDS)+
-         "; seconds_from_up_arrow="+(observerLastUpArrowTime>0 ? DoubleToString((double)(ot-observerLastUpArrowTime),0) : "na")+
-         "; seconds_from_down_arrow="+(observerLastDownArrowTime>0 ? DoubleToString((double)(ot-observerLastDownArrowTime),0) : "na"),
+         "; seconds_from_up_arrow_observed="+(observerLastUpArrowSeenAt>0 ? DoubleToString((double)(ot-observerLastUpArrowSeenAt),0) : "na")+
+         "; seconds_from_down_arrow_observed="+(observerLastDownArrowSeenAt>0 ? DoubleToString((double)(ot-observerLastDownArrowSeenAt),0) : "na"),
          OrderTicket(),now,OrderOpenPrice(),OrderProfit()+OrderSwap()+OrderCommission());
       GlobalVariableSet(linkGV,now);
    }
