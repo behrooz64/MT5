@@ -31,6 +31,7 @@ double observerLevelMinAfterTouch[10];
 datetime observerLevelTouchTime[10];
 string ObserverLevelsFile = "Derik1.1\\Observer_Levels.csv";
 string ObserverScenariosFile = "Derik1.1\\Observer_Scenarios.csv";
+string ObserverTicksFile = "Derik1.1\\Observer_Ticks.csv";
 int observerTrackedTicket = -1;
 double observerMaxFloatingProfit = 0.0;
 double observerMaxFloatingLoss = 0.0;
@@ -257,6 +258,22 @@ void ObserverWriteLevel(string eventType,string detail,datetime at,double price,
    ObserverWrite(ObserverLevelsFile,eventType,detail,ticket,at,price,0.0);
 }
 
+
+void ObserverWriteTickTrace()
+{
+   double point=ObserverPointSize();
+   double pip=ObserverPipSize();
+   string detail="bid="+DoubleToString(Bid,Digits)+
+      "; ask="+DoubleToString(Ask,Digits)+
+      "; spread_points="+DoubleToString((Ask-Bid)/point,1)+
+      "; point_size="+DoubleToString(point,Digits)+
+      "; pip_size="+DoubleToString(pip,Digits)+
+      "; tick_value="+DoubleToString(MarketInfo(symbol,MODE_TICKVALUE),4)+
+      "; tick_size="+DoubleToString(MarketInfo(symbol,MODE_TICKSIZE),Digits)+
+      "; "+ObserverFiboSnapshot();
+   ObserverWrite(ObserverTicksFile,"price_tick",detail,-1,TimeCurrent(),Bid,0.0);
+}
+
 void ObserverTrackFiboTouches()
 {
    double bid=Bid;
@@ -407,6 +424,7 @@ void ObserverTick()
 {
    if(observerStartedAt==0) observerStartedAt=TimeCurrent();
    ObserverCheckArrows();
+   ObserverWriteTickTrace();
    ObserverTrackFiboTouches();
    ObserverCaptureOpenTrades();
    ObserverTrackTradePriceExcursions();
