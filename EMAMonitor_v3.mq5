@@ -384,18 +384,28 @@ void LoadTrackState()
    FileClose(f);
    SavePersistentCounter("TRACKID",nextId);
 }
-bool OutcomeAlreadyLogged(const long eventId)
+bool OutcomeAlreadyLogged(const long eventId,const datetime signalTime,const string eventType)
 {
    int h=FileOpen(MakeFile("Outcomes"),FILE_READ|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
    if(h==INVALID_HANDLE) return false;
    for(int i=0;i<15 && !FileIsEnding(h);i++) FileReadString(h);
-   string target=(string)eventId; bool found=false;
+   string targetId=(string)eventId;
+   string targetTime=TimeToString(signalTime,TIME_DATE|TIME_SECONDS);
+   bool found=false;
    while(!FileIsEnding(h))
    {
       string id=FileReadString(h);
       if(id=="") break;
-      for(int col=1;col<15 && !FileIsEnding(h);col++) FileReadString(h);
-      if(id==target) { found=true; break; }
+      string rowTime="",rowType="";
+      for(int col=1;col<15 && !FileIsEnding(h);col++)
+      {
+         string value=FileReadString(h);
+         if(col==1) rowTime=value;
+         else if(col==4) rowType=value;
+      }
+      // Old outcomes used a separate counter; match the full identity to avoid false collisions.
+      if(id==targetId && rowTime==targetTime && rowType==eventType)
+      { found=true; break; }
    }
    FileClose(h); return found;
 }
@@ -414,7 +424,7 @@ void UpdateTracks(const MqlRates &bar)
       tracks[i].barsSeen++;
       if(tracks[i].barsSeen>=InpOutcomeBars)
       {
-         if(fOutcomes!=INVALID_HANDLE && !OutcomeAlreadyLogged(tracks[i].id))
+         if(fOutcomes!=INVALID_HANDLE && !OutcomeAlreadyLogged(tracks[i].id,tracks[i].signalTime,tracks[i].eventName))
             FileWrite(fOutcomes,(string)tracks[i].id,TimeToString(tracks[i].signalTime,TIME_DATE|TIME_SECONDS),
             _Symbol,TFName(),tracks[i].eventName,(tracks[i].direction==1?"BUY":(tracks[i].direction==-1?"SELL":"BOTH")),
             DoubleToString(tracks[i].entry,_Digits),InpOutcomeBars,tracks[i].barsSeen,
