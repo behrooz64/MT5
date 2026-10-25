@@ -834,7 +834,9 @@ int OnInit()
 {
    if(InpHistoryBars<10 || InpOutcomeBars<1 || InpBreakoutBars<2 || InpBandsPeriod<2 || InpADXPeriod<2 ||
       InpSimFixedTPPoints<=0 || InpSimFixedSLPoints<=0 || InpSimATRTPMultiple<=0 || InpSimATRSLMultiple<=0 ||
-      InpSimTrailATRMultiple<=0 || InpSimBETriggerATRMultiple<=0 || InpSimMoneyStopUSD<=0 || InpSimAccountBalance<=0 || InpSimRiskPercent<=0 || InpSimLotSize<=0 || InpSimGridStepPoints<=0 || InpSimGridMaxAdds<0 || InpSimGridTargetPoints<=0 || InpSimGridMaxLossPoints<=0 || InpSimMaxBars<1 || InpSimCostPoints<0)
+      InpSimTrailATRMultiple<=0 || InpSimBETriggerATRMultiple<=0 || InpSimMoneyStopUSD<=0 || InpSimAccountBalance<=0 || InpSimRiskPercent<=0 || InpSimRiskPercent>=100 || InpSimLotSize<=0 || InpSimGridStepPoints<=0 || InpSimGridMaxAdds<0 || InpSimGridTargetPoints<=0 || InpSimGridMaxLossPoints<=0 || InpSimMaxBars<1 || InpSimCostPoints<0 ||
+      InpFastEMA<1 || InpEMA50<1 || InpEMA100<1 || InpEMA200<1 || InpStochK<1 || InpStochD<1 || InpStochSlowing<1 ||
+      InpRSIPeriod<2 || InpATRPeriod<2 || InpADXPeriod<2 || InpBandsPeriod<2 || InpMACDFast<1 || InpMACDSlow<2 || InpMACDSignal<1 || InpMACDFast>=InpMACDSlow)
       return INIT_PARAMETERS_INCORRECT;
    string accountCurrency=AccountInfoString(ACCOUNT_CURRENCY);
    if(accountCurrency!="USD")
@@ -873,6 +875,7 @@ int OnInit()
    if(FileSize(fScenarios)==0) WriteScenarioHeader();
    FileSeek(fBars,0,SEEK_END); FileSeek(fEvents,0,SEEK_END); FileSeek(fOutcomes,0,SEEK_END); FileSeek(fScenarios,0,SEEK_END);
 
+   datetime historyScanCheckpoint=0;
    if(InpScanHistoryIfFresh && barsFileWasEmpty)
    {
       int total=Bars(_Symbol,CollectTF());
@@ -881,6 +884,7 @@ int OnInit()
        {
           if(!ProcessBar(shift,true))
           { Print("EMAMonitor v3.10: history scan paused; indicator data not ready at shift ",shift); break; }
+          historyScanCheckpoint=iTime(_Symbol,CollectTF(),shift);
        }
    }
    long trackFromFiles=MaxIdInCsv(outName,15,0)+1;
@@ -898,7 +902,8 @@ int OnInit()
    datetime savedCheckpoint=LoadPersistentBarTime();
    if(barsFileWasEmpty && InpScanHistoryIfFresh)
    {
-      lastBarTime=latestClosedBar;
+      // If history scanning stopped early, resume after its last successful bar rather than skipping data.
+      lastBarTime=historyScanCheckpoint;
       SavePersistentBarTime(lastBarTime);
    }
    else
@@ -930,7 +935,7 @@ void OnTick()
       else if(checkpointShift<0)
       {
          int total=Bars(_Symbol,CollectTF());
-         startShift=MathMax(1,MathMin(InpHistoryBars,total-InpBreakoutBars-3));
+         startShift=(int)MathMax(1,MathMin(InpHistoryBars,total-InpBreakoutBars-3));
          Print("EMAMonitor v3.10: checkpoint not present in loaded history; attempting bounded recovery from ",startShift," bars.");
       }
    }
