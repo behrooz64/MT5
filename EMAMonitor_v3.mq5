@@ -541,10 +541,26 @@ int OnInit()
    nextEventId=MathMax(nextEventId,MaxIdInCsv(eventsName,36,3)+1);
    SavePersistentCounter("TRACKID",nextId);
    SavePersistentCounter("EVENTID",nextEventId);
-   lastBarTime=iTime(_Symbol,CollectTF(),0);
-   // Flush all output before committing the current-bar checkpoint.
-   FileFlush(fBars);FileFlush(fEvents);FileFlush(fOutcomes);
-   SavePersistentBarTime(lastBarTime);
+   // Keep the prior checkpoint when restarting an existing collector. OnTick will
+   // replay every fully closed bar newer than that checkpoint in chronological order.
+   datetime currentBar=iTime(_Symbol,CollectTF(),0);
+   datetime savedCheckpoint=LoadPersistentBarTime();
+   if(barsFileWasEmpty && InpScanHistoryIfFresh)
+   {
+      lastBarTime=currentBar;
+      SavePersistentBarTime(lastBarTime);
+   }
+   else
+   {
+      lastBarTime=savedCheckpoint;
+      if(lastBarTime==0)
+      {
+         // No reliable checkpoint exists: avoid replaying all history into a non-empty CSV.
+         lastBarTime=currentBar;
+         SavePersistentBarTime(lastBarTime);
+      }
+   }
+   // Flush output before saving any new checkpoint.
    Print("EMAMonitor_v3 v3.00 started in collection-only mode: ",_Symbol," ",TFName(),
       ". No orders are sent. Files: ",barsName," | ",eventsName," | ",outName);
    return INIT_SUCCEEDED;
@@ -552,10 +568,25 @@ int OnInit()
 void OnTick()
 {
    datetime t=iTime(_Symbol,CollectTF(),0);
-   datetime savedBar=LoadPersistentBarTime();
-   if(t==0 || t==lastBarTime || t==savedBar) return;
-   ProcessBar(1,true);
-   FileFlush(fBars);FileFlush(fEvents);FileFlush(fOutcomes);
+   if(t==0 || t==lastBarTime) return;
+
+   int startShift=1;
+   if(lastBarTime>0)
+   {
+      int checkpointShift=iBarShift(_Symbol,CollectTF(),lastBarTime,false);
+      if(checkpointShift>1) startShift=checkpointShift-1;
+   }
+
+   // Process missed closed bars from oldest to newest; shift values descend toward 1.
+   for(int shift=startShift;shift>=1;shift--)
+   {
+      datetime closedBarTime=iTime(_Symbol,CollectTF(),shift);
+      if(closedBarTime==0 || closedBarTime<=lastBarTime) continue;
+      ProcessBar(shift,true);
+      FileFlush(fBars);FileFlush(fEvents);FileFlush(fOutcomes);
+   }
+
+   // Commit the new checkpoint only after all eligible bars have been flushed.
    lastBarTime=t;
    SavePersistentBarTime(t);
 }
