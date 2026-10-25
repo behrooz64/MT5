@@ -218,14 +218,14 @@ bool BarAlreadyLogged(const datetime barTime)
    int h=FileOpen(MakeFile("Bars"),FILE_READ|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
    if(h==INVALID_HANDLE) return false;
    // Bars rows have a fixed schema; event_time is the first field.
-   for(int i=0;i<52 && !FileIsEnding(h);i++) FileReadString(h);
+   for(int i=0;i<59 && !FileIsEnding(h);i++) FileReadString(h);
    string target=TimeToString(barTime,TIME_DATE|TIME_SECONDS);
    bool found=false;
    while(!FileIsEnding(h))
    {
       string t=FileReadString(h);
       if(t=="") break;
-      for(int col=1;col<52 && !FileIsEnding(h);col++) FileReadString(h);
+      for(int col=1;col<59 && !FileIsEnding(h);col++) FileReadString(h);
       if(t==target) { found=true; break; }
    }
    FileClose(h);
