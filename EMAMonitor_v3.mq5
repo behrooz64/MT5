@@ -978,7 +978,7 @@ void WriteScenarioStats()
          DoubleToString(netTotal[k],1),DoubleToString(expectancy,2),DoubleToString(grossProfit[k],1),
          DoubleToString(grossLoss[k],1),pfText,DoubleToString(maxDD[k],1),
          DoubleToString(InpSimCostPoints,1),_Symbol,TFName(),
-         "Point-based OHLC simulation only; flat estimated cost; not live trading performance");
+         "Point-based OHLC simulation only; flat estimated cost; verify tick value, account currency and lot size for money-risk scenarios; not live trading performance");
    }
    FileFlush(w); FileClose(w);
 }
