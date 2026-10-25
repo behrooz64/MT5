@@ -420,7 +420,7 @@ void LoadScenarioState()
       string entryText=FileReadString(f),atrText=FileReadString(f),ftp=FileReadString(f),fsl=FileReadString(f);
       string atp=FileReadString(f),asl=FileReadString(f),fexit=FileReadString(f),aexit=FileReadString(f);
       string texit=FileReadString(f),best=FileReadString(f),bars=FileReadString(f);
-      string fs=FileReadString(f),as=FileReadString(f),ts=FileReadString(f);
+      string fs=FileReadString(f),atrStatusText=FileReadString(f),ts=FileReadString(f);
       if(idText=="" || timeText=="") continue;
       int n=ArraySize(simTracks);if(ArrayResize(simTracks,n+1)!=n+1)break;
       simTracks[n].eventId=(long)StringToInteger(idText);simTracks[n].signalTime=StringToTime(timeText);
@@ -431,7 +431,7 @@ void LoadScenarioState()
       simTracks[n].fixedExit=StringToDouble(fexit);simTracks[n].atrExit=StringToDouble(aexit);
       simTracks[n].trailExit=StringToDouble(texit);simTracks[n].bestPrice=StringToDouble(best);
       simTracks[n].barsSeen=(int)StringToInteger(bars);simTracks[n].fixedStatus=(int)StringToInteger(fs);
-      simTracks[n].atrStatus=(int)StringToInteger(as);simTracks[n].trailStatus=(int)StringToInteger(ts);
+      simTracks[n].atrStatus=(int)StringToInteger(atrStatusText);simTracks[n].trailStatus=(int)StringToInteger(ts);
    }
    FileClose(f);
 }
