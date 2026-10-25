@@ -65,6 +65,36 @@ Track tracks[];
 long nextId=1;
 long nextEventId=1;
 
+string PersistentKey(const string suffix)
+{
+   string key=InpFilePrefix+"_"+SafeName(_Symbol)+"_"+TFName()+"_"+suffix;
+   StringReplace(key,"-","_");
+   if(StringLen(key)>63) key=StringSubstr(key,0,63);
+   return key;
+}
+long LoadPersistentCounter(const string suffix,const long fallback)
+{
+   string key=PersistentKey(suffix);
+   if(!GlobalVariableCheck(key)) return fallback;
+   double value=GlobalVariableGet(key);
+   if(value<1.0) return fallback;
+   return (long)value;
+}
+void SavePersistentCounter(const string suffix,const long value)
+{
+   GlobalVariableSet(PersistentKey(suffix),(double)value);
+}
+datetime LoadPersistentBarTime()
+{
+   string key=PersistentKey("LASTBAR");
+   if(!GlobalVariableCheck(key)) return 0;
+   return (datetime)GlobalVariableGet(key);
+}
+void SavePersistentBarTime(const datetime value)
+{
+   GlobalVariableSet(PersistentKey("LASTBAR"),(double)value);
+}
+
 ENUM_TIMEFRAMES CollectTF(){ return (InpCollectTimeframe==PERIOD_CURRENT ? (ENUM_TIMEFRAMES)_Period : InpCollectTimeframe); }
 string TFName(){ return EnumToString(CollectTF()); }
 string SafeName(string s)
@@ -195,7 +225,7 @@ void WriteEvent(const Snapshot &s,const string name,const string dir,const doubl
    double dist=(ema!=0.0 ? Pts(s.bar.close-ema) : 0.0);
    string regime=s.bull ? "UPTREND" : (s.bear ? "DOWNTREND" : (s.range ? "RANGE" : "TRANSITION"));
    FileWrite(fEvents,TimeToString(s.bar.time,TIME_DATE|TIME_SECONDS),_Symbol,TFName(),
-   (string)nextEventId++,name,dir,DoubleToString(refPrice,_Digits),DoubleToString(ema,_Digits),DoubleToString(dist,1),
+   (string)nextEventId,name,dir,DoubleToString(refPrice,_Digits),DoubleToString(ema,_Digits),DoubleToString(dist,1),
    DoubleToString(s.bar.open,_Digits),DoubleToString(s.bar.high,_Digits),DoubleToString(s.bar.low,_Digits),
    DoubleToString(s.bar.close,_Digits),DoubleToString(s.e15,_Digits),DoubleToString(s.e50,_Digits),
    DoubleToString(s.e100,_Digits),DoubleToString(s.e200,_Digits),B(s.touch15),B(s.touch50),B(s.touch100),B(s.touch200),
@@ -204,11 +234,12 @@ void WriteEvent(const Snapshot &s,const string name,const string dir,const doubl
    DoubleToString(s.upper,_Digits),DoubleToString(s.middle,_Digits),DoubleToString(s.lower,_Digits),
    DoubleToString(s.macdMain,_Digits),DoubleToString(s.macdSignal,_Digits),
    DoubleToString(s.spreadPoints,1),details);
+   nextEventId++; SavePersistentCounter("EVENTID",nextEventId);
 }
 void AddTrack(const Snapshot &s,const string name,const int dir,const double entry)
 {
    int n=ArraySize(tracks); if(ArrayResize(tracks,n+1)!=n+1) return;
-   tracks[n].id=nextId++; tracks[n].signalTime=s.bar.time; tracks[n].eventName=name;
+   tracks[n].id=nextId; nextId++; SavePersistentCounter("TRACKID",nextId); tracks[n].signalTime=s.bar.time; tracks[n].eventName=name;
    tracks[n].direction=dir; tracks[n].entry=entry; tracks[n].barsSeen=0;
    tracks[n].mfePoints=0; tracks[n].maePoints=0; tracks[n].upPoints=0; tracks[n].downPoints=0;
 }
@@ -347,7 +378,10 @@ int OnInit()
       int scan=MathMin(InpHistoryBars,total-InpBreakoutBars-3);
       for(int shift=scan;shift>=1;shift--) ProcessBar(shift,true);
    }
+   nextId=LoadPersistentCounter("TRACKID",1);
+   nextEventId=LoadPersistentCounter("EVENTID",1);
    lastBarTime=iTime(_Symbol,CollectTF(),0);
+   SavePersistentBarTime(lastBarTime);
    FileFlush(fBars);FileFlush(fEvents);FileFlush(fOutcomes);
    Print("EMAMonitor v3.00 started in collection-only mode: ",_Symbol," ",TFName(),
       ". No orders are sent. Files: ",barsName," | ",eventsName," | ",outName);
@@ -356,8 +390,10 @@ int OnInit()
 void OnTick()
 {
    datetime t=iTime(_Symbol,CollectTF(),0);
-   if(t==0 || t==lastBarTime) return;
+   datetime savedBar=LoadPersistentBarTime();
+   if(t==0 || t==lastBarTime || t==savedBar) return;
    lastBarTime=t;
+   SavePersistentBarTime(t);
    ProcessBar(1,true);
    FileFlush(fBars);FileFlush(fEvents);FileFlush(fOutcomes);
 }
