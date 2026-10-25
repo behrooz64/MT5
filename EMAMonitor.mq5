@@ -1,11 +1,12 @@
 //+------------------------------------------------------------------+
 //|                                                EMAMonitor.mq5    |
-//| Research observer v3.00 - collection only, never trades            |
+//| Research observer v3.00 - configurable timeframe, collection only            |
 //+------------------------------------------------------------------+
 #property strict
 #property version   "3.00"
-#property description "Research-only market data collector. Does not send or manage orders."
+#property description "Research-only market data collector. Configure timeframe per instance; does not send or manage orders."
 
+input ENUM_TIMEFRAMES InpCollectTimeframe = PERIOD_CURRENT; // Set to M1 or M5 per EA instance
 input int      InpFastEMA       = 15;
 input int      InpEMA50         = 50;
 input int      InpEMA100        = 100;
@@ -64,7 +65,8 @@ Track tracks[];
 long nextId=1;
 long nextEventId=1;
 
-string TFName(){ return EnumToString((ENUM_TIMEFRAMES)_Period); }
+ENUM_TIMEFRAMES CollectTF(){ return (InpCollectTimeframe==PERIOD_CURRENT ? (ENUM_TIMEFRAMES)_Period : InpCollectTimeframe); }
+string TFName(){ return EnumToString(CollectTF()); }
 string SafeName(string s)
 {
    StringReplace(s,"/","_"); StringReplace(s,"\\","_"); StringReplace(s,":","_");
@@ -87,7 +89,7 @@ bool ReadVal(const int handle,const int buffer,const int shift,double &v)
 bool ReadRate(const int shift,MqlRates &bar)
 {
    MqlRates a[]; ArraySetAsSeries(a,true);
-   if(CopyRates(_Symbol,_Period,shift,1,a)!=1) return false;
+   if(CopyRates(_Symbol,CollectTF(),shift,1,a)!=1) return false;
    bar=a[0]; return true;
 }
 bool LoadSnapshot(const int shift,Snapshot &s)
@@ -109,8 +111,8 @@ bool LoadSnapshot(const int shift,Snapshot &s)
       return false;
 
    double hs[],ls[]; ArraySetAsSeries(hs,true); ArraySetAsSeries(ls,true);
-   if(CopyHigh(_Symbol,_Period,shift+1,InpBreakoutBars,hs)!=InpBreakoutBars ||
-      CopyLow(_Symbol,_Period,shift+1,InpBreakoutBars,ls)!=InpBreakoutBars) return false;
+   if(CopyHigh(_Symbol,CollectTF(),shift+1,InpBreakoutBars,hs)!=InpBreakoutBars ||
+      CopyLow(_Symbol,CollectTF(),shift+1,InpBreakoutBars,ls)!=InpBreakoutBars) return false;
    s.priorHigh=hs[ArrayMaximum(hs)]; s.priorLow=ls[ArrayMinimum(ls)];
    s.spreadPoints=(double)SymbolInfoInteger(_Symbol,SYMBOL_SPREAD);
    s.tickSize=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE);
@@ -312,16 +314,16 @@ int OnInit()
 {
    if(InpHistoryBars<10 || InpOutcomeBars<1 || InpBreakoutBars<2 || InpBandsPeriod<2 || InpADXPeriod<2)
       return INIT_PARAMETERS_INCORRECT;
-   hFast=iMA(_Symbol,_Period,InpFastEMA,0,MODE_EMA,PRICE_CLOSE);
-   h50=iMA(_Symbol,_Period,InpEMA50,0,MODE_EMA,PRICE_CLOSE);
-   h100=iMA(_Symbol,_Period,InpEMA100,0,MODE_EMA,PRICE_CLOSE);
-   h200=iMA(_Symbol,_Period,InpEMA200,0,MODE_EMA,PRICE_CLOSE);
-   hStoch=iStochastic(_Symbol,_Period,InpStochK,InpStochD,InpStochSlowing,MODE_SMA,STO_LOWHIGH);
-   hRSI=iRSI(_Symbol,_Period,InpRSIPeriod,PRICE_CLOSE);
-   hATR=iATR(_Symbol,_Period,InpATRPeriod);
-   hADX=iADX(_Symbol,_Period,InpADXPeriod);
-   hBands=iBands(_Symbol,_Period,InpBandsPeriod,0,InpBandsDev,PRICE_CLOSE);
-   hMACD=iMACD(_Symbol,_Period,InpMACDFast,InpMACDSlow,InpMACDSignal,PRICE_CLOSE);
+   hFast=iMA(_Symbol,CollectTF(),InpFastEMA,0,MODE_EMA,PRICE_CLOSE);
+   h50=iMA(_Symbol,CollectTF(),InpEMA50,0,MODE_EMA,PRICE_CLOSE);
+   h100=iMA(_Symbol,CollectTF(),InpEMA100,0,MODE_EMA,PRICE_CLOSE);
+   h200=iMA(_Symbol,CollectTF(),InpEMA200,0,MODE_EMA,PRICE_CLOSE);
+   hStoch=iStochastic(_Symbol,CollectTF(),InpStochK,InpStochD,InpStochSlowing,MODE_SMA,STO_LOWHIGH);
+   hRSI=iRSI(_Symbol,CollectTF(),InpRSIPeriod,PRICE_CLOSE);
+   hATR=iATR(_Symbol,CollectTF(),InpATRPeriod);
+   hADX=iADX(_Symbol,CollectTF(),InpADXPeriod);
+   hBands=iBands(_Symbol,CollectTF(),InpBandsPeriod,0,InpBandsDev,PRICE_CLOSE);
+   hMACD=iMACD(_Symbol,CollectTF(),InpMACDFast,InpMACDSlow,InpMACDSignal,PRICE_CLOSE);
    if(hFast==INVALID_HANDLE||h50==INVALID_HANDLE||h100==INVALID_HANDLE||h200==INVALID_HANDLE||
       hStoch==INVALID_HANDLE||hRSI==INVALID_HANDLE||hATR==INVALID_HANDLE||hADX==INVALID_HANDLE||
       hBands==INVALID_HANDLE||hMACD==INVALID_HANDLE)
@@ -341,11 +343,11 @@ int OnInit()
 
    if(InpScanHistoryIfFresh && barsFileWasEmpty)
    {
-      int total=Bars(_Symbol,_Period);
+      int total=Bars(_Symbol,CollectTF());
       int scan=MathMin(InpHistoryBars,total-InpBreakoutBars-3);
       for(int shift=scan;shift>=1;shift--) ProcessBar(shift,true);
    }
-   lastBarTime=iTime(_Symbol,_Period,0);
+   lastBarTime=iTime(_Symbol,CollectTF(),0);
    FileFlush(fBars);FileFlush(fEvents);FileFlush(fOutcomes);
    Print("EMAMonitor v3.00 started in collection-only mode: ",_Symbol," ",TFName(),
       ". No orders are sent. Files: ",barsName," | ",eventsName," | ",outName);
@@ -353,7 +355,7 @@ int OnInit()
 }
 void OnTick()
 {
-   datetime t=iTime(_Symbol,_Period,0);
+   datetime t=iTime(_Symbol,CollectTF(),0);
    if(t==0 || t==lastBarTime) return;
    lastBarTime=t;
    ProcessBar(1,true);
