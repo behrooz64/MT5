@@ -62,6 +62,7 @@ struct Track
 };
 Track tracks[];
 long nextId=1;
+long nextEventId=1;
 
 string TFName(){ return EnumToString((ENUM_TIMEFRAMES)_Period); }
 string SafeName(string s)
@@ -192,7 +193,7 @@ void WriteEvent(const Snapshot &s,const string name,const string dir,const doubl
    double dist=(ema!=0.0 ? Pts(s.bar.close-ema) : 0.0);
    string regime=s.bull ? "UPTREND" : (s.bear ? "DOWNTREND" : (s.range ? "RANGE" : "TRANSITION"));
    FileWrite(fEvents,TimeToString(s.bar.time,TIME_DATE|TIME_SECONDS),_Symbol,TFName(),
-   (string)nextId,name,dir,DoubleToString(refPrice,_Digits),DoubleToString(ema,_Digits),DoubleToString(dist,1),
+   (string)nextEventId++,name,dir,DoubleToString(refPrice,_Digits),DoubleToString(ema,_Digits),DoubleToString(dist,1),
    DoubleToString(s.bar.open,_Digits),DoubleToString(s.bar.high,_Digits),DoubleToString(s.bar.low,_Digits),
    DoubleToString(s.bar.close,_Digits),DoubleToString(s.e15,_Digits),DoubleToString(s.e50,_Digits),
    DoubleToString(s.e100,_Digits),DoubleToString(s.e200,_Digits),B(s.touch15),B(s.touch50),B(s.touch100),B(s.touch200),
@@ -253,7 +254,9 @@ void EmitSignals(const Snapshot &s)
    bool macSell=(s.macdPrev>=s.macdSigPrev && s.macdMain<s.macdSignal);
    bool boBuy=(s.bar.close>s.priorHigh),boSell=(s.bar.close<s.priorLow);
    double ema[4]; ema[0]=s.e15;ema[1]=s.e50;ema[2]=s.e100;ema[3]=s.e200;
+   int emaHandles[4]; emaHandles[0]=hFast;emaHandles[1]=h50;emaHandles[2]=h100;emaHandles[3]=h200;
    string ename[4]; ename[0]="EMA15";ename[1]="EMA50";ename[2]="EMA100";ename[3]="EMA200";
+   MqlRates priorBar; bool havePrior=ReadRate(2,priorBar);
    bool touch[4]; touch[0]=s.touch15;touch[1]=s.touch50;touch[2]=s.touch100;touch[3]=s.touch200;
    for(int i=0;i<4;i++)
    {
@@ -268,13 +271,13 @@ void EmitSignals(const Snapshot &s)
          if(s.bar.close<ema[i] && s.bar.close<s.bar.open)
             AddEventTrack(s,"BOUNCE_DOWN_"+ename[i],-1,s.bar.close,"Touch and bearish close below EMA; heuristic only");
       }
-      if(i>0)
+      double prevEma=0;
+      if(havePrior && ReadVal(emaHandles[i],0,2,prevEma))
       {
-         double prevEma=0; int handle=(i==1?h50:(i==2?h100:h200));
-         ReadVal(handle,0,2,prevEma);
-         double cur=ema[i];
-         if((s.bar.close>cur && s.bar.close<=prevEma) || (s.bar.close<cur && s.bar.close>=prevEma))
-            WriteEvent(s,"EMA_CROSS_"+ename[i],"NONE",s.bar.close,cur,"Price crossed EMA between adjacent closed bars; verify prior-close relation");
+         if(priorBar.close<=prevEma && s.bar.close>ema[i])
+            WriteEvent(s,"PRICE_CROSS_ABOVE_"+ename[i],"BUY",s.bar.close,ema[i],"Prior close was at/below prior EMA; current close is above current EMA");
+         if(priorBar.close>=prevEma && s.bar.close<ema[i])
+            WriteEvent(s,"PRICE_CROSS_BELOW_"+ename[i],"SELL",s.bar.close,ema[i],"Prior close was at/above prior EMA; current close is below current EMA");
       }
    }
    if(stUp) AddEventTrack(s,"STOCH_CROSS_UP",1,s.bar.close,"Stochastic main crossed above signal");
@@ -307,8 +310,6 @@ void ProcessBar(const int shift,const bool collect)
 }
 int OnInit()
 {
-   if(InpHistoryBars<10 || InpOutcomeBars<1 || InpBreakoutBars<2 ||
-      InpBandsPeriod<2 || InpADXPeriod<2 || InpGridATRStep<0) { /* Grid input removed in v3; no trading. */ }
    if(InpHistoryBars<10 || InpOutcomeBars<1 || InpBreakoutBars<2 || InpBandsPeriod<2 || InpADXPeriod<2)
       return INIT_PARAMETERS_INCORRECT;
    hFast=iMA(_Symbol,_Period,InpFastEMA,0,MODE_EMA,PRICE_CLOSE);
