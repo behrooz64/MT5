@@ -428,7 +428,7 @@ void LoadScenarioState()
    if(simStateFileName=="") return;
    int f=FileOpen(simStateFileName,FILE_READ|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
    if(f==INVALID_HANDLE) return;
-   if(!FileIsEnding(f)) for(int h=0;h<27 && !FileIsEnding(f);h++) FileReadString(f);
+   if(!FileIsEnding(f)) for(int h=0;h<26 && !FileIsEnding(f);h++) FileReadString(f);
    while(!FileIsEnding(f))
    {
       string idText=FileReadString(f); if(idText=="") break;
@@ -729,7 +729,7 @@ int OnInit()
 
    string barsName=MakeFile("Bars"),eventsName=MakeFile("Events"),outName=MakeFile("Outcomes"),scenarioName=MakeFile("Scenarios");
    stateFileName=MakeFile("PendingState");
-   simStateFileName=MakeFile("ScenarioState");
+   simStateFileName=MakeFile("ScenarioState_v2"); // New schema; preserve any prior ScenarioState file untouched
    LoadTrackState();
    LoadScenarioState();
    fBars=FileOpen(barsName,FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
