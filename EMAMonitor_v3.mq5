@@ -761,9 +761,76 @@ void OnTick()
    lastBarTime=t;
    SavePersistentBarTime(t);
 }
+
+void WriteScenarioStats()
+{
+   string inputName=MakeFile("Scenarios");
+   string outputName=MakeFile("ScenarioStats");
+   int r=FileOpen(inputName,FILE_READ|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
+   if(r==INVALID_HANDLE) { Print("EMAMonitor v3: cannot read scenario results for statistics ",GetLastError()); return; }
+
+   string names[3]; names[0]="FIXED_TP_SL"; names[1]="ATR_TP_SL"; names[2]="ATR_TP_TRAIL";
+   long count[3],wins[3],losses[3];
+   double grossProfit[3],grossLoss[3],netTotal[3],equity[3],peak[3],maxDD[3];
+   ArrayInitialize(count,0); ArrayInitialize(wins,0); ArrayInitialize(losses,0);
+   ArrayInitialize(grossProfit,0.0); ArrayInitialize(grossLoss,0.0); ArrayInitialize(netTotal,0.0);
+   ArrayInitialize(equity,0.0); ArrayInitialize(peak,0.0); ArrayInitialize(maxDD,0.0);
+
+   // Scenario CSV contains 18 columns. Skip the header before reading result rows.
+   for(int h=0;h<18 && !FileIsEnding(r);h++) FileReadString(r);
+   while(!FileIsEnding(r))
+   {
+      string fields[18];
+      bool hasData=false;
+      for(int col=0;col<18;col++)
+      {
+         if(FileIsEnding(r)) break;
+         fields[col]=FileReadString(r);
+         if(fields[col]!="") hasData=true;
+      }
+      if(!hasData) break;
+      int idx=-1;
+      for(int k=0;k<3;k++) if(fields[7]==names[k]) { idx=k; break; }
+      if(idx<0) continue;
+      double gross=StringToDouble(fields[11]);
+      double cost=StringToDouble(fields[12]);
+      double net=StringToDouble(fields[13]);
+      count[idx]++;
+      netTotal[idx]+=net;
+      if(net>0.0) { wins[idx]++; grossProfit[idx]+=net; }
+      else if(net<0.0) { losses[idx]++; grossLoss[idx]+=-net; }
+      equity[idx]+=net;
+      if(equity[idx]>peak[idx]) peak[idx]=equity[idx];
+      double dd=peak[idx]-equity[idx];
+      if(dd>maxDD[idx]) maxDD[idx]=dd;
+   }
+   FileClose(r);
+
+   int w=FileOpen(outputName,FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
+   if(w==INVALID_HANDLE) { Print("EMAMonitor v3: cannot write scenario statistics ",GetLastError()); return; }
+   FileWrite(w,"scenario","closed_simulations","wins","losses","win_rate_percent","net_points",
+      "average_net_points","gross_profit_points","gross_loss_points","profit_factor","max_drawdown_points",
+      "cost_model_points_per_trade","symbol","timeframe","note");
+   for(int k=0;k<3;k++)
+   {
+      double winRate=(count[k]>0 ? 100.0*(double)wins[k]/(double)count[k] : 0.0);
+      double expectancy=(count[k]>0 ? netTotal[k]/(double)count[k] : 0.0);
+      double pf=(grossLoss[k]>0.0 ? grossProfit[k]/grossLoss[k] : (grossProfit[k]>0.0 ? -1.0 : 0.0));
+      string pfText=(pf<0.0 ? "NO_LOSSES" : DoubleToString(pf,3));
+      FileWrite(w,names[k],count[k],wins[k],losses[k],DoubleToString(winRate,2),
+         DoubleToString(netTotal[k],1),DoubleToString(expectancy,2),DoubleToString(grossProfit[k],1),
+         DoubleToString(grossLoss[k],1),pfText,DoubleToString(maxDD[k],1),
+         DoubleToString(InpSimCostPoints,1),_Symbol,TFName(),
+         "Point-based OHLC simulation only; flat estimated cost; not live trading performance");
+   }
+   FileFlush(w); FileClose(w);
+}
+
 void OnDeinit(const int reason)
 {
    WriteTrackState();
+   if(fScenarios!=INVALID_HANDLE) FileFlush(fScenarios);
+   WriteScenarioStats();
    SaveScenarioState();
    if(fBars!=INVALID_HANDLE){FileFlush(fBars);FileClose(fBars);}
    if(fEvents!=INVALID_HANDLE){FileFlush(fEvents);FileClose(fEvents);}
