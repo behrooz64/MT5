@@ -381,7 +381,7 @@ void AddScenarioTrack(const Snapshot &s,const string name,const int dir,const do
    simTracks[n].bestPrice=entry; simTracks[n].barsSeen=0;
    simTracks[n].fixedStatus=0; simTracks[n].atrStatus=0; simTracks[n].trailStatus=0;
    simTracks[n].beStatus=0; simTracks[n].moneyStatus=0; simTracks[n].rr2Status=0; simTracks[n].gridStatus=0; simTracks[n].pctStatus=0; simTracks[n].pyrStatus=0; simTracks[n].beActivated=false;
-   simTracks[n].beStop=entry-s.dir*s.atr*InpSimATRSLMultiple;
+   simTracks[n].beStop=entry-dir*s.atr*InpSimATRSLMultiple;
    double tickSize=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE);
    double tickValue=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE_LOSS);
     if(tickValue<=0.0) tickValue=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE);
