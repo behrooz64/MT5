@@ -53,7 +53,7 @@ struct Snapshot
 };
 struct Track
 {
-   long id;
+   long id; // linked source event_id, reused as outcome signal_id
    datetime signalTime;
    string eventName;
    int direction; // 1=buy, -1=sell, 0=measure both directions after touch
@@ -213,9 +213,27 @@ void WriteOutcomeHeader()
    "entry_price","horizon_bars","bars_observed","mfe_favourable_points","mae_adverse_points",
    "max_up_points","max_down_points","last_close","outcome_status");
 }
+bool BarAlreadyLogged(const datetime barTime)
+{
+   int h=FileOpen(MakeFile("Bars"),FILE_READ|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
+   if(h==INVALID_HANDLE) return false;
+   // Bars rows have a fixed schema; event_time is the first field.
+   for(int i=0;i<52 && !FileIsEnding(h);i++) FileReadString(h);
+   string target=TimeToString(barTime,TIME_DATE|TIME_SECONDS);
+   bool found=false;
+   while(!FileIsEnding(h))
+   {
+      string t=FileReadString(h);
+      if(t=="") break;
+      for(int col=1;col<52 && !FileIsEnding(h);col++) FileReadString(h);
+      if(t==target) { found=true; break; }
+   }
+   FileClose(h);
+   return found;
+}
 void WriteBar(const Snapshot &s,const int shift)
 {
-   if(fBars==INVALID_HANDLE) return;
+   if(fBars==INVALID_HANDLE || BarAlreadyLogged(s.bar.time)) return;
    double p15=0,p50=0,p100=0,p200=0;
    double old15,old50,old100,old200;
    if(ReadVal(hFast,0,shift+1,old15)) p15=Pts(s.e15-old15);
@@ -300,17 +318,20 @@ bool WriteEvent(const Snapshot &s,const string name,const string dir,const doubl
    nextEventId++; SavePersistentCounter("EVENTID",nextEventId);
    return true;
 }
-void AddTrack(const Snapshot &s,const string name,const int dir,const double entry)
+void AddTrack(const Snapshot &s,const string name,const int dir,const double entry,const long sourceEventId)
 {
    int n=ArraySize(tracks); if(ArrayResize(tracks,n+1)!=n+1) return;
-   tracks[n].id=nextId; nextId++; SavePersistentCounter("TRACKID",nextId); tracks[n].signalTime=s.bar.time; tracks[n].eventName=name;
+   tracks[n].id=sourceEventId; tracks[n].signalTime=s.bar.time; tracks[n].eventName=name;
    tracks[n].direction=dir; tracks[n].entry=entry; tracks[n].barsSeen=0;
    tracks[n].mfePoints=0; tracks[n].maePoints=0; tracks[n].upPoints=0; tracks[n].downPoints=0;
 }
 void AddEventTrack(const Snapshot &s,const string name,const int dir,const double entry,const string details)
 {
    if(!WriteEvent(s,name,(dir==1?"BUY":(dir==-1?"SELL":"BOTH")),entry,0,details)) return;
-   AddTrack(s,name,dir,entry);
+   // WriteEvent increments nextEventId only after a successful append; link the pending outcome
+   // to the exact event ID just written, rather than an unrelated independent counter.
+   long sourceEventId=nextEventId-1;
+   AddTrack(s,name,dir,entry,sourceEventId);
 }
 void WriteTrackState()
 {
@@ -363,6 +384,21 @@ void LoadTrackState()
    FileClose(f);
    SavePersistentCounter("TRACKID",nextId);
 }
+bool OutcomeAlreadyLogged(const long eventId)
+{
+   int h=FileOpen(MakeFile("Outcomes"),FILE_READ|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
+   if(h==INVALID_HANDLE) return false;
+   for(int i=0;i<15 && !FileIsEnding(h);i++) FileReadString(h);
+   string target=(string)eventId; bool found=false;
+   while(!FileIsEnding(h))
+   {
+      string id=FileReadString(h);
+      if(id=="") break;
+      for(int col=1;col<15 && !FileIsEnding(h);col++) FileReadString(h);
+      if(id==target) { found=true; break; }
+   }
+   FileClose(h); return found;
+}
 void UpdateTracks(const MqlRates &bar)
 {
    for(int i=ArraySize(tracks)-1;i>=0;i--)
@@ -378,7 +414,7 @@ void UpdateTracks(const MqlRates &bar)
       tracks[i].barsSeen++;
       if(tracks[i].barsSeen>=InpOutcomeBars)
       {
-         if(fOutcomes!=INVALID_HANDLE)
+         if(fOutcomes!=INVALID_HANDLE && !OutcomeAlreadyLogged(tracks[i].id))
             FileWrite(fOutcomes,(string)tracks[i].id,TimeToString(tracks[i].signalTime,TIME_DATE|TIME_SECONDS),
             _Symbol,TFName(),tracks[i].eventName,(tracks[i].direction==1?"BUY":(tracks[i].direction==-1?"SELL":"BOTH")),
             DoubleToString(tracks[i].entry,_Digits),InpOutcomeBars,tracks[i].barsSeen,
@@ -498,9 +534,11 @@ int OnInit()
    }
    long trackFromFiles=MaxIdInCsv(outName,15,0)+1;
    long eventFromFiles=MaxIdInCsv(eventsName,36,3)+1;
+   // Outcome IDs are linked to source event IDs. Recover the next event sequence from both files.
    nextId=MathMax(nextId,LoadPersistentCounter("TRACKID",1));
    nextId=MathMax(nextId,trackFromFiles);
    nextEventId=MathMax(LoadPersistentCounter("EVENTID",1),eventFromFiles);
+   nextEventId=MathMax(nextEventId,MaxIdInCsv(eventsName,36,3)+1);
    SavePersistentCounter("TRACKID",nextId);
    SavePersistentCounter("EVENTID",nextEventId);
    lastBarTime=iTime(_Symbol,CollectTF(),0);
