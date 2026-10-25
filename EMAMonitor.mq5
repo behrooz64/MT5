@@ -37,6 +37,7 @@ int hStoch=INVALID_HANDLE, hRSI=INVALID_HANDLE, hATR=INVALID_HANDLE;
 int hBands=INVALID_HANDLE, hMACD=INVALID_HANDLE;
 int csvHandle=INVALID_HANDLE;
 datetime lastBarTime=0;
+bool freshResearchFile=true;
 
 struct SignalTrack
 {
@@ -286,14 +287,18 @@ int OnInit()
       Print("EMAMonitor: could not open research CSV. Error=",GetLastError());
       return INIT_FAILED;
    }
+   freshResearchFile=(FileSize(csvHandle)==0);
    FileSeek(csvHandle,0,SEEK_END);
    WriteHeader();
 
-   int bars=Bars(_Symbol,_Period);
-   int scan=MathMin(InpHistoryBars,bars-2);
-   // Historical bars are processed oldest-to-newest for consistent outcome tracking.
-   for(int shift=scan;shift>=1;shift--)
-      ProcessBar(shift,true);
+   if(freshResearchFile)
+   {
+      int bars=Bars(_Symbol,_Period);
+      int scan=MathMin(InpHistoryBars,bars-2);
+      // Historical bars are processed oldest-to-newest for consistent outcome tracking.
+      for(int shift=scan;shift>=1;shift--)
+         ProcessBar(shift,true);
+   }
 
    lastBarTime=iTime(_Symbol,_Period,0);
    FileFlush(csvHandle);
