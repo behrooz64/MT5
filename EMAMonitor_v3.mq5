@@ -871,7 +871,7 @@ void WriteScenarioStats()
    int r=FileOpen(inputName,FILE_READ|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
    if(r==INVALID_HANDLE) { Print("EMAMonitor v3: cannot read scenario results for statistics ",GetLastError()); return; }
 
-   string names[5]; names[0]="FIXED_TP_SL"; names[1]="ATR_TP_SL"; names[2]="ATR_TP_TRAIL";
+   string names[7]; names[0]="FIXED_TP_SL"; names[1]="ATR_TP_SL"; names[2]="ATR_TP_TRAIL";
    names[3]="ATR_BREAK_EVEN"; names[4]="MONEY_RISK_1_5R"; names[5]="FIXED_RR_2R"; names[6]="GRID_PYRAMID_SIM";
    long count[7],wins[7],losses[7];
    double grossProfit[7],grossLoss[7],netTotal[7],equity[7],peak[7],maxDD[7];
@@ -895,8 +895,6 @@ void WriteScenarioStats()
       int idx=-1;
       for(int k=0;k<7;k++) if(fields[7]==names[k]) { idx=k; break; }
       if(idx<0) continue;
-      double gross=StringToDouble(fields[11]);
-      double cost=StringToDouble(fields[12]);
       double net=StringToDouble(fields[13]);
       count[idx]++;
       netTotal[idx]+=net;
