@@ -804,7 +804,7 @@ int OnInit()
 
    string barsName=MakeFile("Bars"),eventsName=MakeFile("Events"),outName=MakeFile("Outcomes"),scenarioName=MakeFile("Scenarios");
    stateFileName=MakeFile("PendingState");
-   simStateFileName=MakeFile("ScenarioState_v2"); // New schema; preserve any prior ScenarioState file untouched
+   simStateFileName=MakeFile("ScenarioState_v3"); // New schema; preserve older state files untouched
    LoadTrackState();
    LoadScenarioState();
    fBars=FileOpen(barsName,FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
@@ -932,7 +932,7 @@ void WriteScenarioStats()
    int w=FileOpen(outputName,FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
    if(w==INVALID_HANDLE) { Print("EMAMonitor v3: cannot write scenario statistics ",GetLastError()); return; }
    FileWrite(w,"scenario","closed_simulations","wins","losses","win_rate_percent","net_points",
-      "average_net_points","gross_profit_points","gross_loss_points","profit_factor","max_drawdown_points",
+      "average_net_points","positive_net_points","negative_net_points","profit_factor","max_drawdown_points",
       "cost_model_points_per_trade","symbol","timeframe","note");
    for(int k=0;k<8;k++)
    {
