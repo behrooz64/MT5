@@ -88,10 +88,10 @@ struct SimTrack
    double entry;
    double atrPrice;
    double fixedTP,fixedSL,atrTP,atrSL;
-   double fixedExit,atrExit,trailExit,beExit,moneyExit,rr2Exit,gridExit,pctExit;
-   double bestPrice,moneyTP,moneySL,beStop,gridAvgEntry,gridLastAdd,gridTP,gridSL,pctTP,pctSL;
+   double fixedExit,atrExit,trailExit,beExit,moneyExit,rr2Exit,gridExit,pctExit,pyrExit;
+   double bestPrice,moneyTP,moneySL,beStop,gridAvgEntry,gridLastAdd,gridTP,gridSL,pctTP,pctSL,pyrAvgEntry,pyrLastAdd,pyrTP,pyrSL;
    int barsSeen;
-   int fixedStatus,atrStatus,trailStatus,beStatus,moneyStatus,rr2Status,gridStatus,gridAdds,pctStatus;
+   int fixedStatus,atrStatus,trailStatus,beStatus,moneyStatus,rr2Status,gridStatus,gridAdds,pctStatus,pyrStatus,pyrAdds;
    bool beActivated;
 };
 SimTrack simTracks[];
@@ -367,13 +367,16 @@ void AddScenarioTrack(const Snapshot &s,const string name,const int dir,const do
    simTracks[n].fixedTP=InpSimFixedTPPoints*_Point; simTracks[n].fixedSL=InpSimFixedSLPoints*_Point;
    simTracks[n].atrTP=s.atr*InpSimATRTPMultiple; simTracks[n].atrSL=s.atr*InpSimATRSLMultiple;
    simTracks[n].fixedExit=0; simTracks[n].atrExit=0; simTracks[n].trailExit=0;
-   simTracks[n].beExit=0; simTracks[n].moneyExit=0; simTracks[n].rr2Exit=0; simTracks[n].gridExit=0; simTracks[n].pctExit=0;
+   simTracks[n].beExit=0; simTracks[n].moneyExit=0; simTracks[n].rr2Exit=0; simTracks[n].gridExit=0; simTracks[n].pctExit=0; simTracks[n].pyrExit=0;
    simTracks[n].gridAvgEntry=entry; simTracks[n].gridLastAdd=entry;
    simTracks[n].gridTP=InpSimGridTargetPoints*_Point; simTracks[n].gridSL=InpSimGridMaxLossPoints*_Point;
    simTracks[n].gridAdds=0;
+   simTracks[n].pyrAvgEntry=entry; simTracks[n].pyrLastAdd=entry;
+   simTracks[n].pyrTP=InpSimGridTargetPoints*_Point; simTracks[n].pyrSL=InpSimGridMaxLossPoints*_Point;
+   simTracks[n].pyrAdds=0;
    simTracks[n].bestPrice=entry; simTracks[n].barsSeen=0;
    simTracks[n].fixedStatus=0; simTracks[n].atrStatus=0; simTracks[n].trailStatus=0;
-   simTracks[n].beStatus=0; simTracks[n].moneyStatus=0; simTracks[n].rr2Status=0; simTracks[n].gridStatus=0; simTracks[n].pctStatus=0; simTracks[n].beActivated=false;
+   simTracks[n].beStatus=0; simTracks[n].moneyStatus=0; simTracks[n].rr2Status=0; simTracks[n].gridStatus=0; simTracks[n].pctStatus=0; simTracks[n].pyrStatus=0; simTracks[n].beActivated=false;
    simTracks[n].beStop=entry-s.dir*s.atr*InpSimATRSLMultiple;
    double tickSize=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE);
    double tickValue=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE);
@@ -424,7 +427,7 @@ void SaveScenarioState()
       "fixed_exit","atr_exit","trail_exit","best_price","bars_seen","fixed_status","atr_status","trail_status",
       "be_exit","money_exit","money_tp","money_sl","be_stop","be_status","money_status","be_activated",
       "rr2_exit","grid_exit","grid_avg_entry","grid_last_add","grid_tp","grid_sl","rr2_status","grid_status","grid_adds",
-      "pct_exit","pct_tp","pct_sl","pct_status");
+      "pct_exit","pct_tp","pct_sl","pct_status","pyr_exit","pyr_avg_entry","pyr_last_add","pyr_tp","pyr_sl","pyr_status","pyr_adds");
    for(int i=0;i<ArraySize(simTracks);i++)
    {
       SimTrack st=simTracks[i];
@@ -438,7 +441,9 @@ void SaveScenarioState()
          DoubleToString(st.rr2Exit,_Digits),DoubleToString(st.gridExit,_Digits),DoubleToString(st.gridAvgEntry,_Digits),
          DoubleToString(st.gridLastAdd,_Digits),DoubleToString(st.gridTP,_Digits),DoubleToString(st.gridSL,_Digits),
          st.rr2Status,st.gridStatus,st.gridAdds,DoubleToString(st.pctExit,_Digits),
-         DoubleToString(st.pctTP,_Digits),DoubleToString(st.pctSL,_Digits),st.pctStatus);
+         DoubleToString(st.pctTP,_Digits),DoubleToString(st.pctSL,_Digits),st.pctStatus,
+         DoubleToString(st.pyrExit,_Digits),DoubleToString(st.pyrAvgEntry,_Digits),DoubleToString(st.pyrLastAdd,_Digits),
+         DoubleToString(st.pyrTP,_Digits),DoubleToString(st.pyrSL,_Digits),st.pyrStatus,st.pyrAdds);
    }
    FileFlush(f);FileClose(f);
 }
@@ -447,7 +452,7 @@ void LoadScenarioState()
    if(simStateFileName=="") return;
    int f=FileOpen(simStateFileName,FILE_READ|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
    if(f==INVALID_HANDLE) return;
-   if(!FileIsEnding(f)) for(int h=0;h<39 && !FileIsEnding(f);h++) FileReadString(f);
+   if(!FileIsEnding(f)) for(int h=0;h<46 && !FileIsEnding(f);h++) FileReadString(f);
    while(!FileIsEnding(f))
    {
       string idText=FileReadString(f); if(idText=="") break;
@@ -461,6 +466,7 @@ void LoadScenarioState()
       string rr2x=FileReadString(f),gridx=FileReadString(f),gavg=FileReadString(f),glast=FileReadString(f);
       string gtp=FileReadString(f),gsl=FileReadString(f),rr2s=FileReadString(f),grids=FileReadString(f),gadds=FileReadString(f);
       string pexit=FileReadString(f),ptp=FileReadString(f),psl=FileReadString(f),pstatus=FileReadString(f);
+      string pyrexit=FileReadString(f),pyravg=FileReadString(f),pyrlast=FileReadString(f),pyrtp=FileReadString(f),pyrsl=FileReadString(f),pyrs=FileReadString(f),pyra=FileReadString(f);
       if(idText=="" || timeText=="") continue;
       int n=ArraySize(simTracks);if(ArrayResize(simTracks,n+1)!=n+1)break;
       simTracks[n].eventId=(long)StringToInteger(idText);simTracks[n].signalTime=StringToTime(timeText);
@@ -482,7 +488,10 @@ void LoadScenarioState()
       simTracks[n].rr2Status=(int)StringToInteger(rr2s);simTracks[n].gridStatus=(int)StringToInteger(grids);
       simTracks[n].gridAdds=(int)StringToInteger(gadds);simTracks[n].pctExit=StringToDouble(pexit);
       simTracks[n].pctTP=StringToDouble(ptp);simTracks[n].pctSL=StringToDouble(psl);
-      simTracks[n].pctStatus=(int)StringToInteger(pstatus);
+      simTracks[n].pctStatus=(int)StringToInteger(pstatus);simTracks[n].pyrExit=StringToDouble(pyrexit);
+      simTracks[n].pyrAvgEntry=StringToDouble(pyravg);simTracks[n].pyrLastAdd=StringToDouble(pyrlast);
+      simTracks[n].pyrTP=StringToDouble(pyrtp);simTracks[n].pyrSL=StringToDouble(pyrsl);
+      simTracks[n].pyrStatus=(int)StringToInteger(pyrs);simTracks[n].pyrAdds=(int)StringToInteger(pyra);
    }
    FileClose(f);
 }
@@ -679,8 +688,8 @@ void UpdateScenarioTracks(const MqlRates &bar)
          bool hitGridTP=(st.direction==1?bar.high>=gridTPPrice:bar.low<=gridTPPrice);
          SimTrack gridResult=st;
          gridResult.entry=st.gridAvgEntry;
-         if(hitGridSL){st.gridStatus=-1;st.gridExit=gridSLPrice;gridResult.entry=st.gridAvgEntry;WriteScenarioResult(gridResult,"GRID_PYRAMID_SIM",st.gridTP,st.gridSL,st.gridExit,"MAX_LOSS");}
-         else if(hitGridTP){st.gridStatus=1;st.gridExit=gridTPPrice;WriteScenarioResult(gridResult,"GRID_PYRAMID_SIM",st.gridTP,st.gridSL,st.gridExit,"AVERAGE_ENTRY_TP");}
+         if(hitGridSL){st.gridStatus=-1;st.gridExit=gridSLPrice;gridResult.entry=st.gridAvgEntry;WriteScenarioResult(gridResult,"GRID_AVERAGING_SIM",st.gridTP,st.gridSL,st.gridExit,"MAX_LOSS");}
+         else if(hitGridTP){st.gridStatus=1;st.gridExit=gridTPPrice;WriteScenarioResult(gridResult,"GRID_AVERAGING_SIM",st.gridTP,st.gridSL,st.gridExit,"AVERAGE_ENTRY_TP");}
          else if(st.gridAdds<InpSimGridMaxAdds)
          {
             double addPrice=st.gridLastAdd-st.direction*InpSimGridStepPoints*_Point;
@@ -691,6 +700,30 @@ void UpdateScenarioTracks(const MqlRates &bar)
                st.gridAvgEntry=(st.gridAvgEntry*oldCount+addPrice)/(oldCount+1);
                st.gridLastAdd=addPrice;
                st.gridAdds++;
+            }
+         }
+      }
+
+      if(st.pyrStatus==0)
+      {
+         double pyrTPPrice=st.pyrAvgEntry+st.direction*st.pyrTP;
+         double pyrSLPrice=st.entry-st.direction*st.pyrSL;
+         bool hitPyrSL=(st.direction==1?bar.low<=pyrSLPrice:bar.high>=pyrSLPrice);
+         bool hitPyrTP=(st.direction==1?bar.high>=pyrTPPrice:bar.low<=pyrTPPrice);
+         SimTrack pyrResult=st;
+         pyrResult.entry=st.pyrAvgEntry;
+         if(hitPyrSL){st.pyrStatus=-1;st.pyrExit=pyrSLPrice;WriteScenarioResult(pyrResult,"PYRAMIDING_SIM",st.pyrTP,st.pyrSL,st.pyrExit,"MAX_LOSS");}
+         else if(hitPyrTP){st.pyrStatus=1;st.pyrExit=pyrTPPrice;WriteScenarioResult(pyrResult,"PYRAMIDING_SIM",st.pyrTP,st.pyrSL,st.pyrExit,"AVERAGE_ENTRY_TP");}
+         else if(st.pyrAdds<InpSimGridMaxAdds)
+         {
+            double addPrice=st.pyrLastAdd+st.direction*InpSimGridStepPoints*_Point;
+            bool addTriggered=(st.direction==1?bar.high>=addPrice:bar.low<=addPrice);
+            if(addTriggered)
+            {
+               int oldCount=st.pyrAdds+1;
+               st.pyrAvgEntry=(st.pyrAvgEntry*oldCount+addPrice)/(oldCount+1);
+               st.pyrLastAdd=addPrice;
+               st.pyrAdds++;
             }
          }
       }
@@ -707,9 +740,10 @@ void UpdateScenarioTracks(const MqlRates &bar)
          if(st.moneyStatus==0){st.moneyStatus=2;st.moneyExit=bar.close;WriteScenarioResult(st,"MONEY_RISK_1_5R",st.moneyTP,st.moneySL,bar.close,"TIME_EXIT");}
          if(st.rr2Status==0){st.rr2Status=2;st.rr2Exit=bar.close;WriteScenarioResult(st,"FIXED_RR_2R",st.fixedSL*2.0,st.fixedSL,bar.close,"TIME_EXIT");}
          if(st.pctStatus==0){st.pctStatus=2;st.pctExit=bar.close;WriteScenarioResult(st,"PERCENT_RISK_1_5R",st.pctTP,st.pctSL,bar.close,"TIME_EXIT");}
-         if(st.gridStatus==0){st.gridStatus=2;st.gridExit=bar.close;SimTrack gridResult=st;gridResult.entry=st.gridAvgEntry;WriteScenarioResult(gridResult,"GRID_PYRAMID_SIM",st.gridTP,st.gridSL,bar.close,"TIME_EXIT");}
+         if(st.gridStatus==0){st.gridStatus=2;st.gridExit=bar.close;SimTrack gridResult=st;gridResult.entry=st.gridAvgEntry;WriteScenarioResult(gridResult,"GRID_AVERAGING_SIM",st.gridTP,st.gridSL,bar.close,"TIME_EXIT");}
+         if(st.pyrStatus==0){st.pyrStatus=2;st.pyrExit=bar.close;SimTrack pyrResult=st;pyrResult.entry=st.pyrAvgEntry;WriteScenarioResult(pyrResult,"PYRAMIDING_SIM",st.pyrTP,st.pyrSL,bar.close,"TIME_EXIT");}
       }
-      bool done=(st.fixedStatus!=0 && st.atrStatus!=0 && st.trailStatus!=0 && st.beStatus!=0 && st.moneyStatus!=0 && st.rr2Status!=0 && st.gridStatus!=0 && st.pctStatus!=0);
+      bool done=(st.fixedStatus!=0 && st.atrStatus!=0 && st.trailStatus!=0 && st.beStatus!=0 && st.moneyStatus!=0 && st.rr2Status!=0 && st.gridStatus!=0 && st.pctStatus!=0 && st.pyrStatus!=0);
       if(done){for(int j=i;j<ArraySize(simTracks)-1;j++)simTracks[j]=simTracks[j+1];ArrayResize(simTracks,ArraySize(simTracks)-1);}
       else simTracks[i]=st;
    }
@@ -893,10 +927,10 @@ void WriteScenarioStats()
    int r=FileOpen(inputName,FILE_READ|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
    if(r==INVALID_HANDLE) { Print("EMAMonitor v3: cannot read scenario results for statistics ",GetLastError()); return; }
 
-   string names[8]; names[0]="FIXED_TP_SL"; names[1]="ATR_TP_SL"; names[2]="ATR_TP_TRAIL";
-   names[3]="ATR_BREAK_EVEN"; names[4]="MONEY_RISK_1_5R"; names[5]="FIXED_RR_2R"; names[6]="GRID_PYRAMID_SIM"; names[7]="PERCENT_RISK_1_5R";
-   long count[8],wins[8],losses[8];
-   double grossProfit[8],grossLoss[8],netTotal[8],equity[8],peak[8],maxDD[8];
+   string names[9]; names[0]="FIXED_TP_SL"; names[1]="ATR_TP_SL"; names[2]="ATR_TP_TRAIL";
+   names[3]="ATR_BREAK_EVEN"; names[4]="MONEY_RISK_1_5R"; names[5]="FIXED_RR_2R"; names[6]="GRID_AVERAGING_SIM"; names[7]="PERCENT_RISK_1_5R"; names[8]="PYRAMIDING_SIM";
+   long count[9],wins[9],losses[9];
+   double grossProfit[9],grossLoss[9],netTotal[9],equity[9],peak[9],maxDD[9];
    ArrayInitialize(count,0); ArrayInitialize(wins,0); ArrayInitialize(losses,0);
    ArrayInitialize(grossProfit,0.0); ArrayInitialize(grossLoss,0.0); ArrayInitialize(netTotal,0.0);
    ArrayInitialize(equity,0.0); ArrayInitialize(peak,0.0); ArrayInitialize(maxDD,0.0);
@@ -915,7 +949,7 @@ void WriteScenarioStats()
       }
       if(!hasData) break;
       int idx=-1;
-      for(int k=0;k<8;k++) if(fields[7]==names[k]) { idx=k; break; }
+      for(int k=0;k<9;k++) if(fields[7]==names[k]) { idx=k; break; }
       if(idx<0) continue;
       double net=StringToDouble(fields[13]);
       count[idx]++;
@@ -934,7 +968,7 @@ void WriteScenarioStats()
    FileWrite(w,"scenario","closed_simulations","wins","losses","win_rate_percent","net_points",
       "average_net_points","positive_net_points","negative_net_points","profit_factor","max_drawdown_points",
       "cost_model_points_per_trade","symbol","timeframe","note");
-   for(int k=0;k<8;k++)
+   for(int k=0;k<9;k++)
    {
       double winRate=(count[k]>0 ? 100.0*(double)wins[k]/(double)count[k] : 0.0);
       double expectancy=(count[k]>0 ? netTotal[k]/(double)count[k] : 0.0);
