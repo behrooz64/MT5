@@ -101,12 +101,11 @@ void AddTrack(const datetime t,const string model,const int direction,const doub
 void WriteOutcome(const SignalTrack &tr)
 {
    if(csvHandle==INVALID_HANDLE) return;
-   // Keep the same column count/order as the header; outcome-only fields are populated.
+   // 48 columns total: six identifying fields, 39 empty market/signal fields, three outcome fields.
    FileWrite(csvHandle,
       TimeToString(tr.time,TIME_DATE|TIME_MINUTES),_Symbol,TFName(),"OUTCOME",
       tr.model,(tr.direction==1 ? "BUY" : "SELL"),
-      "","","","","","","","","","","","","","","","","","","","","","","","","",
-      "","","","","","","","","","","","",
+      "","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",
       DoubleToString(tr.mfe,1),DoubleToString(tr.mae,1),tr.barsSeen);
 }
 
