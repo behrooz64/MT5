@@ -37,7 +37,7 @@ input double   InpSimTrailATRMultiple = 1.0;
 input int      InpSimMaxBars = 120;
 input double   InpSimCostPoints = 30.0;
 input int      InpHistoryBars   = 2000;
-input bool     InpScanHistoryIfFresh = true;
+input bool     InpScanHistoryIfFresh = false; // Keep the seven-day forward-test dataset free of historical backfill by default
 input bool     InpLogEveryBar   = true;
 input string   InpFilePrefix    = "EMAMonitor_v3";
 
