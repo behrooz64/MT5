@@ -212,7 +212,8 @@ bool LoadSnapshot(const int shift,Snapshot &s)
    // Some brokers omit historical spread in MqlRates; only then use current quote as fallback.
    if(s.spreadPoints<=0.0) s.spreadPoints=(double)SymbolInfoInteger(_Symbol,SYMBOL_SPREAD);
    s.tickSize=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE);
-   s.tickValue=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE);
+   s.tickValue=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE_LOSS);
+    if(s.tickValue<=0.0) s.tickValue=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE);
    s.bull=(s.e50>s.e100 && s.e100>s.e200);
    s.bear=(s.e50<s.e100 && s.e100<s.e200);
    s.range=(s.adx<20.0 && MathAbs(s.e50-s.e100)<s.atr*0.50);
@@ -382,7 +383,8 @@ void AddScenarioTrack(const Snapshot &s,const string name,const int dir,const do
    simTracks[n].beStatus=0; simTracks[n].moneyStatus=0; simTracks[n].rr2Status=0; simTracks[n].gridStatus=0; simTracks[n].pctStatus=0; simTracks[n].pyrStatus=0; simTracks[n].beActivated=false;
    simTracks[n].beStop=entry-s.dir*s.atr*InpSimATRSLMultiple;
    double tickSize=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE);
-   double tickValue=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE);
+   double tickValue=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE_LOSS);
+    if(tickValue<=0.0) tickValue=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE);
    double moneyPerPoint=(tickSize>0.0 ? tickValue*_Point/tickSize : 0.0);
    double moneySLPoints=(moneyPerPoint>0.0 && InpSimLotSize>0.0 ? InpSimMoneyStopUSD/(moneyPerPoint*InpSimLotSize) : InpSimFixedSLPoints);
    simTracks[n].moneySL=moneySLPoints*_Point;
@@ -834,6 +836,10 @@ int OnInit()
       InpSimFixedTPPoints<=0 || InpSimFixedSLPoints<=0 || InpSimATRTPMultiple<=0 || InpSimATRSLMultiple<=0 ||
       InpSimTrailATRMultiple<=0 || InpSimBETriggerATRMultiple<=0 || InpSimMoneyStopUSD<=0 || InpSimAccountBalance<=0 || InpSimRiskPercent<=0 || InpSimLotSize<=0 || InpSimGridStepPoints<=0 || InpSimGridMaxAdds<0 || InpSimGridTargetPoints<=0 || InpSimGridMaxLossPoints<=0 || InpSimMaxBars<1 || InpSimCostPoints<0)
       return INIT_PARAMETERS_INCORRECT;
+   string accountCurrency=AccountInfoString(ACCOUNT_CURRENCY);
+   if(accountCurrency!="USD")
+      Print("EMAMonitor v3.10 WARNING: InpSimMoneyStopUSD is denominated in USD but account currency is ",accountCurrency,
+            ". Money-stop simulation is not USD-accurate on this account; percentage-risk uses account currency.");
    hFast=iMA(_Symbol,CollectTF(),InpFastEMA,0,MODE_EMA,PRICE_CLOSE);
    h50=iMA(_Symbol,CollectTF(),InpEMA50,0,MODE_EMA,PRICE_CLOSE);
    h100=iMA(_Symbol,CollectTF(),InpEMA100,0,MODE_EMA,PRICE_CLOSE);
@@ -924,7 +930,7 @@ void OnTick()
       else if(checkpointShift<0)
       {
          int total=Bars(_Symbol,CollectTF());
-         startShift=MathMin(InpHistoryBars,total-InpBreakoutBars-3);
+         startShift=MathMax(1,MathMin(InpHistoryBars,total-InpBreakoutBars-3));
          Print("EMAMonitor v3.10: checkpoint not present in loaded history; attempting bounded recovery from ",startShift," bars.");
       }
    }
