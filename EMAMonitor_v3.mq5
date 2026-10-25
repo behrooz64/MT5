@@ -36,6 +36,9 @@ input bool     InpSimTrailingEnabled = true;
 input double   InpSimTrailATRMultiple = 1.0;
 input int      InpSimMaxBars = 120;
 input double   InpSimCostPoints = 30.0;
+input double   InpSimBETriggerATRMultiple = 1.0;
+input double   InpSimMoneyStopUSD = 25.0; // Approximate simulated stop budget per entry
+input double   InpSimLotSize = 0.01;      // Used only to convert money risk to price distance
 input int      InpHistoryBars   = 2000;
 input bool     InpScanHistoryIfFresh = false; // Keep the seven-day forward-test dataset free of historical backfill by default
 input bool     InpLogEveryBar   = true;
@@ -79,10 +82,11 @@ struct SimTrack
    double entry;
    double atrPrice;
    double fixedTP,fixedSL,atrTP,atrSL;
-   double fixedExit,atrExit,trailExit;
-   double bestPrice;
+   double fixedExit,atrExit,trailExit,beExit,moneyExit;
+   double bestPrice,moneyTP,moneySL,beStop;
    int barsSeen;
-   int fixedStatus,atrStatus,trailStatus;
+   int fixedStatus,atrStatus,trailStatus,beStatus,moneyStatus;
+   bool beActivated;
 };
 SimTrack simTracks[];
 long nextId=1;
@@ -357,8 +361,17 @@ void AddScenarioTrack(const Snapshot &s,const string name,const int dir,const do
    simTracks[n].fixedTP=InpSimFixedTPPoints*_Point; simTracks[n].fixedSL=InpSimFixedSLPoints*_Point;
    simTracks[n].atrTP=s.atr*InpSimATRTPMultiple; simTracks[n].atrSL=s.atr*InpSimATRSLMultiple;
    simTracks[n].fixedExit=0; simTracks[n].atrExit=0; simTracks[n].trailExit=0;
+   simTracks[n].beExit=0; simTracks[n].moneyExit=0;
    simTracks[n].bestPrice=entry; simTracks[n].barsSeen=0;
    simTracks[n].fixedStatus=0; simTracks[n].atrStatus=0; simTracks[n].trailStatus=0;
+   simTracks[n].beStatus=0; simTracks[n].moneyStatus=0; simTracks[n].beActivated=false;
+   simTracks[n].beStop=entry-s.dir*s.atr*InpSimATRSLMultiple;
+   double tickSize=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE);
+   double tickValue=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE);
+   double moneyPerPoint=(tickSize>0.0 ? tickValue*_Point/tickSize : 0.0);
+   double moneySLPoints=(moneyPerPoint>0.0 && InpSimLotSize>0.0 ? InpSimMoneyStopUSD/(moneyPerPoint*InpSimLotSize) : InpSimFixedSLPoints);
+   simTracks[n].moneySL=moneySLPoints*_Point;
+   simTracks[n].moneyTP=simTracks[n].moneySL*1.5;
 }
 void AddTrack(const Snapshot &s,const string name,const int dir,const double entry,const long sourceEventId)
 {
@@ -395,7 +408,8 @@ void SaveScenarioState()
    int f=FileOpen(simStateFileName,FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
    if(f==INVALID_HANDLE){Print("EMAMonitor v3: cannot save scenario state ",GetLastError());return;}
    FileWrite(f,"event_id","signal_time","event_type","direction","entry","atr_price","fixed_tp","fixed_sl","atr_tp","atr_sl",
-      "fixed_exit","atr_exit","trail_exit","best_price","bars_seen","fixed_status","atr_status","trail_status");
+      "fixed_exit","atr_exit","trail_exit","best_price","bars_seen","fixed_status","atr_status","trail_status",
+      "be_exit","money_exit","money_tp","money_sl","be_stop","be_status","money_status","be_activated");
    for(int i=0;i<ArraySize(simTracks);i++)
    {
       SimTrack st=simTracks[i];
@@ -403,7 +417,9 @@ void SaveScenarioState()
          DoubleToString(st.entry,_Digits),DoubleToString(st.atrPrice,_Digits),DoubleToString(st.fixedTP,_Digits),
          DoubleToString(st.fixedSL,_Digits),DoubleToString(st.atrTP,_Digits),DoubleToString(st.atrSL,_Digits),
          DoubleToString(st.fixedExit,_Digits),DoubleToString(st.atrExit,_Digits),DoubleToString(st.trailExit,_Digits),
-         DoubleToString(st.bestPrice,_Digits),st.barsSeen,st.fixedStatus,st.atrStatus,st.trailStatus);
+         DoubleToString(st.bestPrice,_Digits),st.barsSeen,st.fixedStatus,st.atrStatus,st.trailStatus,
+         DoubleToString(st.beExit,_Digits),DoubleToString(st.moneyExit,_Digits),DoubleToString(st.moneyTP,_Digits),
+         DoubleToString(st.moneySL,_Digits),DoubleToString(st.beStop,_Digits),st.beStatus,st.moneyStatus,B(st.beActivated));
    }
    FileFlush(f);FileClose(f);
 }
@@ -412,7 +428,7 @@ void LoadScenarioState()
    if(simStateFileName=="") return;
    int f=FileOpen(simStateFileName,FILE_READ|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
    if(f==INVALID_HANDLE) return;
-   if(!FileIsEnding(f)) for(int h=0;h<18 && !FileIsEnding(f);h++) FileReadString(f);
+   if(!FileIsEnding(f)) for(int h=0;h<27 && !FileIsEnding(f);h++) FileReadString(f);
    while(!FileIsEnding(f))
    {
       string idText=FileReadString(f); if(idText=="") break;
@@ -421,6 +437,8 @@ void LoadScenarioState()
       string atp=FileReadString(f),asl=FileReadString(f),fexit=FileReadString(f),aexit=FileReadString(f);
       string texit=FileReadString(f),best=FileReadString(f),bars=FileReadString(f);
       string fs=FileReadString(f),atrStatusText=FileReadString(f),ts=FileReadString(f);
+      string bex=FileReadString(f),moneyx=FileReadString(f),mtp=FileReadString(f),msl=FileReadString(f),bstop=FileReadString(f);
+      string bes=FileReadString(f),mstatus=FileReadString(f),bactive=FileReadString(f);
       if(idText=="" || timeText=="") continue;
       int n=ArraySize(simTracks);if(ArrayResize(simTracks,n+1)!=n+1)break;
       simTracks[n].eventId=(long)StringToInteger(idText);simTracks[n].signalTime=StringToTime(timeText);
@@ -432,6 +450,10 @@ void LoadScenarioState()
       simTracks[n].trailExit=StringToDouble(texit);simTracks[n].bestPrice=StringToDouble(best);
       simTracks[n].barsSeen=(int)StringToInteger(bars);simTracks[n].fixedStatus=(int)StringToInteger(fs);
       simTracks[n].atrStatus=(int)StringToInteger(atrStatusText);simTracks[n].trailStatus=(int)StringToInteger(ts);
+      simTracks[n].beExit=StringToDouble(bex);simTracks[n].moneyExit=StringToDouble(moneyx);
+      simTracks[n].moneyTP=StringToDouble(mtp);simTracks[n].moneySL=StringToDouble(msl);simTracks[n].beStop=StringToDouble(bstop);
+      simTracks[n].beStatus=(int)StringToInteger(bes);simTracks[n].moneyStatus=(int)StringToInteger(mstatus);
+      simTracks[n].beActivated=(StringToInteger(bactive)!=0);
    }
    FileClose(f);
 }
@@ -575,6 +597,31 @@ void UpdateScenarioTracks(const MqlRates &bar)
          else if(hitTP){st.trailStatus=1;st.trailExit=atrTPPrice;WriteScenarioResult(st,"ATR_TP_TRAIL",st.atrTP,st.atrSL,st.trailExit,"TP");}
          else if(hitTrail){st.trailStatus=-1;st.trailExit=trailStop;WriteScenarioResult(st,"ATR_TP_TRAIL",st.atrTP,trailDist,st.trailExit,"TRAILING_STOP");}
       }
+
+      if(st.beStatus==0)
+      {
+         double beTP=st.entry+st.direction*st.atrTP;
+         double initialSL=st.entry-st.direction*st.atrSL;
+         bool hitInitial=(st.direction==1?bar.low<=initialSL:bar.high>=initialSL);
+         bool hitTarget=(st.direction==1?bar.high>=beTP:bar.low<=beTP);
+         bool hitBE=(st.beActivated && (st.direction==1?bar.low<=st.beStop:bar.high>=st.beStop));
+         if(hitInitial){st.beStatus=-1;st.beExit=initialSL;WriteScenarioResult(st,"ATR_BREAK_EVEN",st.atrTP,st.atrSL,st.beExit,"INITIAL_SL");}
+         else if(hitTarget){st.beStatus=1;st.beExit=beTP;WriteScenarioResult(st,"ATR_BREAK_EVEN",st.atrTP,st.atrSL,st.beExit,"TP");}
+         else if(hitBE){st.beStatus=2;st.beExit=st.beStop;WriteScenarioResult(st,"ATR_BREAK_EVEN",st.atrTP,st.atrSL,st.beExit,"BREAK_EVEN_STOP");}
+         // Activate only after this candle has been evaluated, avoiding same-bar look-ahead.
+         double beTrigger=st.entry+st.direction*st.atrPrice*InpSimBETriggerATRMultiple;
+         bool reachedTrigger=(st.direction==1?bar.high>=beTrigger:bar.low<=beTrigger);
+         if(st.beStatus==0 && reachedTrigger && !st.beActivated){st.beActivated=true;st.beStop=st.entry;}
+      }
+      if(st.moneyStatus==0)
+      {
+         double moneyTPPrice=st.entry+st.direction*st.moneyTP;
+         double moneySLPrice=st.entry-st.direction*st.moneySL;
+         bool hitMoneySL=(st.direction==1?bar.low<=moneySLPrice:bar.high>=moneySLPrice);
+         bool hitMoneyTP=(st.direction==1?bar.high>=moneyTPPrice:bar.low<=moneyTPPrice);
+         if(hitMoneySL){st.moneyStatus=-1;st.moneyExit=moneySLPrice;WriteScenarioResult(st,"MONEY_RISK_1_5R",st.moneyTP,st.moneySL,st.moneyExit,"MONEY_STOP");}
+         else if(hitMoneyTP){st.moneyStatus=1;st.moneyExit=moneyTPPrice;WriteScenarioResult(st,"MONEY_RISK_1_5R",st.moneyTP,st.moneySL,st.moneyExit,"TP_1_5R");}
+      }
       // Update the favorable extreme only after evaluating stops for this completed bar,
       // avoiding same-bar future information in the trailing-stop test.
       if(st.direction==1 && bar.high>st.bestPrice) st.bestPrice=bar.high;
@@ -584,8 +631,10 @@ void UpdateScenarioTracks(const MqlRates &bar)
          if(st.fixedStatus==0){st.fixedStatus=2;st.fixedExit=bar.close;WriteScenarioResult(st,"FIXED_TP_SL",st.fixedTP,st.fixedSL,bar.close,"TIME_EXIT");}
          if(st.atrStatus==0){st.atrStatus=2;st.atrExit=bar.close;WriteScenarioResult(st,"ATR_TP_SL",st.atrTP,st.atrSL,bar.close,"TIME_EXIT");}
          if(st.trailStatus==0){st.trailStatus=2;st.trailExit=bar.close;WriteScenarioResult(st,"ATR_TP_TRAIL",st.atrTP,st.atrSL,bar.close,"TIME_EXIT");}
+         if(st.beStatus==0){st.beStatus=2;st.beExit=bar.close;WriteScenarioResult(st,"ATR_BREAK_EVEN",st.atrTP,st.atrSL,bar.close,"TIME_EXIT");}
+         if(st.moneyStatus==0){st.moneyStatus=2;st.moneyExit=bar.close;WriteScenarioResult(st,"MONEY_RISK_1_5R",st.moneyTP,st.moneySL,bar.close,"TIME_EXIT");}
       }
-      bool done=(st.fixedStatus!=0 && st.atrStatus!=0 && st.trailStatus!=0);
+      bool done=(st.fixedStatus!=0 && st.atrStatus!=0 && st.trailStatus!=0 && st.beStatus!=0 && st.moneyStatus!=0);
       if(done){for(int j=i;j<ArraySize(simTracks)-1;j++)simTracks[j]=simTracks[j+1];ArrayResize(simTracks,ArraySize(simTracks)-1);}
       else simTracks[i]=st;
    }
@@ -661,7 +710,7 @@ int OnInit()
 {
    if(InpHistoryBars<10 || InpOutcomeBars<1 || InpBreakoutBars<2 || InpBandsPeriod<2 || InpADXPeriod<2 ||
       InpSimFixedTPPoints<=0 || InpSimFixedSLPoints<=0 || InpSimATRTPMultiple<=0 || InpSimATRSLMultiple<=0 ||
-      InpSimTrailATRMultiple<=0 || InpSimMaxBars<1 || InpSimCostPoints<0)
+      InpSimTrailATRMultiple<=0 || InpSimBETriggerATRMultiple<=0 || InpSimMoneyStopUSD<=0 || InpSimLotSize<=0 || InpSimMaxBars<1 || InpSimCostPoints<0)
       return INIT_PARAMETERS_INCORRECT;
    hFast=iMA(_Symbol,CollectTF(),InpFastEMA,0,MODE_EMA,PRICE_CLOSE);
    h50=iMA(_Symbol,CollectTF(),InpEMA50,0,MODE_EMA,PRICE_CLOSE);
@@ -769,9 +818,10 @@ void WriteScenarioStats()
    int r=FileOpen(inputName,FILE_READ|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
    if(r==INVALID_HANDLE) { Print("EMAMonitor v3: cannot read scenario results for statistics ",GetLastError()); return; }
 
-   string names[3]; names[0]="FIXED_TP_SL"; names[1]="ATR_TP_SL"; names[2]="ATR_TP_TRAIL";
-   long count[3],wins[3],losses[3];
-   double grossProfit[3],grossLoss[3],netTotal[3],equity[3],peak[3],maxDD[3];
+   string names[5]; names[0]="FIXED_TP_SL"; names[1]="ATR_TP_SL"; names[2]="ATR_TP_TRAIL";
+   names[3]="ATR_BREAK_EVEN"; names[4]="MONEY_RISK_1_5R";
+   long count[5],wins[5],losses[5];
+   double grossProfit[5],grossLoss[5],netTotal[5],equity[5],peak[5],maxDD[5];
    ArrayInitialize(count,0); ArrayInitialize(wins,0); ArrayInitialize(losses,0);
    ArrayInitialize(grossProfit,0.0); ArrayInitialize(grossLoss,0.0); ArrayInitialize(netTotal,0.0);
    ArrayInitialize(equity,0.0); ArrayInitialize(peak,0.0); ArrayInitialize(maxDD,0.0);
@@ -790,7 +840,7 @@ void WriteScenarioStats()
       }
       if(!hasData) break;
       int idx=-1;
-      for(int k=0;k<3;k++) if(fields[7]==names[k]) { idx=k; break; }
+      for(int k=0;k<5;k++) if(fields[7]==names[k]) { idx=k; break; }
       if(idx<0) continue;
       double gross=StringToDouble(fields[11]);
       double cost=StringToDouble(fields[12]);
@@ -811,7 +861,7 @@ void WriteScenarioStats()
    FileWrite(w,"scenario","closed_simulations","wins","losses","win_rate_percent","net_points",
       "average_net_points","gross_profit_points","gross_loss_points","profit_factor","max_drawdown_points",
       "cost_model_points_per_trade","symbol","timeframe","note");
-   for(int k=0;k<3;k++)
+   for(int k=0;k<5;k++)
    {
       double winRate=(count[k]>0 ? 100.0*(double)wins[k]/(double)count[k] : 0.0);
       double expectancy=(count[k]>0 ? netTotal[k]/(double)count[k] : 0.0);
