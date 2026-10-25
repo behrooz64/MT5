@@ -64,6 +64,7 @@ struct Track
 Track tracks[];
 long nextId=1;
 long nextEventId=1;
+string stateFileName="";
 
 string PersistentKey(const string suffix)
 {
@@ -248,6 +249,57 @@ void AddEventTrack(const Snapshot &s,const string name,const int dir,const doubl
    WriteEvent(s,name,(dir==1?"BUY":(dir==-1?"SELL":"BOTH")),entry,0,details);
    AddTrack(s,name,dir,entry);
 }
+void WriteTrackState()
+{
+   if(stateFileName=="") return;
+   int f=FileOpen(stateFileName,FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
+   if(f==INVALID_HANDLE) { Print("EMAMonitor v3: cannot save pending state ",GetLastError()); return; }
+   FileWrite(f,"id","signal_time","event_type","direction","entry","bars_seen","mfe_points","mae_points","up_points","down_points");
+   for(int i=0;i<ArraySize(tracks);i++)
+      FileWrite(f,(string)tracks[i].id,TimeToString(tracks[i].signalTime,TIME_DATE|TIME_SECONDS),
+         tracks[i].eventName,tracks[i].direction,DoubleToString(tracks[i].entry,_Digits),
+         tracks[i].barsSeen,DoubleToString(tracks[i].mfePoints,1),DoubleToString(tracks[i].maePoints,1),
+         DoubleToString(tracks[i].upPoints,1),DoubleToString(tracks[i].downPoints,1));
+   FileFlush(f); FileClose(f);
+}
+void LoadTrackState()
+{
+   if(stateFileName=="") return;
+   int f=FileOpen(stateFileName,FILE_READ|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
+   if(f==INVALID_HANDLE) return;
+   // Skip the header row (10 fields).
+   if(!FileIsEnding(f))
+      for(int h=0;h<10 && !FileIsEnding(f);h++) FileReadString(f);
+   while(!FileIsEnding(f))
+   {
+      string idText=FileReadString(f); if(idText=="") break;
+      string timeText=FileReadString(f);
+      string eventName=FileReadString(f);
+      string dirText=FileReadString(f);
+      string entryText=FileReadString(f);
+      string barsText=FileReadString(f);
+      string mfeText=FileReadString(f);
+      string maeText=FileReadString(f);
+      string upText=FileReadString(f);
+      string downText=FileReadString(f);
+      if(idText=="" || timeText=="") continue;
+      int n=ArraySize(tracks);
+      if(ArrayResize(tracks,n+1)!=n+1) break;
+      tracks[n].id=(long)StringToInteger(idText);
+      tracks[n].signalTime=StringToTime(timeText);
+      tracks[n].eventName=eventName;
+      tracks[n].direction=(int)StringToInteger(dirText);
+      tracks[n].entry=StringToDouble(entryText);
+      tracks[n].barsSeen=(int)StringToInteger(barsText);
+      tracks[n].mfePoints=StringToDouble(mfeText);
+      tracks[n].maePoints=StringToDouble(maeText);
+      tracks[n].upPoints=StringToDouble(upText);
+      tracks[n].downPoints=StringToDouble(downText);
+      if(tracks[n].id>=nextId) nextId=tracks[n].id+1;
+   }
+   FileClose(f);
+   SavePersistentCounter("TRACKID",nextId);
+}
 void UpdateTracks(const MqlRates &bar)
 {
    for(int i=ArraySize(tracks)-1;i>=0;i--)
@@ -274,6 +326,7 @@ void UpdateTracks(const MqlRates &bar)
          ArrayResize(tracks,ArraySize(tracks)-1);
       }
    }
+   WriteTrackState();
 }
 void EmitSignals(const Snapshot &s,const int shift)
 {
@@ -361,6 +414,8 @@ int OnInit()
    { Print("EMAMonitor v3: indicator handle error ",GetLastError()); return INIT_FAILED; }
 
    string barsName=MakeFile("Bars"),eventsName=MakeFile("Events"),outName=MakeFile("Outcomes");
+   stateFileName=MakeFile("PendingState");
+   LoadTrackState();
    fBars=FileOpen(barsName,FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
    fEvents=FileOpen(eventsName,FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
    fOutcomes=FileOpen(outName,FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
@@ -399,6 +454,7 @@ void OnTick()
 }
 void OnDeinit(const int reason)
 {
+   WriteTrackState();
    if(fBars!=INVALID_HANDLE){FileFlush(fBars);FileClose(fBars);}
    if(fEvents!=INVALID_HANDLE){FileFlush(fEvents);FileClose(fEvents);}
    if(fOutcomes!=INVALID_HANDLE){FileFlush(fOutcomes);FileClose(fOutcomes);}
