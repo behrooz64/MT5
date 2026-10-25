@@ -28,6 +28,14 @@ input int      InpMACDSlow      = 26;
 input int      InpMACDSignal    = 9;
 input int      InpBreakoutBars  = 20;
 input int      InpOutcomeBars   = 40;
+input double   InpSimFixedTPPoints = 300.0;
+input double   InpSimFixedSLPoints = 300.0;
+input double   InpSimATRTPMultiple = 1.5;
+input double   InpSimATRSLMultiple = 1.0;
+input bool     InpSimTrailingEnabled = true;
+input double   InpSimTrailATRMultiple = 1.0;
+input int      InpSimMaxBars = 120;
+input double   InpSimCostPoints = 30.0;
 input int      InpHistoryBars   = 2000;
 input bool     InpScanHistoryIfFresh = true;
 input bool     InpLogEveryBar   = true;
@@ -36,7 +44,7 @@ input string   InpFilePrefix    = "EMAMonitor_v3";
 int hFast=INVALID_HANDLE,h50=INVALID_HANDLE,h100=INVALID_HANDLE,h200=INVALID_HANDLE;
 int hStoch=INVALID_HANDLE,hRSI=INVALID_HANDLE,hATR=INVALID_HANDLE,hADX=INVALID_HANDLE;
 int hBands=INVALID_HANDLE,hMACD=INVALID_HANDLE;
-int fBars=INVALID_HANDLE,fEvents=INVALID_HANDLE,fOutcomes=INVALID_HANDLE;
+int fBars=INVALID_HANDLE,fEvents=INVALID_HANDLE,fOutcomes=INVALID_HANDLE,fScenarios=INVALID_HANDLE;
 datetime lastBarTime=0;
 bool barsFileWasEmpty=false;
 
@@ -62,6 +70,21 @@ struct Track
    double mfePoints,maePoints,upPoints,downPoints;
 };
 Track tracks[];
+struct SimTrack
+{
+   long eventId;
+   datetime signalTime;
+   string eventName;
+   int direction;
+   double entry;
+   double atrPrice;
+   double fixedTP,fixedSL,atrTP,atrSL;
+   double fixedExit,atrExit,trailExit;
+   double bestPrice;
+   int barsSeen;
+   int fixedStatus,atrStatus,trailStatus;
+};
+SimTrack simTracks[];
 long nextId=1;
 long nextEventId=1;
 string stateFileName="";
@@ -213,6 +236,12 @@ void WriteOutcomeHeader()
    "entry_price","horizon_bars","bars_observed","mfe_favourable_points","mae_adverse_points",
    "max_up_points","max_down_points","last_close","outcome_status");
 }
+void WriteScenarioHeader()
+{
+   FileWrite(fScenarios,"event_id","signal_time","symbol","timeframe","event_type","direction",
+   "entry_price","scenario","tp_points","sl_points","bars_held","gross_points","estimated_cost_points",
+   "net_points","exit_price","exit_reason","atr_at_entry_points","trailing_enabled");
+}
 bool BarAlreadyLogged(const datetime barTime)
 {
    int h=FileOpen(MakeFile("Bars"),FILE_READ|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
@@ -318,12 +347,25 @@ bool WriteEvent(const Snapshot &s,const string name,const string dir,const doubl
    nextEventId++; SavePersistentCounter("EVENTID",nextEventId);
    return true;
 }
+void AddScenarioTrack(const Snapshot &s,const string name,const int dir,const double entry,const long sourceEventId)
+{
+   if(dir==0 || fScenarios==INVALID_HANDLE) return;
+   int n=ArraySize(simTracks); if(ArrayResize(simTracks,n+1)!=n+1) return;
+   simTracks[n].eventId=sourceEventId; simTracks[n].signalTime=s.bar.time; simTracks[n].eventName=name;
+   simTracks[n].direction=dir; simTracks[n].entry=entry; simTracks[n].atrPrice=s.atr;
+   simTracks[n].fixedTP=InpSimFixedTPPoints*_Point; simTracks[n].fixedSL=InpSimFixedSLPoints*_Point;
+   simTracks[n].atrTP=s.atr*InpSimATRTPMultiple; simTracks[n].atrSL=s.atr*InpSimATRSLMultiple;
+   simTracks[n].fixedExit=0; simTracks[n].atrExit=0; simTracks[n].trailExit=0;
+   simTracks[n].bestPrice=entry; simTracks[n].barsSeen=0;
+   simTracks[n].fixedStatus=0; simTracks[n].atrStatus=0; simTracks[n].trailStatus=0;
+}
 void AddTrack(const Snapshot &s,const string name,const int dir,const double entry,const long sourceEventId)
 {
    int n=ArraySize(tracks); if(ArrayResize(tracks,n+1)!=n+1) return;
    tracks[n].id=sourceEventId; tracks[n].signalTime=s.bar.time; tracks[n].eventName=name;
    tracks[n].direction=dir; tracks[n].entry=entry; tracks[n].barsSeen=0;
    tracks[n].mfePoints=0; tracks[n].maePoints=0; tracks[n].upPoints=0; tracks[n].downPoints=0;
+   AddScenarioTrack(s,name,dir,entry,sourceEventId);
 }
 void AddEventTrack(const Snapshot &s,const string name,const int dir,const double entry,const string details)
 {
@@ -437,6 +479,67 @@ void UpdateTracks(const MqlRates &bar)
    }
    WriteTrackState();
 }
+void WriteScenarioResult(const SimTrack &st,const string scenario,const double tp,const double sl,
+                         const double exitPrice,const string reason)
+{
+   if(fScenarios==INVALID_HANDLE) return;
+   double gross=(exitPrice-st.entry)/_Point*st.direction;
+   double cost=InpSimCostPoints;
+   FileWrite(fScenarios,(string)st.eventId,TimeToString(st.signalTime,TIME_DATE|TIME_SECONDS),_Symbol,TFName(),
+      st.eventName,(st.direction==1?"BUY":"SELL"),DoubleToString(st.entry,_Digits),scenario,
+      DoubleToString(tp/_Point,1),DoubleToString(sl/_Point,1),st.barsSeen,DoubleToString(gross,1),
+      DoubleToString(cost,1),DoubleToString(gross-cost,1),DoubleToString(exitPrice,_Digits),reason,
+      DoubleToString(Pts(st.atrPrice),1),B(InpSimTrailingEnabled));
+}
+void UpdateScenarioTracks(const MqlRates &bar)
+{
+   for(int i=ArraySize(simTracks)-1;i>=0;i--)
+   {
+      SimTrack st=simTracks[i];
+      st.barsSeen++;
+      if(st.direction==1 && bar.high>st.bestPrice) st.bestPrice=bar.high;
+      if(st.direction==-1 && bar.low<st.bestPrice) st.bestPrice=bar.low;
+      double fixedTPPrice=st.entry+st.direction*st.fixedTP;
+      double fixedSLPrice=st.entry-st.direction*st.fixedSL;
+      double atrTPPrice=st.entry+st.direction*st.atrTP;
+      double atrSLPrice=st.entry-st.direction*st.atrSL;
+      // Conservative OHLC assumption: if TP and SL occur in the same candle, SL wins.
+      if(st.fixedStatus==0)
+      {
+         bool hitSL=(st.direction==1?bar.low<=fixedSLPrice:bar.high>=fixedSLPrice);
+         bool hitTP=(st.direction==1?bar.high>=fixedTPPrice:bar.low<=fixedTPPrice);
+         if(hitSL){st.fixedStatus=-1;st.fixedExit=fixedSLPrice;WriteScenarioResult(st,"FIXED_TP_SL",st.fixedTP,st.fixedSL,st.fixedExit,"SL");}
+         else if(hitTP){st.fixedStatus=1;st.fixedExit=fixedTPPrice;WriteScenarioResult(st,"FIXED_TP_SL",st.fixedTP,st.fixedSL,st.fixedExit,"TP");}
+      }
+      if(st.atrStatus==0)
+      {
+         bool hitSL=(st.direction==1?bar.low<=atrSLPrice:bar.high>=atrSLPrice);
+         bool hitTP=(st.direction==1?bar.high>=atrTPPrice:bar.low<=atrTPPrice);
+         if(hitSL){st.atrStatus=-1;st.atrExit=atrSLPrice;WriteScenarioResult(st,"ATR_TP_SL",st.atrTP,st.atrSL,st.atrExit,"SL");}
+         else if(hitTP){st.atrStatus=1;st.atrExit=atrTPPrice;WriteScenarioResult(st,"ATR_TP_SL",st.atrTP,st.atrSL,st.atrExit,"TP");}
+      }
+      if(st.trailStatus==0)
+      {
+         double trailDist=st.atrPrice*InpSimTrailATRMultiple;
+         double trailStop=(st.direction==1?st.bestPrice-trailDist:st.bestPrice+trailDist);
+         bool hitTrail=(InpSimTrailingEnabled && (st.direction==1?bar.low<=trailStop:bar.high>=trailStop));
+         bool hitTP=(st.direction==1?bar.high>=atrTPPrice:bar.low<=atrTPPrice);
+         bool hitInitialSL=(st.direction==1?bar.low<=atrSLPrice:bar.high>=atrSLPrice);
+         if(hitInitialSL){st.trailStatus=-1;st.trailExit=atrSLPrice;WriteScenarioResult(st,"ATR_TP_TRAIL",st.atrTP,st.atrSL,st.trailExit,"INITIAL_SL");}
+         else if(hitTP){st.trailStatus=1;st.trailExit=atrTPPrice;WriteScenarioResult(st,"ATR_TP_TRAIL",st.atrTP,st.atrSL,st.trailExit,"TP");}
+         else if(hitTrail){st.trailStatus=-1;st.trailExit=trailStop;WriteScenarioResult(st,"ATR_TP_TRAIL",st.atrTP,trailDist,st.trailExit,"TRAILING_STOP");}
+      }
+      if(st.barsSeen>=InpSimMaxBars)
+      {
+         if(st.fixedStatus==0){st.fixedStatus=2;st.fixedExit=bar.close;WriteScenarioResult(st,"FIXED_TP_SL",st.fixedTP,st.fixedSL,bar.close,"TIME_EXIT");}
+         if(st.atrStatus==0){st.atrStatus=2;st.atrExit=bar.close;WriteScenarioResult(st,"ATR_TP_SL",st.atrTP,st.atrSL,bar.close,"TIME_EXIT");}
+         if(st.trailStatus==0){st.trailStatus=2;st.trailExit=bar.close;WriteScenarioResult(st,"ATR_TP_TRAIL",st.atrTP,st.atrSL,bar.close,"TIME_EXIT");}
+      }
+      bool done=(st.fixedStatus!=0 && st.atrStatus!=0 && st.trailStatus!=0);
+      if(done){for(int j=i;j<ArraySize(simTracks)-1;j++)simTracks[j]=simTracks[j+1];ArrayResize(simTracks,ArraySize(simTracks)-1);}
+      else simTracks[i]=st;
+   }
+}
 void EmitSignals(const Snapshot &s,const int shift)
 {
    bool stUp=(s.stPrev<=s.stSigPrev && s.stMain>s.stSignal);
@@ -499,13 +602,15 @@ void EmitSignals(const Snapshot &s,const int shift)
 void ProcessBar(const int shift,const bool collect)
 {
    Snapshot s; if(!LoadSnapshot(shift,s)) return;
-   if(collect) UpdateTracks(s.bar);
+   if(collect) { UpdateTracks(s.bar); UpdateScenarioTracks(s.bar); }
    if(InpLogEveryBar || s.touch15 || s.touch50 || s.touch100 || s.touch200) WriteBar(s,shift);
    if(collect) EmitSignals(s,shift);
 }
 int OnInit()
 {
-   if(InpHistoryBars<10 || InpOutcomeBars<1 || InpBreakoutBars<2 || InpBandsPeriod<2 || InpADXPeriod<2)
+   if(InpHistoryBars<10 || InpOutcomeBars<1 || InpBreakoutBars<2 || InpBandsPeriod<2 || InpADXPeriod<2 ||
+      InpSimFixedTPPoints<=0 || InpSimFixedSLPoints<=0 || InpSimATRTPMultiple<=0 || InpSimATRSLMultiple<=0 ||
+      InpSimTrailATRMultiple<=0 || InpSimMaxBars<1 || InpSimCostPoints<0)
       return INIT_PARAMETERS_INCORRECT;
    hFast=iMA(_Symbol,CollectTF(),InpFastEMA,0,MODE_EMA,PRICE_CLOSE);
    h50=iMA(_Symbol,CollectTF(),InpEMA50,0,MODE_EMA,PRICE_CLOSE);
@@ -522,19 +627,21 @@ int OnInit()
       hBands==INVALID_HANDLE||hMACD==INVALID_HANDLE)
    { Print("EMAMonitor v3: indicator handle error ",GetLastError()); return INIT_FAILED; }
 
-   string barsName=MakeFile("Bars"),eventsName=MakeFile("Events"),outName=MakeFile("Outcomes");
+   string barsName=MakeFile("Bars"),eventsName=MakeFile("Events"),outName=MakeFile("Outcomes"),scenarioName=MakeFile("Scenarios");
    stateFileName=MakeFile("PendingState");
    LoadTrackState();
    fBars=FileOpen(barsName,FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
    fEvents=FileOpen(eventsName,FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
    fOutcomes=FileOpen(outName,FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
-   if(fBars==INVALID_HANDLE||fEvents==INVALID_HANDLE||fOutcomes==INVALID_HANDLE)
+   fScenarios=FileOpen(scenarioName,FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
+   if(fBars==INVALID_HANDLE||fEvents==INVALID_HANDLE||fOutcomes==INVALID_HANDLE||fScenarios==INVALID_HANDLE)
    { Print("EMAMonitor v3: output file open error ",GetLastError()); return INIT_FAILED; }
    barsFileWasEmpty=(FileSize(fBars)==0);
    if(barsFileWasEmpty) WriteBarHeader();
    if(FileSize(fEvents)==0) WriteEventHeader();
    if(FileSize(fOutcomes)==0) WriteOutcomeHeader();
-   FileSeek(fBars,0,SEEK_END); FileSeek(fEvents,0,SEEK_END); FileSeek(fOutcomes,0,SEEK_END);
+   if(FileSize(fScenarios)==0) WriteScenarioHeader();
+   FileSeek(fBars,0,SEEK_END); FileSeek(fEvents,0,SEEK_END); FileSeek(fOutcomes,0,SEEK_END); FileSeek(fScenarios,0,SEEK_END);
 
    if(InpScanHistoryIfFresh && barsFileWasEmpty)
    {
@@ -572,7 +679,7 @@ int OnInit()
    }
    // Flush output before saving any new checkpoint.
    Print("EMAMonitor_v3 v3.00 started in collection-only mode: ",_Symbol," ",TFName(),
-      ". No orders are sent. Files: ",barsName," | ",eventsName," | ",outName);
+      ". No orders are sent. Files: ",barsName," | ",eventsName," | ",outName," | ",scenarioName);
    return INIT_SUCCEEDED;
 }
 void OnTick()
@@ -593,7 +700,7 @@ void OnTick()
       datetime closedBarTime=iTime(_Symbol,CollectTF(),shift);
       if(closedBarTime==0 || closedBarTime<=lastBarTime) continue;
       ProcessBar(shift,true);
-      FileFlush(fBars);FileFlush(fEvents);FileFlush(fOutcomes);
+      FileFlush(fBars);FileFlush(fEvents);FileFlush(fOutcomes);FileFlush(fScenarios);
    }
 
    // Commit the new checkpoint only after all eligible bars have been flushed.
@@ -606,6 +713,7 @@ void OnDeinit(const int reason)
    if(fBars!=INVALID_HANDLE){FileFlush(fBars);FileClose(fBars);}
    if(fEvents!=INVALID_HANDLE){FileFlush(fEvents);FileClose(fEvents);}
    if(fOutcomes!=INVALID_HANDLE){FileFlush(fOutcomes);FileClose(fOutcomes);}
+   if(fScenarios!=INVALID_HANDLE){FileFlush(fScenarios);FileClose(fScenarios);}
    if(hFast!=INVALID_HANDLE)IndicatorRelease(hFast);
    if(h50!=INVALID_HANDLE)IndicatorRelease(h50);
    if(h100!=INVALID_HANDLE)IndicatorRelease(h100);
