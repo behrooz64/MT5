@@ -247,10 +247,44 @@ void WriteBar(const Snapshot &s,const int shift)
    B(s.bar.close>s.priorHigh),B(s.bar.close<s.priorLow),
    DoubleToString(p15,1),DoubleToString(p50,1),DoubleToString(p100,1),DoubleToString(p200,1));
 }
-void WriteEvent(const Snapshot &s,const string name,const string dir,const double refPrice,
+bool EventAlreadyLogged(const datetime eventTime,const string eventType)
+{
+   // Idempotency key: timestamp + symbol + timeframe + event type.
+   // Read-only scan of the existing event CSV; the file is never rewritten.
+   string fileName=MakeFile("Events");
+   int h=FileOpen(fileName,FILE_READ|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
+   if(h==INVALID_HANDLE) return false;
+   // Events header has 36 fields; event_time=0, symbol=1, timeframe=2, event_type=4.
+   for(int i=0;i<36 && !FileIsEnding(h);i++) FileReadString(h);
+   string targetTime=TimeToString(eventTime,TIME_DATE|TIME_SECONDS);
+   bool found=false;
+   while(!FileIsEnding(h))
+   {
+      string rowTime="",rowSymbol="",rowTF="",rowType="";
+      bool hasData=false;
+      for(int col=0;col<36;col++)
+      {
+         if(FileIsEnding(h)) break;
+         string value=FileReadString(h);
+         if(value!="") hasData=true;
+         if(col==0) rowTime=value;
+         else if(col==1) rowSymbol=value;
+         else if(col==2) rowTF=value;
+         else if(col==4) rowType=value;
+      }
+      if(!hasData) break;
+      if(rowTime==targetTime && rowSymbol==_Symbol && rowTF==TFName() && rowType==eventType)
+      { found=true; break; }
+   }
+   FileClose(h);
+   return found;
+}
+
+bool WriteEvent(const Snapshot &s,const string name,const string dir,const double refPrice,
                 const double ema,const string details)
 {
-   if(fEvents==INVALID_HANDLE) return;
+   if(fEvents==INVALID_HANDLE) return false;
+   if(EventAlreadyLogged(s.bar.time,name)) return false;
    double dist=(ema!=0.0 ? Pts(s.bar.close-ema) : 0.0);
    string regime=s.bull ? "UPTREND" : (s.bear ? "DOWNTREND" : (s.range ? "RANGE" : "TRANSITION"));
    FileWrite(fEvents,TimeToString(s.bar.time,TIME_DATE|TIME_SECONDS),_Symbol,TFName(),
@@ -264,6 +298,7 @@ void WriteEvent(const Snapshot &s,const string name,const string dir,const doubl
    DoubleToString(s.macdMain,_Digits),DoubleToString(s.macdSignal,_Digits),
    DoubleToString(s.spreadPoints,1),details);
    nextEventId++; SavePersistentCounter("EVENTID",nextEventId);
+   return true;
 }
 void AddTrack(const Snapshot &s,const string name,const int dir,const double entry)
 {
@@ -274,7 +309,7 @@ void AddTrack(const Snapshot &s,const string name,const int dir,const double ent
 }
 void AddEventTrack(const Snapshot &s,const string name,const int dir,const double entry,const string details)
 {
-   WriteEvent(s,name,(dir==1?"BUY":(dir==-1?"SELL":"BOTH")),entry,0,details);
+   if(!WriteEvent(s,name,(dir==1?"BUY":(dir==-1?"SELL":"BOTH")),entry,0,details)) return;
    AddTrack(s,name,dir,entry);
 }
 void WriteTrackState()
@@ -461,8 +496,8 @@ int OnInit()
       int scan=MathMin(InpHistoryBars,total-InpBreakoutBars-3);
       for(int shift=scan;shift>=1;shift--) ProcessBar(shift,true);
    }
-   long trackFromFiles=MaxIdInCsv(outName,16,0)+1;
-   long eventFromFiles=MaxIdInCsv(eventsName,35,3)+1;
+   long trackFromFiles=MaxIdInCsv(outName,15,0)+1;
+   long eventFromFiles=MaxIdInCsv(eventsName,36,3)+1;
    nextId=MathMax(nextId,LoadPersistentCounter("TRACKID",1));
    nextId=MathMax(nextId,trackFromFiles);
    nextEventId=MathMax(LoadPersistentCounter("EVENTID",1),eventFromFiles);
