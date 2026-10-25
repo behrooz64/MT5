@@ -88,6 +88,7 @@ SimTrack simTracks[];
 long nextId=1;
 long nextEventId=1;
 string stateFileName="";
+string simStateFileName="";
 
 string PersistentKey(const string suffix)
 {
@@ -388,6 +389,52 @@ void WriteTrackState()
          DoubleToString(tracks[i].upPoints,1),DoubleToString(tracks[i].downPoints,1));
    FileFlush(f); FileClose(f);
 }
+void SaveScenarioState()
+{
+   if(simStateFileName=="") return;
+   int f=FileOpen(simStateFileName,FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
+   if(f==INVALID_HANDLE){Print("EMAMonitor v3: cannot save scenario state ",GetLastError());return;}
+   FileWrite(f,"event_id","signal_time","event_type","direction","entry","atr_price","fixed_tp","fixed_sl","atr_tp","atr_sl",
+      "fixed_exit","atr_exit","trail_exit","best_price","bars_seen","fixed_status","atr_status","trail_status");
+   for(int i=0;i<ArraySize(simTracks);i++)
+   {
+      SimTrack st=simTracks[i];
+      FileWrite(f,(string)st.eventId,TimeToString(st.signalTime,TIME_DATE|TIME_SECONDS),st.eventName,st.direction,
+         DoubleToString(st.entry,_Digits),DoubleToString(st.atrPrice,_Digits),DoubleToString(st.fixedTP,_Digits),
+         DoubleToString(st.fixedSL,_Digits),DoubleToString(st.atrTP,_Digits),DoubleToString(st.atrSL,_Digits),
+         DoubleToString(st.fixedExit,_Digits),DoubleToString(st.atrExit,_Digits),DoubleToString(st.trailExit,_Digits),
+         DoubleToString(st.bestPrice,_Digits),st.barsSeen,st.fixedStatus,st.atrStatus,st.trailStatus);
+   }
+   FileFlush(f);FileClose(f);
+}
+void LoadScenarioState()
+{
+   if(simStateFileName=="") return;
+   int f=FileOpen(simStateFileName,FILE_READ|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
+   if(f==INVALID_HANDLE) return;
+   if(!FileIsEnding(f)) for(int h=0;h<18 && !FileIsEnding(f);h++) FileReadString(f);
+   while(!FileIsEnding(f))
+   {
+      string idText=FileReadString(f); if(idText=="") break;
+      string timeText=FileReadString(f),name=FileReadString(f),dirText=FileReadString(f);
+      string entryText=FileReadString(f),atrText=FileReadString(f),ftp=FileReadString(f),fsl=FileReadString(f);
+      string atp=FileReadString(f),asl=FileReadString(f),fexit=FileReadString(f),aexit=FileReadString(f);
+      string texit=FileReadString(f),best=FileReadString(f),bars=FileReadString(f);
+      string fs=FileReadString(f),as=FileReadString(f),ts=FileReadString(f);
+      if(idText=="" || timeText=="") continue;
+      int n=ArraySize(simTracks);if(ArrayResize(simTracks,n+1)!=n+1)break;
+      simTracks[n].eventId=(long)StringToInteger(idText);simTracks[n].signalTime=StringToTime(timeText);
+      simTracks[n].eventName=name;simTracks[n].direction=(int)StringToInteger(dirText);
+      simTracks[n].entry=StringToDouble(entryText);simTracks[n].atrPrice=StringToDouble(atrText);
+      simTracks[n].fixedTP=StringToDouble(ftp);simTracks[n].fixedSL=StringToDouble(fsl);
+      simTracks[n].atrTP=StringToDouble(atp);simTracks[n].atrSL=StringToDouble(asl);
+      simTracks[n].fixedExit=StringToDouble(fexit);simTracks[n].atrExit=StringToDouble(aexit);
+      simTracks[n].trailExit=StringToDouble(texit);simTracks[n].bestPrice=StringToDouble(best);
+      simTracks[n].barsSeen=(int)StringToInteger(bars);simTracks[n].fixedStatus=(int)StringToInteger(fs);
+      simTracks[n].atrStatus=(int)StringToInteger(as);simTracks[n].trailStatus=(int)StringToInteger(ts);
+   }
+   FileClose(f);
+}
 void LoadTrackState()
 {
    if(stateFileName=="") return;
@@ -497,8 +544,7 @@ void UpdateScenarioTracks(const MqlRates &bar)
    {
       SimTrack st=simTracks[i];
       st.barsSeen++;
-      if(st.direction==1 && bar.high>st.bestPrice) st.bestPrice=bar.high;
-      if(st.direction==-1 && bar.low<st.bestPrice) st.bestPrice=bar.low;
+      double priorBest=st.bestPrice;
       double fixedTPPrice=st.entry+st.direction*st.fixedTP;
       double fixedSLPrice=st.entry-st.direction*st.fixedSL;
       double atrTPPrice=st.entry+st.direction*st.atrTP;
@@ -521,7 +567,7 @@ void UpdateScenarioTracks(const MqlRates &bar)
       if(st.trailStatus==0)
       {
          double trailDist=st.atrPrice*InpSimTrailATRMultiple;
-         double trailStop=(st.direction==1?st.bestPrice-trailDist:st.bestPrice+trailDist);
+         double trailStop=(st.direction==1?priorBest-trailDist:priorBest+trailDist);
          bool hitTrail=(InpSimTrailingEnabled && (st.direction==1?bar.low<=trailStop:bar.high>=trailStop));
          bool hitTP=(st.direction==1?bar.high>=atrTPPrice:bar.low<=atrTPPrice);
          bool hitInitialSL=(st.direction==1?bar.low<=atrSLPrice:bar.high>=atrSLPrice);
@@ -529,6 +575,10 @@ void UpdateScenarioTracks(const MqlRates &bar)
          else if(hitTP){st.trailStatus=1;st.trailExit=atrTPPrice;WriteScenarioResult(st,"ATR_TP_TRAIL",st.atrTP,st.atrSL,st.trailExit,"TP");}
          else if(hitTrail){st.trailStatus=-1;st.trailExit=trailStop;WriteScenarioResult(st,"ATR_TP_TRAIL",st.atrTP,trailDist,st.trailExit,"TRAILING_STOP");}
       }
+      // Update the favorable extreme only after evaluating stops for this completed bar,
+      // avoiding same-bar future information in the trailing-stop test.
+      if(st.direction==1 && bar.high>st.bestPrice) st.bestPrice=bar.high;
+      if(st.direction==-1 && bar.low<st.bestPrice) st.bestPrice=bar.low;
       if(st.barsSeen>=InpSimMaxBars)
       {
          if(st.fixedStatus==0){st.fixedStatus=2;st.fixedExit=bar.close;WriteScenarioResult(st,"FIXED_TP_SL",st.fixedTP,st.fixedSL,bar.close,"TIME_EXIT");}
@@ -539,6 +589,7 @@ void UpdateScenarioTracks(const MqlRates &bar)
       if(done){for(int j=i;j<ArraySize(simTracks)-1;j++)simTracks[j]=simTracks[j+1];ArrayResize(simTracks,ArraySize(simTracks)-1);}
       else simTracks[i]=st;
    }
+   SaveScenarioState();
 }
 void EmitSignals(const Snapshot &s,const int shift)
 {
@@ -629,7 +680,9 @@ int OnInit()
 
    string barsName=MakeFile("Bars"),eventsName=MakeFile("Events"),outName=MakeFile("Outcomes"),scenarioName=MakeFile("Scenarios");
    stateFileName=MakeFile("PendingState");
+   simStateFileName=MakeFile("ScenarioState");
    LoadTrackState();
+   LoadScenarioState();
    fBars=FileOpen(barsName,FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
    fEvents=FileOpen(eventsName,FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
    fOutcomes=FileOpen(outName,FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ,',');
@@ -701,6 +754,7 @@ void OnTick()
       if(closedBarTime==0 || closedBarTime<=lastBarTime) continue;
       ProcessBar(shift,true);
       FileFlush(fBars);FileFlush(fEvents);FileFlush(fOutcomes);FileFlush(fScenarios);
+      SaveScenarioState();
    }
 
    // Commit the new checkpoint only after all eligible bars have been flushed.
@@ -710,6 +764,7 @@ void OnTick()
 void OnDeinit(const int reason)
 {
    WriteTrackState();
+   SaveScenarioState();
    if(fBars!=INVALID_HANDLE){FileFlush(fBars);FileClose(fBars);}
    if(fEvents!=INVALID_HANDLE){FileFlush(fEvents);FileClose(fEvents);}
    if(fOutcomes!=INVALID_HANDLE){FileFlush(fOutcomes);FileClose(fOutcomes);}
