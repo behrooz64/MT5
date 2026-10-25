@@ -242,7 +242,7 @@ void UpdateTracks(const MqlRates &bar)
       }
    }
 }
-void EmitSignals(const Snapshot &s)
+void EmitSignals(const Snapshot &s,const int shift)
 {
    bool stUp=(s.stPrev<=s.stSigPrev && s.stMain>s.stSignal);
    bool stDown=(s.stPrev>=s.stSigPrev && s.stMain<s.stSignal);
@@ -256,7 +256,7 @@ void EmitSignals(const Snapshot &s)
    double ema[4]; ema[0]=s.e15;ema[1]=s.e50;ema[2]=s.e100;ema[3]=s.e200;
    int emaHandles[4]; emaHandles[0]=hFast;emaHandles[1]=h50;emaHandles[2]=h100;emaHandles[3]=h200;
    string ename[4]; ename[0]="EMA15";ename[1]="EMA50";ename[2]="EMA100";ename[3]="EMA200";
-   MqlRates priorBar; bool havePrior=ReadRate(2,priorBar);
+   MqlRates priorBar; bool havePrior=ReadRate(shift+1,priorBar);
    bool touch[4]; touch[0]=s.touch15;touch[1]=s.touch50;touch[2]=s.touch100;touch[3]=s.touch200;
    for(int i=0;i<4;i++)
    {
@@ -272,7 +272,7 @@ void EmitSignals(const Snapshot &s)
             AddEventTrack(s,"BOUNCE_DOWN_"+ename[i],-1,s.bar.close,"Touch and bearish close below EMA; heuristic only");
       }
       double prevEma=0;
-      if(havePrior && ReadVal(emaHandles[i],0,2,prevEma))
+      if(havePrior && ReadVal(emaHandles[i],0,shift+1,prevEma))
       {
          if(priorBar.close<=prevEma && s.bar.close>ema[i])
             WriteEvent(s,"PRICE_CROSS_ABOVE_"+ename[i],"BUY",s.bar.close,ema[i],"Prior close was at/below prior EMA; current close is above current EMA");
@@ -306,7 +306,7 @@ void ProcessBar(const int shift,const bool collect)
    Snapshot s; if(!LoadSnapshot(shift,s)) return;
    if(collect) UpdateTracks(s.bar);
    if(InpLogEveryBar || s.touch15 || s.touch50 || s.touch100 || s.touch200) WriteBar(s,shift);
-   if(collect) EmitSignals(s);
+   if(collect) EmitSignals(s,shift);
 }
 int OnInit()
 {
