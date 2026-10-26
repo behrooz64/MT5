@@ -7,7 +7,7 @@
 #property description "Owner : Kia64 "
 #property link        "https://kia64.ir"
 #property description "Kia64 Academy Presentation"
-input string AllowedBroker = "GTCGlobalTrade-Demo"; // Allowed broker server
+input string AllowedBroker = "AMarkets"; // Allowed broker name fragment; supports AMarkets server variants
 #define EXPIRATION_DATE "2027.01.20"
 #define CORRECT_PASSWORD "Kia64"
 
@@ -353,9 +353,9 @@ int OnInit()
 //==================================coder robo ===============================
  string broker_name = AccountInfoString(ACCOUNT_SERVER);
 
-    if (broker_name != AllowedBroker)
+    if (StringFind(broker_name,AllowedBroker) < 0)
     {
-        Print("This Expert only works on the selected broker server: ", AllowedBroker);
+        Print("This Expert only works on broker servers containing: ", AllowedBroker);
         ExpertRemove();
         return(INIT_FAILED); 
     }
