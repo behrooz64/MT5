@@ -20,7 +20,9 @@ input string user_password = "";
 input string Set = "==========Setting Bot=========";
 string KamalEA = "Kia64 UNLIMITED VERSION"; // in
 int MagicNumber = 8398;//Magic Number                           // in
-int MaxSpread = 500;//Max Spread (for open a trade)             //in
+int MaxSpread = 500;//Legacy max spread in points (for open a trade)
+input bool KiaXAM_EnableSpreadFilter = true; // Enable live spread filter for new entries
+input double KiaXAM_MaxSpreadPrice = 2.50; // Maximum Bid/Ask difference in symbol price units
 
 string Separo0="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -379,9 +381,12 @@ int OnInit()
      Print(" password is corect ");
 //=================================================================================  
 m_trade.SetExpertMagicNumber(MagicNumber);
+// Use the filling policy reported by the active chart symbol for CTrade operations.
+m_trade.SetTypeFillingBySymbol(_Symbol);
 
 Bid_ = Bid();
 Ask_ = Ask();
+KiaXAMLogSymbolSpecs();
 
 
 
@@ -711,12 +716,9 @@ return;
 
 
 
-bool Spread = MaxSpread*_Point >= Ask_-Bid_;
-if (!Spread)
-{
-   Kia64TradeDiagnostic("Entry blocked: spread filter; current_points="+DoubleToString((Ask_-Bid_)/_Point,1)+"; maximum_points="+DoubleToString(MaxSpread,1));
-   return;
-}
+bool KiaXAMSpreadOK = (MaxSpread*_Point >= Ask_-Bid_) && KiaXAMSpreadAllowed();
+if (MaxSpread*_Point < Ask_-Bid_)
+   Kia64TradeDiagnostic("Entry blocked by legacy points spread limit; current_points="+DoubleToString((Ask_-Bid_)/_Point,1)+"; maximum_points="+DoubleToString(MaxSpread,1));
 
 
 if ( EnableAverageTrailingStop )
@@ -765,11 +767,11 @@ LottoDaTradare = NormalizeDouble( LottoDaTradare+ (LottoDaTradare *OrdiniAperti(
 
 
 
-bool Kia64BuyEntryAllowed = ordiniapertibuy && ExtraIndicatorsBuy && !OrdiniApertiSuBarra(MagicNumber,AlternationOpeningBars) && !ordiniapertichiusisubarra(MagicNumber,AlternationOpeningBars) && !ordinichiusisubarra(MagicNumber,AlternationOpeningBars,"OP BUY") && OrdiniApertiGlobale() && FifoModality(OP_BUY,ordinibuy,ordinisell) && DayCheck(Oggi) && AllowBuy;
+bool Kia64BuyEntryAllowed = KiaXAMSpreadOK && ordiniapertibuy && ExtraIndicatorsBuy && !OrdiniApertiSuBarra(MagicNumber,AlternationOpeningBars) && !ordiniapertichiusisubarra(MagicNumber,AlternationOpeningBars) && !ordinichiusisubarra(MagicNumber,AlternationOpeningBars,"OP BUY") && OrdiniApertiGlobale() && FifoModality(OP_BUY,ordinibuy,ordinisell) && DayCheck(Oggi) && AllowBuy;
 if(Kia64BuyEntryAllowed) Ordine(OP_BUY,LottoDaTradare,Ask_,0,0,MagicNumber,0);
 else Kia64TradeDiagnostic("BUY not sent: one or more original entry conditions are false; open_buy="+string(ordiniapertibuy)+"; indicators="+string(ExtraIndicatorsBuy)+"; allowed="+string(AllowBuy));
 
-bool Kia64SellEntryAllowed = ordiniapertisell && ExtraIndicatorsSell && !OrdiniApertiSuBarra(MagicNumber,AlternationOpeningBars) && !ordiniapertichiusisubarra(MagicNumber,AlternationOpeningBars) && !ordinichiusisubarra(MagicNumber,AlternationOpeningBars, "OP SELL") && OrdiniApertiGlobale() && FifoModality(OP_SELL,ordinibuy,ordinisell) && DayCheck(Oggi) && AllowSell;
+bool Kia64SellEntryAllowed = KiaXAMSpreadOK && ordiniapertisell && ExtraIndicatorsSell && !OrdiniApertiSuBarra(MagicNumber,AlternationOpeningBars) && !ordiniapertichiusisubarra(MagicNumber,AlternationOpeningBars) && !ordinichiusisubarra(MagicNumber,AlternationOpeningBars, "OP SELL") && OrdiniApertiGlobale() && FifoModality(OP_SELL,ordinibuy,ordinisell) && DayCheck(Oggi) && AllowSell;
 if(Kia64SellEntryAllowed) Ordine(OP_SELL,LottoDaTradare,Bid_,0,0,MagicNumber,0);
 else Kia64TradeDiagnostic("SELL not sent: one or more original entry conditions are false; open_sell="+string(ordiniapertisell)+"; indicators="+string(ExtraIndicatorsSell)+"; allowed="+string(AllowSell));
 
@@ -1539,6 +1541,89 @@ return ticket;
 
 
 //==================================================================
+// KIA XAM: live symbol specification and spread checks
+// This filter affects NEW entries only. Position management/closing continues.
+//==================================================================
+#define KIAXAM_SYMBOL_INFO_FILE "KiaXAM_SymbolInfo.csv"
+datetime KiaXAMLastSpreadBlockLog = 0;
+
+bool KiaXAMSpreadAllowed()
+{
+   if(!KiaXAM_EnableSpreadFilter) return true;
+   MqlTick tick;
+   if(!SymbolInfoTick(_Symbol,tick) || tick.ask <= 0.0 || tick.bid <= 0.0 || tick.ask < tick.bid)
+   {
+      datetime now = TimeCurrent();
+      if(now - KiaXAMLastSpreadBlockLog >= 300)
+      {
+         Kia64TradeDiagnostic("KiaXAM entry blocked: live Bid/Ask quote unavailable.");
+         KiaXAMLastSpreadBlockLog = now;
+      }
+      return false;
+   }
+   double liveSpread = tick.ask - tick.bid;
+   if(liveSpread <= KiaXAM_MaxSpreadPrice) return true;
+   datetime now = TimeCurrent();
+   if(now - KiaXAMLastSpreadBlockLog >= 300)
+   {
+      Kia64TradeDiagnostic("KiaXAM entry blocked by live spread filter; symbol="+_Symbol+
+                           "; spread_price="+DoubleToString(liveSpread,_Digits)+
+                           "; max_spread_price="+DoubleToString(KiaXAM_MaxSpreadPrice,_Digits)+
+                           "; spread_points="+DoubleToString(liveSpread/_Point,1));
+      KiaXAMLastSpreadBlockLog = now;
+   }
+   return false;
+}
+
+void KiaXAMLogSymbolSpecs()
+{
+   MqlTick tick;
+   bool hasTick = SymbolInfoTick(_Symbol,tick);
+   double bid = hasTick ? tick.bid : SymbolInfoDouble(_Symbol,SYMBOL_BID);
+   double ask = hasTick ? tick.ask : SymbolInfoDouble(_Symbol,SYMBOL_ASK);
+   double spreadPrice = (bid > 0.0 && ask >= bid) ? ask-bid : 0.0;
+   long digits=0, spreadPoints=0, spreadFloat=0, fillingFlags=0, executionMode=0, tradeMode=0, stopsLevel=0;
+   SymbolInfoInteger(_Symbol,SYMBOL_DIGITS,digits);
+   SymbolInfoInteger(_Symbol,SYMBOL_SPREAD,spreadPoints);
+   SymbolInfoInteger(_Symbol,SYMBOL_SPREAD_FLOAT,spreadFloat);
+   SymbolInfoInteger(_Symbol,SYMBOL_FILLING_MODE,fillingFlags);
+   SymbolInfoInteger(_Symbol,SYMBOL_TRADE_EXEMODE,executionMode);
+   SymbolInfoInteger(_Symbol,SYMBOL_TRADE_MODE,tradeMode);
+   SymbolInfoInteger(_Symbol,SYMBOL_TRADE_STOPS_LEVEL,stopsLevel);
+   double point=SymbolInfoDouble(_Symbol,SYMBOL_POINT);
+   double tickSize=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE);
+   double tickValue=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE);
+   double contractSize=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_CONTRACT_SIZE);
+   double volumeMin=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MIN);
+   double volumeMax=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MAX);
+   double volumeStep=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_STEP);
+   int handle=FileOpen(KIAXAM_SYMBOL_INFO_FILE,FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ|FILE_SHARE_WRITE,';');
+   if(handle==INVALID_HANDLE)
+   {
+      Kia64TradeDiagnostic("KiaXAM could not open symbol-spec file; last_error="+IntegerToString(GetLastError()));
+      return;
+   }
+   if(FileSize(handle)==0)
+      FileWrite(handle,"timestamp","account_server","account_currency","account_margin_mode","symbol","timeframe",
+                "bid","ask","spread_price","spread_points","digits","point","tick_size","tick_value","contract_size",
+                "volume_min","volume_max","volume_step","spread_floating","filling_flags","execution_mode",
+                "trade_mode","stops_level","max_spread_price","commission_note");
+   FileSeek(handle,0,SEEK_END);
+   FileWrite(handle,TimeToString(TimeCurrent(),TIME_DATE|TIME_SECONDS),AccountInfoString(ACCOUNT_SERVER),
+             AccountInfoString(ACCOUNT_CURRENCY),IntegerToString((int)AccountInfoInteger(ACCOUNT_MARGIN_MODE)),
+             _Symbol,EnumToString((ENUM_TIMEFRAMES)_Period),DoubleToString(bid,(int)digits),
+             DoubleToString(ask,(int)digits),DoubleToString(spreadPrice,(int)digits),IntegerToString((int)spreadPoints),
+             IntegerToString((int)digits),DoubleToString(point,8),DoubleToString(tickSize,8),DoubleToString(tickValue,8),
+             DoubleToString(contractSize,4),DoubleToString(volumeMin,4),DoubleToString(volumeMax,4),
+             DoubleToString(volumeStep,4),IntegerToString((int)spreadFloat),IntegerToString((int)fillingFlags),
+             IntegerToString((int)executionMode),IntegerToString((int)tradeMode),IntegerToString((int)stopsLevel),
+             DoubleToString(KiaXAM_MaxSpreadPrice,(int)digits),
+             "Not exposed as a universal live symbol property; verify account contract/commission schedule");
+   FileFlush(handle);
+   FileClose(handle);
+}
+
+//==================================================================
 // KIA64 TRADE DIAGNOSTICS
 // Set to 0 to disable diagnostic messages, or remove this section
 // and the Kia64TradeDiagnostic() calls to remove diagnostics entirely.
@@ -1825,15 +1910,25 @@ int InvioOrdine(string simbolo,int cmd,double lotti, double prezzo, double stopl
    ENUM_ORDER_TYPE_FILLING fillingModes[3];
    int fillingCount = 0;
 
-   // IOC first, then FOK, but only if the symbol reports support.
-   if((fillingFlags & SYMBOL_FILLING_IOC) == SYMBOL_FILLING_IOC)
+   // Request/Instant execution allows IOC and FOK regardless of symbol flags.
+   // Market/Exchange execution must respect the symbol's advertised filling flags.
+   if(executionMode == SYMBOL_TRADE_EXECUTION_REQUEST ||
+      executionMode == SYMBOL_TRADE_EXECUTION_INSTANT)
+   {
       fillingModes[fillingCount++] = ORDER_FILLING_IOC;
-   if((fillingFlags & SYMBOL_FILLING_FOK) == SYMBOL_FILLING_FOK)
       fillingModes[fillingCount++] = ORDER_FILLING_FOK;
-
-   // RETURN is not allowed for Market Execution.
-   if(executionMode != SYMBOL_TRADE_EXECUTION_MARKET)
       fillingModes[fillingCount++] = ORDER_FILLING_RETURN;
+   }
+   else
+   {
+      if((fillingFlags & SYMBOL_FILLING_IOC) == SYMBOL_FILLING_IOC)
+         fillingModes[fillingCount++] = ORDER_FILLING_IOC;
+      if((fillingFlags & SYMBOL_FILLING_FOK) == SYMBOL_FILLING_FOK)
+         fillingModes[fillingCount++] = ORDER_FILLING_FOK;
+      // RETURN is prohibited for Market Execution, but allowed for Exchange Execution.
+      if(executionMode == SYMBOL_TRADE_EXECUTION_EXCHANGE)
+         fillingModes[fillingCount++] = ORDER_FILLING_RETURN;
+   }
 
    if(fillingCount == 0)
    {
@@ -2529,7 +2624,7 @@ if (cmd == OP_BUY)
 {
 sendlot = GestioneOrdini(LottoDaTradare,OP_BUY);// NormalizeDouble( LottoDaTradare+ (LottoDaTradare *OrdiniAperti(MagicNumber,OP_BUY)*CoefficientePyramide),2);
 //Print(Lots," *",OrdiniAperti(MagicNumber,OP_BUY),"*",CoefficientePyramide);
-if (CheckVolumeValue(sendlot) && EnableGrid && ( !GridOrdersComplyMaxSpreadConditions ||  MaxSpread*_Point >= Ask_-Bid_ ) && ( !GridOrdersComplyIndicatorsConditions || extraindicatorsbuy()) && ( !GridOrdersComplyHoursConditions || Hour_trade_allowed(coefstart,coefstop)) && ( !GridOrdersComplyWeekDaysConditions || DayCheck(DayOfWeek())) )
+if (CheckVolumeValue(sendlot) && EnableGrid && KiaXAMSpreadAllowed() && ( !GridOrdersComplyMaxSpreadConditions ||  MaxSpread*_Point >= Ask_-Bid_ ) && ( !GridOrdersComplyIndicatorsConditions || extraindicatorsbuy()) && ( !GridOrdersComplyHoursConditions || Hour_trade_allowed(coefstart,coefstop)) && ( !GridOrdersComplyWeekDaysConditions || DayCheck(DayOfWeek())) )
 {
 Ordine(OP_BUY,sendlot,Ask_,0,0,MagicNumber,0); 
 }
