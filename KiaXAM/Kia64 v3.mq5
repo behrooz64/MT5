@@ -2591,7 +2591,7 @@ double MinimalDistance = 0;
 if ( MinDistanceOnAtr )
 MinimalDistance = AtrMultiplier*iatr(_Symbol,DistanceAtrTimeframe,DistanceAtrPeriod,1);
 else
-MinimalDistance =  MinDistanzaPiramide*_Point;
+MinimalDistance = MinDistanzaPiramide*SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE);
 
    for(int i=1;i<NumOrdini;i++)
      {
