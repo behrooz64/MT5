@@ -607,7 +607,10 @@ if (!OnlyEndOfBar || (EndBar < iTime(_Symbol,OrderTimeframe,0)) )
       {
       
          if ( prezzomediobuy+(TakeTargetBuy*_Point) < Bid_  )
-         EliminaOrdiniFifo(MagicNumber,OP_BUY);
+         {
+          KiaXAMLogCloseDiagnostic("AVERAGE_WEIGHTED_TAKE_PROFIT","BUY",prezzomediobuy,prezzomediobuy+(TakeTargetBuy*_Point));
+          EliminaOrdiniFifo(MagicNumber,OP_BUY);
+          }
       
          if ( StopTargetMode == Default &&  prezzomediobuy-(StopTarget*_Point) > Bid_  )
          EliminaOrdiniFifo(MagicNumber,OP_BUY);
@@ -627,7 +630,10 @@ HLineMove(0,"StopLineBuy",PrezzoPrimoOrdineBuy()-(StopTarget*_Point));
       {
       
          if (  prezzomediosell-(TakeTargetSell*_Point) > Ask_  )
-         EliminaOrdiniFifo(MagicNumber,OP_SELL);
+         {
+          KiaXAMLogCloseDiagnostic("AVERAGE_WEIGHTED_TAKE_PROFIT","SELL",prezzomediosell,prezzomediosell-(TakeTargetSell*_Point));
+          EliminaOrdiniFifo(MagicNumber,OP_SELL);
+          }
       
          if ( StopTargetMode == Default && prezzomediosell+(StopTarget*_Point) < Ask_  )
          EliminaOrdiniFifo(MagicNumber,OP_SELL);
@@ -650,7 +656,8 @@ HLineMove(0,"StopLineSell",PrezzoPrimoOrdineSell()+(StopTarget*_Point));
                LottoDaTradare = 0.01;
                if (profit < ( (EveryMicrolot)? (MaximumMonetaryLoss*(LottoDaTradare*100)) :  MaximumMonetaryLoss)*-1 )
                {
-               EliminaOrdiniFifo(MagicNumber);
+               KiaXAMLogCloseDiagnostic("MONETARY_STOP_LOSS","ALL",0.0,0.0);
+                EliminaOrdiniFifo(MagicNumber);
                if (StopTradingWhenHit)
                {
                Comment("Stop Trading When Hit, I removed the Expert, to continue insert it again");
@@ -675,7 +682,8 @@ double profit = CalcolaProfitto(MagicNumber);
 
    if (  LossPercentage < ((-1*profit)/AccountBalance())*100 )
    {
-      EliminaOrdiniFifo(MagicNumber);
+      KiaXAMLogCloseDiagnostic("PERCENTAGE_LOSS_PROTECTION","ALL",0.0,0.0);
+       EliminaOrdiniFifo(MagicNumber);
       if ( StopTradingAfterPercentageLoss )
       {
          Comment("Stop Trading After Percentage Loss, I removed the Expert, to continue insert it again");
@@ -1025,7 +1033,7 @@ for(int i=0;i<5;i++)
 
 void EliminaOrdiniFifo(int Magic,int cmd)
 {
-
+   KiaXAMLogCloseDiagnostic("GENERIC_CLOSE_FUNCTION","SIDE_"+IntegerToString(cmd),0.0,0.0);
 int Ticket[];
 ArrayResize(Ticket,PositionsTotal());
 
@@ -1058,7 +1066,7 @@ EliminaOrdini(Magic,cmd);
 
 void EliminaOrdiniFifo(int Magic)
 {
-
+   KiaXAMLogCloseDiagnostic("GENERIC_CLOSE_FUNCTION","ALL",0.0,0.0);
 int Ticket[];
 ArrayResize(Ticket,PositionsTotal());
 
@@ -1545,7 +1553,45 @@ return ticket;
 // This filter affects NEW entries only. Position management/closing continues.
 //==================================================================
 #define KIAXAM_SYMBOL_INFO_FILE "KiaXAM_SymbolInfo.csv"
+#define KIAXAM_CLOSE_DIAG_FILE "KiaXAM_CloseDiagnostics.csv"
 datetime KiaXAMLastSpreadBlockLog = 0;
+
+// Diagnostic only: records close-trigger context without changing trade decisions.
+void KiaXAMLogCloseDiagnostic(string reason, string side, double referencePrice, double targetPrice)
+{
+   MqlTick tick;
+   bool hasTick = SymbolInfoTick(_Symbol,tick);
+   double bid = hasTick ? tick.bid : SymbolInfoDouble(_Symbol,SYMBOL_BID);
+   double ask = hasTick ? tick.ask : SymbolInfoDouble(_Symbol,SYMBOL_ASK);
+   double spread = (bid > 0.0 && ask >= bid) ? ask-bid : 0.0;
+   double floatingProfit = 0.0, totalLots = 0.0;
+   int count = 0;
+   for(int i=PositionsTotal()-1; i>=0; --i)
+   {
+      ulong ticket = PositionGetTicket(i);
+      if(ticket == 0) continue;
+      if(PositionGetInteger(POSITION_MAGIC) != MagicNumber || PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
+      floatingProfit += PositionGetDouble(POSITION_PROFIT) + PositionGetDouble(POSITION_SWAP);
+      totalLots += PositionGetDouble(POSITION_VOLUME);
+      count++;
+   }
+   int h=FileOpen(KIAXAM_CLOSE_DIAG_FILE,FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ|FILE_SHARE_WRITE,';');
+   if(h==INVALID_HANDLE)
+   {
+      Kia64TradeDiagnostic("KiaXAM close diagnostic file open failed; error="+IntegerToString(GetLastError()));
+      return;
+   }
+   if(FileSize(h)==0)
+      FileWrite(h,"timestamp","symbol","timeframe","reason","side","reference_price","target_price","bid","ask","spread_price","target_gap_price","position_count","total_lots","floating_profit","account_currency","only_end_of_bar","close_mode","take_target_points");
+   FileSeek(h,0,SEEK_END);
+   FileWrite(h,TimeToString(TimeCurrent(),TIME_DATE|TIME_SECONDS),_Symbol,EnumToString((ENUM_TIMEFRAMES)_Period),reason,side,
+      DoubleToString(referencePrice,_Digits),DoubleToString(targetPrice,_Digits),DoubleToString(bid,_Digits),DoubleToString(ask,_Digits),
+      DoubleToString(spread,_Digits),DoubleToString(targetPrice-referencePrice,_Digits),IntegerToString(count),DoubleToString(totalLots,2),
+      DoubleToString(floatingProfit,2),AccountInfoString(ACCOUNT_CURRENCY),(OnlyEndOfBar ? "true" : "false"),
+      IntegerToString((int)CloseMode),IntegerToString(TakeTarget));
+   FileFlush(h);
+   FileClose(h);
+}
 
 bool KiaXAMSpreadAllowed()
 {
