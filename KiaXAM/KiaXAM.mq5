@@ -3124,8 +3124,8 @@ void CommentoInit()
    LabelCreate(0,"KevinSection2",0,20,143,CORNER_LEFT_UPPER,"EA / MARKET INFO","Arial",8,C'120,190,220',0,ANCHOR_LEFT);
    LabelCreate(0,"Kevin9",0,20,163,CORNER_LEFT_UPPER,"Spread: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
    LabelCreate(0,"Kevin10",0,20,182,CORNER_LEFT_UPPER,"Start Lot Size: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin11",0,20,201,CORNER_LEFT_UPPER,"Percentage Loss Protection: ","Arial",9,C'255,165,65',0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin12",0,20,220,CORNER_LEFT_UPPER,"Monetary Loss Protection: ","Arial",9,C'255,165,65',0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin11",0,20,201,CORNER_LEFT_UPPER,"Protection % ","Arial",9,C'255,165,65',0,ANCHOR_LEFT);
+   LabelCreate(0,"Kevin12",0,20,220,CORNER_LEFT_UPPER,"Protection $ ","Arial",9,C'255,165,65',0,ANCHOR_LEFT);
    LabelCreate(0,"KevinSection3",0,20,243,CORNER_LEFT_UPPER,"ADDITIONAL PROFIT / LOSS","Arial",8,C'120,190,220',0,ANCHOR_LEFT);
    string Simbolo = StringSubstr(_Symbol,1,5); StringToLower(Simbolo); Simbolo = StringSubstr(_Symbol,0,1)+Simbolo;
    LabelCreate(0,"Kevin5",0,20,263,CORNER_LEFT_UPPER,Simbolo+" Profit/Loss: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
@@ -3168,9 +3168,9 @@ void Commento()
       LabelTextChange(0,"Kevin10","Start Lot Size: "+DoubleToString(LottoDaTradare,2));
       // This EA does not implement a separate whole-account drawdown protection.
       string percentageProtection = (CloseInPercentageLoss ? "ACTIVE" : "INACTIVE");
-      LabelTextChange(0,"Kevin11","Percentage Loss Protection: "+percentageProtection+" ("+IntegerToString(LossPercentage)+"%)");
+      LabelTextChange(0,"Kevin11","Protection % "+percentageProtection+" ("+IntegerToString(LossPercentage)+"%)");
       string monetaryProtection = (MonetaryStopLoss ? "ACTIVE" : "INACTIVE");
-      LabelTextChange(0,"Kevin12","Monetary Loss Protection: "+monetaryProtection+" ($"+IntegerToString(MaximumMonetaryLoss)+")");
+      LabelTextChange(0,"Kevin12","Protection $ "+monetaryProtection+" ($"+IntegerToString(MaximumMonetaryLoss)+")");
       ObjectSetInteger(0,"Kevin11",OBJPROP_COLOR,CloseInPercentageLoss ? C'80,210,130' : C'255,165,65');
       ObjectSetInteger(0,"Kevin12",OBJPROP_COLOR,MonetaryStopLoss ? C'80,210,130' : C'255,165,65');
       
