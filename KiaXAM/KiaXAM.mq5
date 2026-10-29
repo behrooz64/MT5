@@ -232,7 +232,7 @@ string Separo7="----------------------------------------------------------------
 
 
 string TargetSettings = "GAIN/LOSS TARGET SETTINGS";//TARGET SETTINGS   // in
-int TakeTarget = 235;//Take Target     // in
+int TakeTarget = 250;//Take Target     // in
 int TakeTargetBuy = 0;
 int TakeTargetSell = 0;
 
@@ -1554,7 +1554,7 @@ return ticket;
 // This filter affects NEW entries only. Position management/closing continues.
 //==================================================================
 #define KIAXAM_SYMBOL_INFO_FILE "KiaXAM_SymbolInfo.csv"
-#define KIAXAM_CLOSE_DIAG_FILE "KiaXAM_CloseDiagnostics.csv"
+#define KIAXAM_CLOSE_DIAG_FILE "KiaXAM_CloseDiagnostics_v2.csv"
 datetime KiaXAMLastSpreadBlockLog = 0;
 
 // Diagnostic only: records close-trigger context without changing trade decisions.
@@ -1700,6 +1700,74 @@ void Kia64AppendCsvRow(string file_name, string row_type, string details)
    FileClose(handle);
 }
 
+// One row per closing deal for this EA/symbol. Includes duration and realized points.
+#define KIAXAM_TRADE_PERFORMANCE_FILE "KiaXAM_TradePerformance.csv"
+void KiaXAMLogClosedDeal(ulong closingDeal, string symbol, long magic)
+{
+   if(closingDeal == 0 || !HistoryDealSelect(closingDeal)) return;
+   if(symbol != _Symbol || magic != MagicNumber) return;
+   long entryType = HistoryDealGetInteger(closingDeal, DEAL_ENTRY);
+   if(entryType != DEAL_ENTRY_OUT && entryType != DEAL_ENTRY_OUT_BY && entryType != DEAL_ENTRY_INOUT) return;
+
+   ulong positionId = (ulong)HistoryDealGetInteger(closingDeal, DEAL_POSITION_ID);
+   datetime closeTime = (datetime)HistoryDealGetInteger(closingDeal, DEAL_TIME);
+   double closePrice = HistoryDealGetDouble(closingDeal, DEAL_PRICE);
+   double closeVolume = HistoryDealGetDouble(closingDeal, DEAL_VOLUME);
+   double realized = HistoryDealGetDouble(closingDeal, DEAL_PROFIT) +
+                     HistoryDealGetDouble(closingDeal, DEAL_SWAP) +
+                     HistoryDealGetDouble(closingDeal, DEAL_COMMISSION);
+   datetime openTime = 0;
+   double entryPriceVolume = 0.0, entryVolume = 0.0;
+   string side = "UNKNOWN";
+
+   if(HistorySelectByPosition(positionId))
+   {
+      int total = HistoryDealsTotal();
+      for(int i=0; i<total; i++)
+      {
+         ulong deal = HistoryDealGetTicket(i);
+         if(deal == 0) continue;
+         if(HistoryDealGetString(deal, DEAL_SYMBOL) != symbol) continue;
+         long e = HistoryDealGetInteger(deal, DEAL_ENTRY);
+         if(e != DEAL_ENTRY_IN && e != DEAL_ENTRY_INOUT) continue;
+         datetime t = (datetime)HistoryDealGetInteger(deal, DEAL_TIME);
+         if(openTime == 0 || t < openTime) openTime = t;
+         double v = HistoryDealGetDouble(deal, DEAL_VOLUME);
+         entryPriceVolume += HistoryDealGetDouble(deal, DEAL_PRICE) * v;
+         entryVolume += v;
+         long dealType = HistoryDealGetInteger(deal, DEAL_TYPE);
+         if(dealType == DEAL_TYPE_BUY) side = "BUY";
+         else if(dealType == DEAL_TYPE_SELL) side = "SELL";
+      }
+   }
+
+   double entryPrice = (entryVolume > 0.0) ? entryPriceVolume / entryVolume : 0.0;
+   double points = 0.0;
+   if(_Point > 0.0 && entryPrice > 0.0)
+   {
+      if(side == "BUY") points = (closePrice-entryPrice)/_Point;
+      else if(side == "SELL") points = (entryPrice-closePrice)/_Point;
+   }
+   long duration = (openTime > 0 && closeTime >= openTime) ? (long)(closeTime-openTime) : -1;
+   int h = FileOpen(KIAXAM_TRADE_PERFORMANCE_FILE, FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ|FILE_SHARE_WRITE, ';');
+   if(h == INVALID_HANDLE)
+   {
+      Kia64TradeDiagnostic("KiaXAM trade performance file open failed; error="+IntegerToString(GetLastError()));
+      return;
+   }
+   if(FileSize(h) == 0)
+      FileWrite(h,"close_time","open_time","symbol","magic","position_id","closing_deal","side","entry_price","exit_price","volume_closed","duration_seconds","duration_minutes","points_gross","realized_net_profit","result");
+   FileSeek(h,0,SEEK_END);
+   FileWrite(h,TimeToString(closeTime,TIME_DATE|TIME_SECONDS),
+      (openTime>0 ? TimeToString(openTime,TIME_DATE|TIME_SECONDS) : ""),symbol,IntegerToString((int)magic),
+      IntegerToString((long)positionId),IntegerToString((long)closingDeal),side,
+      DoubleToString(entryPrice,_Digits),DoubleToString(closePrice,_Digits),DoubleToString(closeVolume,2),
+      IntegerToString((int)duration),DoubleToString((duration>=0 ? (double)duration/60.0 : 0.0),2),
+      DoubleToString(points,1),DoubleToString(realized,2),(realized>0.0 ? "PROFIT" : (realized<0.0 ? "LOSS" : "BREAKEVEN")));
+   FileFlush(h);
+   FileClose(h);
+}
+
 void Kia64AppendPerformanceRow(string row_type, ulong deal_ticket, datetime deal_time,
                                double volume, double price, double profit, double swap,
                                double commission, string details)
@@ -1785,6 +1853,7 @@ void OnTradeTransaction(const MqlTradeTransaction &trans, const MqlTradeRequest 
          string kind = (entry == DEAL_ENTRY_OUT || entry == DEAL_ENTRY_OUT_BY) ? "CLOSED_DEAL" : "OPEN_OR_IN_DEAL";
          Kia64AppendPerformanceRow(kind, trans.deal, deal_time, volume, price, profit, swap,
                                    commission, "entry="+IntegerToString((int)entry)+"; deal_symbol="+deal_symbol);
+         KiaXAMLogClosedDeal(trans.deal, deal_symbol, deal_magic);
       }
    }
 }
