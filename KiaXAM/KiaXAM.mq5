@@ -232,7 +232,7 @@ string Separo7="----------------------------------------------------------------
 
 
 string TargetSettings = "GAIN/LOSS TARGET SETTINGS";//TARGET SETTINGS   // in
-int TakeTarget = 50;//Take Target     // in
+int TakeTarget = 235;//Take Target     // in
 int TakeTargetBuy = 0;
 int TakeTargetSell = 0;
 
@@ -506,6 +506,7 @@ void OnTick()
   {
 //---
    Kia64UpdateSessionObserver();
+   KiaXAMUpdateCycleObserver();
 
 
 if ( !AllowNetting &&  IsTesting() && AccountInfoInteger(ACCOUNT_MARGIN_MODE) == ACCOUNT_MARGIN_MODE_RETAIL_NETTING && (StringFind(_Symbol,"XAUUSD") > -1 || StringFind(_Symbol,"EURUSD") > -1) &&  StringFind(AccountInfoString(ACCOUNT_SERVER),"eta") > -1 )
@@ -1582,13 +1583,16 @@ void KiaXAMLogCloseDiagnostic(string reason, string side, double referencePrice,
       return;
    }
    if(FileSize(h)==0)
-      FileWrite(h,"timestamp","symbol","timeframe","reason","side","reference_price","target_price","bid","ask","spread_price","target_gap_price","position_count","total_lots","floating_profit","account_currency","only_end_of_bar","close_mode","take_target_points");
+      FileWrite(h,"timestamp","symbol","timeframe","reason","side","reference_price","target_price","bid","ask","spread_price","spread_points","target_gap_price","target_gap_points","point","tick_size","position_count","total_lots","floating_profit","account_currency","only_end_of_bar","close_mode","take_target_points","grid_distance_points");
    FileSeek(h,0,SEEK_END);
    FileWrite(h,TimeToString(TimeCurrent(),TIME_DATE|TIME_SECONDS),_Symbol,EnumToString((ENUM_TIMEFRAMES)_Period),reason,side,
       DoubleToString(referencePrice,_Digits),DoubleToString(targetPrice,_Digits),DoubleToString(bid,_Digits),DoubleToString(ask,_Digits),
-      DoubleToString(spread,_Digits),DoubleToString(targetPrice-referencePrice,_Digits),IntegerToString(count),DoubleToString(totalLots,2),
-      DoubleToString(floatingProfit,2),AccountInfoString(ACCOUNT_CURRENCY),(OnlyEndOfBar ? "true" : "false"),
-      IntegerToString((int)CloseMode),IntegerToString(TakeTarget));
+      DoubleToString(spread,_Digits),DoubleToString((_Point>0.0 ? spread/_Point : 0.0),1),
+      DoubleToString(targetPrice-referencePrice,_Digits),DoubleToString((_Point>0.0 ? (targetPrice-referencePrice)/_Point : 0.0),1),
+      DoubleToString(_Point,8),DoubleToString(SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE),8),
+      IntegerToString(count),DoubleToString(totalLots,2),DoubleToString(floatingProfit,2),
+      AccountInfoString(ACCOUNT_CURRENCY),(OnlyEndOfBar ? "true" : "false"),IntegerToString((int)CloseMode),
+      IntegerToString(TakeTarget),IntegerToString(MinDistanzaPiramide));
    FileFlush(h);
    FileClose(h);
 }
@@ -1792,6 +1796,84 @@ void OnTradeTransaction(const MqlTradeTransaction &trans, const MqlTradeRequest 
 // Output file is written under the terminal's MQL5/Files directory.
 // Session times use broker-server time.
 //==================================================================
+// Observer-only grid-cycle summary. Does not influence trade decisions.
+#define KIAXAM_CYCLE_LOG_FILE "KiaXAM_CycleAnalysis.csv"
+bool KiaXAMCycleWasOpen = false;
+datetime KiaXAMCycleStartTime = 0;
+int KiaXAMCycleMaxPositions = 0;
+double KiaXAMCycleMaxLots = 0.0;
+double KiaXAMCycleMaxFloatingProfit = 0.0;
+double KiaXAMCycleMaxFloatingLoss = 0.0;
+int KiaXAMCycleStartTakeTarget = 0;
+int KiaXAMCycleStartGridPoints = 0;
+
+void KiaXAMUpdateCycleObserver()
+{
+   if(KIA64_TRADE_DIAGNOSTICS != 1) return;
+   int positions = 0;
+   double lots = 0.0, floating = 0.0;
+   for(int i=PositionsTotal()-1; i>=0; --i)
+   {
+      ulong ticket = PositionGetTicket(i);
+      if(ticket == 0) continue;
+      if(PositionGetInteger(POSITION_MAGIC) != MagicNumber ||
+         PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
+      positions++;
+      lots += PositionGetDouble(POSITION_VOLUME);
+      floating += PositionGetDouble(POSITION_PROFIT) + PositionGetDouble(POSITION_SWAP);
+   }
+
+   datetime now = TimeCurrent();
+   if(positions > 0)
+   {
+      if(!KiaXAMCycleWasOpen)
+      {
+         KiaXAMCycleWasOpen = true;
+         KiaXAMCycleStartTime = now;
+         KiaXAMCycleMaxPositions = positions;
+         KiaXAMCycleMaxLots = lots;
+         KiaXAMCycleMaxFloatingProfit = floating;
+         KiaXAMCycleMaxFloatingLoss = floating;
+         KiaXAMCycleStartTakeTarget = TakeTarget;
+         KiaXAMCycleStartGridPoints = MinDistanzaPiramide;
+         Kia64AppendCsvRow(KIAXAM_CYCLE_LOG_FILE, "CYCLE_STARTED",
+            "start_time="+TimeToString(now,TIME_DATE|TIME_SECONDS)+
+            "; target_points="+IntegerToString(TakeTarget)+
+            "; grid_distance_points="+IntegerToString(MinDistanzaPiramide)+
+            "; positions="+IntegerToString(positions)+
+            "; lots="+DoubleToString(lots,2)+
+            "; floating_pl="+DoubleToString(floating,2)+
+            "; note=cycle start observed by EA; may be partial if attached after entries");
+      }
+      if(positions > KiaXAMCycleMaxPositions) KiaXAMCycleMaxPositions = positions;
+      if(lots > KiaXAMCycleMaxLots) KiaXAMCycleMaxLots = lots;
+      if(floating > KiaXAMCycleMaxFloatingProfit) KiaXAMCycleMaxFloatingProfit = floating;
+      if(floating < KiaXAMCycleMaxFloatingLoss) KiaXAMCycleMaxFloatingLoss = floating;
+   }
+   else if(KiaXAMCycleWasOpen)
+   {
+      long durationSeconds = (KiaXAMCycleStartTime > 0 && now >= KiaXAMCycleStartTime)
+                             ? (long)(now-KiaXAMCycleStartTime) : 0;
+      Kia64AppendCsvRow(KIAXAM_CYCLE_LOG_FILE, "CYCLE_ENDED",
+         "start_time="+TimeToString(KiaXAMCycleStartTime,TIME_DATE|TIME_SECONDS)+
+         "; end_time="+TimeToString(now,TIME_DATE|TIME_SECONDS)+
+         "; duration_seconds="+IntegerToString(durationSeconds)+
+         "; max_positions="+IntegerToString(KiaXAMCycleMaxPositions)+
+         "; max_lots="+DoubleToString(KiaXAMCycleMaxLots,2)+
+         "; max_floating_profit="+DoubleToString(KiaXAMCycleMaxFloatingProfit,2)+
+         "; max_floating_loss="+DoubleToString(KiaXAMCycleMaxFloatingLoss,2)+
+         "; target_points_at_start="+IntegerToString(KiaXAMCycleStartTakeTarget)+
+         "; grid_points_at_start="+IntegerToString(KiaXAMCycleStartGridPoints)+
+         "; note=observed floating extrema, not realized net P/L");
+      KiaXAMCycleWasOpen = false;
+      KiaXAMCycleStartTime = 0;
+      KiaXAMCycleMaxPositions = 0;
+      KiaXAMCycleMaxLots = 0.0;
+      KiaXAMCycleMaxFloatingProfit = 0.0;
+      KiaXAMCycleMaxFloatingLoss = 0.0;
+   }
+}
+
 #define KIA64_SESSION_FILE "Kia64_SessionAnalysis.csv"
 datetime Kia64SessionLastSnapshotHour = 0;
 double Kia64SessionPeakEquity = 0.0;
