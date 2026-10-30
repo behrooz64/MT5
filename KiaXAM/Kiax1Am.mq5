@@ -502,10 +502,6 @@ ObjectsDeleteAll(0,-1,OBJ_RECTANGLE_LABEL);
 //+------------------------------------------------------------------+
 //| Expert tick function                                             |
 //+------------------------------------------------------------------+
-// Grid additions are evaluated once when a new NewOpenPeriod candle starts.
-// The previous candle is closed before a grid order can be sent.
-datetime KiaXAM_LastGridBarTime = 0;
-
 void OnTick()
   {
 //---
@@ -522,21 +518,6 @@ return ;
 
 Bid_ = Bid();
 Ask_ = Ask();
-
-// Check grid only on the first tick of a newly opened grid-timeframe bar.
-// First tick after EA attachment initializes the tracker without opening a grid order.
-datetime KiaXAM_CurrentGridBarTime = iTime(_Symbol,NewOpenPeriod,0);
-bool KiaXAM_GridBarJustClosed = false;
-if(KiaXAM_CurrentGridBarTime > 0)
-  {
-   if(KiaXAM_LastGridBarTime == 0)
-      KiaXAM_LastGridBarTime = KiaXAM_CurrentGridBarTime;
-   else if(KiaXAM_CurrentGridBarTime != KiaXAM_LastGridBarTime)
-     {
-      KiaXAM_LastGridBarTime = KiaXAM_CurrentGridBarTime;
-      KiaXAM_GridBarJustClosed = true;
-     }
-  }
 
 
 if (MoneyManagement)
@@ -716,15 +697,11 @@ double profit = CalcolaProfitto(MagicNumber);
 
 
 
-// Keep every original grid condition; only change the timing of grid evaluation.
-if(KiaXAM_GridBarJustClosed)
-  {
-   //APERTURA ORDINI PIRAMIDALI
-   if (ordinibuy < MaxBuyOrders && OrdineInPerdita(OP_BUY,ordinibuy))
-   OrdinoUn(OP_BUY);
-   if (ordinisell < MaxSellOrders && OrdineInPerdita(OP_SELL,ordinisell))
-   OrdinoUn(OP_SELL);
-  }
+//APERTURA ORDINI PIRAMIDALI
+if (ordinibuy < MaxBuyOrders && OrdineInPerdita(OP_BUY,ordinibuy))
+OrdinoUn(OP_BUY);
+if (ordinisell < MaxSellOrders && OrdineInPerdita(OP_SELL,ordinisell))
+OrdinoUn(OP_SELL);
 
 
 
