@@ -1,0 +1,1 @@
+event_id,signal_time,symbol,timeframe,event_type,direction,entry_price,scenario,tp_points,sl_points,bars_held,gross_points,estimated_cost_points,net_points,exit_price,exit_reason,atr_at_entry_points,trailing_enabled

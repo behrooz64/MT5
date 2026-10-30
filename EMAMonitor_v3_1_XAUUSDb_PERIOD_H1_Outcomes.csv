@@ -1,0 +1,1 @@
+signal_id,signal_time,symbol,timeframe,event_type,direction,entry_price,horizon_bars,bars_observed,mfe_favourable_points,mae_adverse_points,max_up_points,max_down_points,last_close,outcome_status

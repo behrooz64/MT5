@@ -1,0 +1,1 @@
+event_time,symbol,timeframe,event_id,event_type,direction,reference_price,ema_value,distance_points,open,high,low,close,ema15,ema50,ema100,ema200,touch_ema15,touch_ema50,touch_ema100,touch_ema200,trend_bull,trend_bear,market_regime,stoch_main,stoch_signal,rsi,atr_points,adx,bb_upper,bb_middle,bb_lower,macd_main,macd_signal,spread_points,details
