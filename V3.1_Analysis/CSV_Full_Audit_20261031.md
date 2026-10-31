@@ -34,7 +34,7 @@ All 18 CSV files in the TRX root were read from their Git blobs. No CSV source f
 | H1 | PendingState | 0 |
 | H1 | ScenarioState_v3 | 0 |
 
-M1 + M5 contain 144,589 data rows. H1 files contain headers only; no H1 observations are available.
+M1 + M5 contain 148,669 data rows. (Corrected arithmetic: M1 122,737 + M5 25,932.) H1 files contain headers only; no H1 observations are available.
 
 ## 3. Collection window and data continuity
 
