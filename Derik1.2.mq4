@@ -49,6 +49,9 @@ double observerRatios[10] = {0.0,0.236,0.333,0.382,0.5,0.618,0.667,0.785,0.886,1
 string ObserverSignalsFile = "Derik1.2\\Observer_Signals.csv";
 string ObserverVirtualTradesFile = "Derik1.2\\Observer_VirtualTrades.csv";
 string ObserverExcursionsFile = "Derik1.2\\Observer_Excursions.csv";
+string ObserverFiboStatsFile = "";
+string ObserverDailySummaryFile = "";
+string ObserverLevelReachedFile = "";
 string observerChartTF = "";
 string observerFiboId = "";
 uint observerLastSampleMs = 0;
@@ -78,6 +81,10 @@ struct VirtualPosition
    bool be;
    bool partial;
    int partialStage;
+   string fiboBucketRange;
+   string nearestFiboBucket;
+   datetime mfeAt;
+   datetime maeAt;
 };
 VirtualPosition virtualPositions[];
 int virtualCount=0;
@@ -155,6 +162,66 @@ string ObserverLevelName(double price)
    if(best<0)return "UNAVAILABLE";
    return DoubleToString(observerRatios[best]*100.0,1)+"%";
 }
+string ObserverNearestFiboBucket(double price)
+{
+   int k=ObserverNearestFibo(price);
+   if(k<0)return "UNAVAILABLE";
+   return DoubleToString(observerRatios[k]*100.0,1);
+}
+string ObserverFiboBucketRange(double price)
+{
+   int k=ObserverNearestFibo(price);
+   if(k<0)return "UNAVAILABLE";
+   int lo=k-1,hi=k+1;
+   if(lo<0)lo=k;
+   if(hi>=10)hi=k;
+   return DoubleToString(observerRatios[lo]*100.0,1)+"_"+DoubleToString(observerRatios[hi]*100.0,1);
+}
+string ObserverStatKey(string prefix,string direction,string bucket,int scenario,string day)
+{
+   string key=prefix+"_"+symbol+"_"+observerChartTF+"_"+direction+"_"+bucket+"_S"+
+      IntegerToString(scenario)+"_"+day;
+   StringReplace(key,".","_");StringReplace(key,"%","P");StringReplace(key,"-","_");
+   if(StringLen(key)>60)key=StringSubstr(key,0,60);
+   return key;
+}
+double ObserverStatValue(string key)
+{
+   if(!GlobalVariableCheck(key))return 0.0;
+   return GlobalVariableGet(key);
+}
+void ObserverPersistStats(string direction,string bucket,int scenario,string day,double money)
+{
+   string keys[8];
+   keys[0]=ObserverStatKey("ALLN",direction,bucket,scenario,"ALL");
+   keys[1]=ObserverStatKey("ALLW",direction,bucket,scenario,"ALL");
+   keys[2]=ObserverStatKey("ALLL",direction,bucket,scenario,"ALL");
+   keys[3]=ObserverStatKey("ALLP",direction,bucket,scenario,"ALL");
+   keys[4]=ObserverStatKey("DAYN",direction,bucket,scenario,day);
+   keys[5]=ObserverStatKey("DAYW",direction,bucket,scenario,day);
+   keys[6]=ObserverStatKey("DAYL",direction,bucket,scenario,day);
+   keys[7]=ObserverStatKey("DAYP",direction,bucket,scenario,day);
+   GlobalVariableSet(keys[0],ObserverStatValue(keys[0])+1.0);
+   if(money>0)GlobalVariableSet(keys[1],ObserverStatValue(keys[1])+1.0);
+   if(money<0)GlobalVariableSet(keys[2],ObserverStatValue(keys[2])+1.0);
+   GlobalVariableSet(keys[3],ObserverStatValue(keys[3])+money);
+   GlobalVariableSet(keys[4],ObserverStatValue(keys[4])+1.0);
+   if(money>0)GlobalVariableSet(keys[5],ObserverStatValue(keys[5])+1.0);
+   if(money<0)GlobalVariableSet(keys[6],ObserverStatValue(keys[6])+1.0);
+   GlobalVariableSet(keys[7],ObserverStatValue(keys[7])+money);
+   string row="timeframe="+observerChartTF+", direction="+direction+
+      ", bucket_range="+bucket+", scenario_id="+IntegerToString(scenario)+
+      ", day_server="+day+", total_count="+DoubleToString(ObserverStatValue(keys[0]),0)+
+      ", wins="+DoubleToString(ObserverStatValue(keys[1]),0)+
+      ", losses="+DoubleToString(ObserverStatValue(keys[2]),0)+
+      ", cumulative_net="+DoubleToString(ObserverStatValue(keys[3]),2)+
+      ", daily_count="+DoubleToString(ObserverStatValue(keys[4]),0)+
+      ", daily_wins="+DoubleToString(ObserverStatValue(keys[5]),0)+
+      ", daily_losses="+DoubleToString(ObserverStatValue(keys[6]),0)+
+      ", daily_net="+DoubleToString(ObserverStatValue(keys[7]),2);
+   ObserverWrite(ObserverFiboStatsFile,"bucket_cumulative",row,scenario,TimeCurrent(),0,money);
+   ObserverWrite(ObserverDailySummaryFile,"daily_bucket_summary",row,scenario,TimeCurrent(),0,money);
+}
 double ObserverMoneyPerPointPerLot()
 {
    // In MQL4 MODE_TICKSIZE is expressed in points, not raw price units.
@@ -189,6 +256,10 @@ void ObserverAddScenario(int sid,int scenario,int dir,double entry,double arrow,
    virtualPositions[n].be=false;
    virtualPositions[n].partial=false;
    virtualPositions[n].partialStage=0;
+   virtualPositions[n].fiboBucketRange=ObserverFiboBucketRange(entry);
+   virtualPositions[n].nearestFiboBucket=ObserverNearestFiboBucket(entry);
+   virtualPositions[n].mfeAt=TimeCurrent();
+   virtualPositions[n].maeAt=TimeCurrent();
    string name="TP1";
    if(scenario==2)name="TP2";
    if(scenario==3)name="TP3";
@@ -207,12 +278,6 @@ void ObserverAddScenario(int sid,int scenario,int dir,double entry,double arrow,
    if(scenario==23)name="TP2_ATR_SL_1X";
    if(scenario==24)name="TP2_ATR_SL_1_5X";
    if(scenario==25)name="TP2_SWING_SL_10_BARS";
-   if(scenario==20)name="TP2_FIXED_SL_10_POINTS";
-   if(scenario==21)name="TP2_FIXED_SL_20_POINTS";
-   if(scenario==22)name="TP2_FIXED_SL_30_POINTS";
-   if(scenario==23)name="TP2_ATR_SL_1X";
-   if(scenario==24)name="TP2_ATR_SL_1_5X";
-   if(scenario==25)name="TP2_SWING_SL_10_BARS";
    string d="signal_id=SIG-"+IntegerToString(sid)+", scenario="+name+
       ", scenario_id="+IntegerToString(scenario)+", timeframe="+observerChartTF+
       ", direction="+(dir==OP_BUY?"BUY":"SELL")+", fibo_id="+observerFiboId+
@@ -220,6 +285,9 @@ void ObserverAddScenario(int sid,int scenario,int dir,double entry,double arrow,
       ", entry_hour_server="+IntegerToString(TimeHour(TimeCurrent()))+
       ", entry_weekday_server="+IntegerToString(TimeDayOfWeek(TimeCurrent()))+
       ", arrow_price="+DoubleToString(arrow,Digits)+", entry_price="+DoubleToString(entry,Digits)+
+      ", spread_points="+DoubleToString((Ask-Bid)/ObserverPointSize(),1)+
+      ", fibo_bucket_range="+virtualPositions[n].fiboBucketRange+
+      ", nearest_fibo_bucket="+virtualPositions[n].nearestFiboBucket+
       ", tp1_price="+DoubleToString(tp1,Digits)+", target_price="+DoubleToString(target,Digits)+
       ", target_fibo="+(target>0?ObserverLevelName(target):"OPPOSITE_SIGNAL")+
       ", initial_stop="+DoubleToString(sl,Digits)+", virtual_lots="+DoubleToString(ObserverVirtualLots,2);
@@ -329,7 +397,11 @@ void ObserverCloseVirtual(int i,double price,string reason)
       ", exit_reason="+reason+", result="+result+", average_points="+DoubleToString(avg,1)+
       ", estimated_gross_money="+DoubleToString(money,2)+", currency="+AccountCurrency()+
       ", mfe_points="+DoubleToString(virtualPositions[i].mfe,1)+
+      ", mfe_time="+TimeToString(virtualPositions[i].mfeAt,TIME_DATE|TIME_SECONDS)+
       ", mae_points="+DoubleToString(virtualPositions[i].mae,1)+
+      ", mae_time="+TimeToString(virtualPositions[i].maeAt,TIME_DATE|TIME_SECONDS)+
+      ", fibo_bucket_range="+virtualPositions[i].fiboBucketRange+
+      ", nearest_fibo_bucket="+virtualPositions[i].nearestFiboBucket+
       ", initial_sl="+DoubleToString(virtualPositions[i].initialStop,Digits)+
       ", final_sl="+DoubleToString(virtualPositions[i].stop,Digits)+
       ", target_fibo="+(virtualPositions[i].target>0?ObserverLevelName(virtualPositions[i].target):"NONE")+
@@ -342,6 +414,9 @@ void ObserverCloseVirtual(int i,double price,string reason)
       virtualPositions[i].signalId*10+virtualPositions[i].scenario,TimeCurrent(),price,money);
    ObserverWrite(ObserverScenariosFile,"scenario_result",d,
       virtualPositions[i].signalId*10+virtualPositions[i].scenario,TimeCurrent(),price,money);
+   string statDay=TimeToString(virtualPositions[i].openedAt,TIME_DATE);StringReplace(statDay,".","-");
+   ObserverPersistStats(dir==OP_BUY?"BUY":"SELL",virtualPositions[i].fiboBucketRange,
+      virtualPositions[i].scenario,statDay,money);
    int sid=virtualPositions[i].signalId;
    if(sid>=0 && sid<5000)
    {
@@ -376,8 +451,8 @@ void ObserverUpdateVirtual()
       double mark=(dir==OP_BUY?Bid:Ask);
       double move=(dir==OP_BUY?mark-virtualPositions[i].entry:virtualPositions[i].entry-mark);
       double pts=move/pt;bool extreme=false;
-      if(pts>virtualPositions[i].mfe){virtualPositions[i].mfe=pts;extreme=true;}
-      if(pts<virtualPositions[i].mae){virtualPositions[i].mae=pts;extreme=true;}
+      if(pts>virtualPositions[i].mfe){virtualPositions[i].mfe=pts;virtualPositions[i].mfeAt=TimeCurrent();extreme=true;}
+      if(pts<virtualPositions[i].mae){virtualPositions[i].mae=pts;virtualPositions[i].maeAt=TimeCurrent();extreme=true;}
       if(extreme)
       {
          string ex="signal_id=SIG-"+IntegerToString(virtualPositions[i].signalId)+
@@ -474,7 +549,14 @@ void ObserverCloseOpposite(int newDir)
 }
 void ObserverRegisterSignal(int dir,datetime arrowTime,double arrowPrice)
 {
-   observerSignalId++;int id=observerSignalId;datetime now=TimeCurrent();
+   if(observerSignalId>=4999)
+   {
+      ObserverWriteError("signal array capacity reached: 4999");
+      return;
+   }
+   observerSignalId++;int id=observerSignalId;
+   GlobalVariableSet("DERIK12_SIGNAL_"+symbol+"_"+observerChartTF,observerSignalId);
+   datetime now=TimeCurrent();
    double entry=(dir==OP_BUY?Ask:Bid);
    string d="signal_id=SIG-"+IntegerToString(id)+", timeframe="+observerChartTF+
       ", direction="+(dir==OP_BUY?"BUY":"SELL")+", fibo_id="+observerFiboId+
@@ -638,21 +720,6 @@ void ObserverWriteLevel(string eventType,string detail,datetime at,double price,
 }
 
 
-void ObserverWriteTickTrace()
-{
-   double point=ObserverPointSize();
-   double pip=ObserverPipSize();
-   string detail="bid="+DoubleToString(Bid,Digits)+
-      "; ask="+DoubleToString(Ask,Digits)+
-      "; spread_points="+DoubleToString((Ask-Bid)/point,1)+
-      "; point_size="+DoubleToString(point,Digits)+
-      "; pip_size="+DoubleToString(pip,Digits)+
-      "; tick_value="+DoubleToString(MarketInfo(symbol,MODE_TICKVALUE),4)+
-      "; tick_size="+DoubleToString(MarketInfo(symbol,MODE_TICKSIZE),Digits)+
-      "; "+ObserverFiboSnapshot();
-   ObserverWrite(ObserverTicksFile,"price_tick",detail,-1,TimeCurrent(),Bid,0.0);
-}
-
 void ObserverTrackFiboTouches()
 {
    double bid=Bid;
@@ -671,6 +738,18 @@ void ObserverTrackFiboTouches()
          crossed=(level>=lo && level<=hi);
       }
       bool near=(dist<=tolerance);
+      if(crossed)
+      {
+         ObserverWrite(ObserverLevelReachedFile,"level_reached",
+            "timeframe="+observerChartTF+", fibo_id="+observerFiboId+
+            ", level_percent="+DoubleToString(observerRatios[i]*100.0,1)+
+            ", level_price="+DoubleToString(level,Digits)+
+            ", previous_bid="+DoubleToString(observerPreviousBid,Digits)+
+            ", reached_bid="+DoubleToString(bid,Digits)+
+            ", crossing_direction="+(bid>observerPreviousBid?"UP":"DOWN")+
+            ", spread_points="+DoubleToString((Ask-Bid)/point,1),
+            i,TimeCurrent(),bid,0);
+      }
       if((crossed || (near && !observerLevelNear[i])) && !observerLevelNear[i])
       {
          observerLevelTouchTime[i]=TimeCurrent();
@@ -740,6 +819,8 @@ int OnInit()
 {
    symbol=Symbol();observerChartTF=ObserverTFName();
    observerStartedAt=TimeCurrent();observerFiboId=ObserverFiboId();
+   string counterKey="DERIK12_SIGNAL_"+symbol+"_"+observerChartTF;
+   if(GlobalVariableCheck(counterKey))observerSignalId=(int)GlobalVariableGet(counterKey);
    // Keep M1 and M5 data in physically separate folders.
    ObserverFolder="Derik1.2\\"+observerChartTF;
    ObserverEventsFile=ObserverFolder+"\\Observer_Events.csv";
@@ -751,6 +832,9 @@ int OnInit()
    ObserverSignalsFile=ObserverFolder+"\\Observer_Signals.csv";
    ObserverVirtualTradesFile=ObserverFolder+"\\Observer_VirtualTrades.csv";
    ObserverExcursionsFile=ObserverFolder+"\\Observer_Excursions.csv";
+   ObserverFiboStatsFile=ObserverFolder+"\\Observer_FiboStats.csv";
+   ObserverDailySummaryFile=ObserverFolder+"\\Observer_DailySummary.csv";
+   ObserverLevelReachedFile=ObserverFolder+"\\Observer_LevelReached.csv";
    FolderCreate("Derik1.2");
    FolderCreate(ObserverFolder);
    ObserverWrite(ObserverEventsFile,"observer_started",
@@ -762,6 +846,9 @@ int OnInit()
    ObserverWrite(ObserverSignalsFile,"file_initialized","timeframe="+observerChartTF,-1,TimeCurrent(),Bid,0);
    ObserverWrite(ObserverVirtualTradesFile,"file_initialized","timeframe="+observerChartTF,-1,TimeCurrent(),Bid,0);
    ObserverWrite(ObserverExcursionsFile,"file_initialized","timeframe="+observerChartTF,-1,TimeCurrent(),Bid,0);
+   ObserverWrite(ObserverFiboStatsFile,"file_initialized","timeframe="+observerChartTF",-1,TimeCurrent(),Bid,0);
+   ObserverWrite(ObserverDailySummaryFile,"file_initialized","timeframe="+observerChartTF",-1,TimeCurrent(),Bid,0);
+   ObserverWrite(ObserverLevelReachedFile,"file_initialized","timeframe="+observerChartTF",-1,TimeCurrent(),Bid,0);
    ObserverWrite(ObserverScenariosFile,"file_initialized","timeframe="+observerChartTF,-1,TimeCurrent(),Bid,0);
    ObserverWrite(ObserverLevelsFile,"observer_started",
       "timeframe="+observerChartTF+
