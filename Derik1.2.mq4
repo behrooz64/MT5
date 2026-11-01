@@ -53,6 +53,8 @@ string observerChartTF = "";
 string observerFiboId = "";
 uint observerLastSampleMs = 0;
 int observerSignalId = 0;
+double observerSignalFiboPrices[5000][10];
+int observerSignalRelations[5000][10];
 
 struct VirtualPosition
 {
@@ -195,6 +197,7 @@ void ObserverAddScenario(int sid,int scenario,int dir,double entry,double arrow,
       ", target_fibo="+(target>0?ObserverLevelName(target):"OPPOSITE_SIGNAL")+
       ", initial_stop="+DoubleToString(sl,Digits)+", virtual_lots="+DoubleToString(ObserverVirtualLots,2);
    ObserverWrite(ObserverVirtualTradesFile,"virtual_open",d,sid*10+scenario,TimeCurrent(),entry,0);
+   ObserverWrite(ObserverScenariosFile,"scenario_created",d,sid*10+scenario,TimeCurrent(),entry,0);
 }
 void ObserverMakeScenarios(int sid,int dir,double arrow)
 {
@@ -254,6 +257,30 @@ void ObserverCloseVirtual(int i,double price,string reason)
       virtualPositions[i].signalId*10+virtualPositions[i].scenario,TimeCurrent(),price,money);
    ObserverWrite(ObserverSummaryFile,"scenario_result",d,
       virtualPositions[i].signalId*10+virtualPositions[i].scenario,TimeCurrent(),price,money);
+   ObserverWrite(ObserverScenariosFile,"scenario_result",d,
+      virtualPositions[i].signalId*10+virtualPositions[i].scenario,TimeCurrent(),price,money);
+   int sid=virtualPositions[i].signalId;
+   if(sid>=0 && sid<5000)
+   {
+      for(int k=0;k<10;k++)
+      {
+         double lv=observerSignalFiboPrices[sid][k];
+         if(lv<=0.0)continue;
+         int rel=observerSignalRelations[sid][k];
+         string relText=(rel==1?"ABOVE":(rel==-1?"BELOW":(rel==0?"ON":"UNKNOWN")));
+         string outcome="signal_id=SIG-"+IntegerToString(sid)+
+            ", scenario_id="+IntegerToString(virtualPositions[i].scenario)+
+            ", timeframe="+observerChartTF+
+            ", direction="+(virtualPositions[i].direction==OP_BUY?"BUY":"SELL")+
+            ", level_percent="+DoubleToString(observerRatios[k]*100.0,1)+
+            ", level_price_at_signal="+DoubleToString(lv,Digits)+
+            ", arrow_relation="+relText+
+            ", scenario_result="+result+
+            ", estimated_gross_money="+DoubleToString(money,2);
+         ObserverWrite(ObserverLevelsFile,"signal_level_outcome",outcome,
+            sid*10+virtualPositions[i].scenario,TimeCurrent(),price,money);
+      }
+   }
    virtualPositions[i].active=false;
 }
 void ObserverUpdateVirtual()
@@ -356,6 +383,12 @@ void ObserverRegisterSignal(int dir,datetime arrowTime,double arrowPrice)
          ", level_price="+DoubleToString(lv,Digits)+
          ", arrow_price="+DoubleToString(arrowPrice,Digits)+
          ", arrow_relation="+ObserverRelation(arrowPrice,lv);
+      if(id>=0 && id<5000)
+      {
+         observerSignalFiboPrices[id][k]=lv;
+         observerSignalRelations[id][k]=(ObserverRelation(arrowPrice,lv)=="ABOVE"?1:
+            (ObserverRelation(arrowPrice,lv)=="BELOW"?-1:0));
+      }
       ObserverWrite(ObserverLevelsFile,"signal_level_position",pos,id,now,arrowPrice,0);
    }
    ObserverCloseOpposite(dir);
@@ -604,6 +637,7 @@ int OnInit()
    ObserverWrite(ObserverSignalsFile,"file_initialized","timeframe="+observerChartTF,-1,TimeCurrent(),Bid,0);
    ObserverWrite(ObserverVirtualTradesFile,"file_initialized","timeframe="+observerChartTF,-1,TimeCurrent(),Bid,0);
    ObserverWrite(ObserverExcursionsFile,"file_initialized","timeframe="+observerChartTF,-1,TimeCurrent(),Bid,0);
+   ObserverWrite(ObserverScenariosFile,"file_initialized","timeframe="+observerChartTF,-1,TimeCurrent(),Bid,0);
    ObserverWrite(ObserverLevelsFile,"observer_started",
       "timeframe="+observerChartTF+
       ", point_size="+DoubleToString(MarketInfo(symbol,MODE_POINT),Digits)+
