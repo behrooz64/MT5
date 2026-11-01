@@ -170,16 +170,24 @@ string ObserverNearestFiboBucket(double price)
 }
 string ObserverFiboBucketRange(double price)
 {
-   int k=ObserverNearestFibo(price);
-   if(k<0)return "UNAVAILABLE";
-   int lo=k-1,hi=k+1;
-   if(lo<0)lo=k;
-   if(hi>=10)hi=k;
-   return DoubleToString(observerRatios[lo]*100.0,1)+"_"+DoubleToString(observerRatios[hi]*100.0,1);
+   double p[10];
+   for(int i=0;i<10;i++)p[i]=ObserverFiboPrice(observerRatios[i]);
+   for(int i=0;i<9;i++)
+   {
+      if(p[i]<=0||p[i+1]<=0)continue;
+      double lo=MathMin(p[i],p[i+1]),hi=MathMax(p[i],p[i+1]);
+      if(price>=lo&&price<=hi)
+         return DoubleToString(observerRatios[i]*100.0,1)+"_"+DoubleToString(observerRatios[i+1]*100.0,1);
+   }
+   int nearest=ObserverNearestFibo(price);
+   if(nearest<0)return "UNAVAILABLE";
+   if(nearest==0)return DoubleToString(observerRatios[0]*100.0,1)+"_OUTSIDE";
+   if(nearest==9)return "OUTSIDE_"+DoubleToString(observerRatios[9]*100.0,1);
+   return DoubleToString(observerRatios[nearest-1]*100.0,1)+"_"+DoubleToString(observerRatios[nearest+1]*100.0,1);
 }
-string ObserverStatKey(string prefix,string direction,string bucket,int scenario,string day)
+string ObserverStatKey(string prefix,string direction,string bucket,int scenario,string tfScope,string day)
 {
-   string key=prefix+"_"+symbol+"_"+observerChartTF+"_"+direction+"_"+bucket+"_S"+
+   string key=prefix+"_"+symbol+"_"+tfScope+"_"+direction+"_"+bucket+"_S"+
       IntegerToString(scenario)+"_"+day;
    StringReplace(key,".","_");StringReplace(key,"%","P");StringReplace(key,"-","_");
    if(StringLen(key)>60)key=StringSubstr(key,0,60);
@@ -192,33 +200,56 @@ double ObserverStatValue(string key)
 }
 void ObserverPersistStats(string direction,string bucket,int scenario,string day,double money)
 {
-   string keys[8];
-   keys[0]=ObserverStatKey("ALLN",direction,bucket,scenario,"ALL");
-   keys[1]=ObserverStatKey("ALLW",direction,bucket,scenario,"ALL");
-   keys[2]=ObserverStatKey("ALLL",direction,bucket,scenario,"ALL");
-   keys[3]=ObserverStatKey("ALLP",direction,bucket,scenario,"ALL");
-   keys[4]=ObserverStatKey("DAYN",direction,bucket,scenario,day);
-   keys[5]=ObserverStatKey("DAYW",direction,bucket,scenario,day);
-   keys[6]=ObserverStatKey("DAYL",direction,bucket,scenario,day);
-   keys[7]=ObserverStatKey("DAYP",direction,bucket,scenario,day);
-   GlobalVariableSet(keys[0],ObserverStatValue(keys[0])+1.0);
-   if(money>0)GlobalVariableSet(keys[1],ObserverStatValue(keys[1])+1.0);
-   if(money<0)GlobalVariableSet(keys[2],ObserverStatValue(keys[2])+1.0);
-   GlobalVariableSet(keys[3],ObserverStatValue(keys[3])+money);
-   GlobalVariableSet(keys[4],ObserverStatValue(keys[4])+1.0);
-   if(money>0)GlobalVariableSet(keys[5],ObserverStatValue(keys[5])+1.0);
-   if(money<0)GlobalVariableSet(keys[6],ObserverStatValue(keys[6])+1.0);
-   GlobalVariableSet(keys[7],ObserverStatValue(keys[7])+money);
+   string a[4],b[4],c[4];
+   a[0]=ObserverStatKey("T1N",direction,bucket,-1,"ALLTF","ALL");
+   a[1]=ObserverStatKey("T1W",direction,bucket,-1,"ALLTF","ALL");
+   a[2]=ObserverStatKey("T1L",direction,bucket,-1,"ALLTF","ALL");
+   a[3]=ObserverStatKey("T1P",direction,bucket,-1,"ALLTF","ALL");
+   b[0]=ObserverStatKey("T2N",direction,bucket,scenario,"ALLTF","ALL");
+   b[1]=ObserverStatKey("T2W",direction,bucket,scenario,"ALLTF","ALL");
+   b[2]=ObserverStatKey("T2L",direction,bucket,scenario,"ALLTF","ALL");
+   b[3]=ObserverStatKey("T2P",direction,bucket,scenario,"ALLTF","ALL");
+   c[0]=ObserverStatKey("T3N",direction,bucket,scenario,observerChartTF,"ALL");
+   c[1]=ObserverStatKey("T3W",direction,bucket,scenario,observerChartTF,"ALL");
+   c[2]=ObserverStatKey("T3L",direction,bucket,scenario,observerChartTF,"ALL");
+   c[3]=ObserverStatKey("T3P",direction,bucket,scenario,observerChartTF,"ALL");
+   string groups[3][4];
+   for(int x=0;x<4;x++){groups[0][x]=a[x];groups[1][x]=b[x];groups[2][x]=c[x];}
+   for(int g=0;g<3;g++)
+   {
+      GlobalVariableSet(groups[g][0],ObserverStatValue(groups[g][0])+1.0);
+      if(money>0)GlobalVariableSet(groups[g][1],ObserverStatValue(groups[g][1])+1.0);
+      if(money<0)GlobalVariableSet(groups[g][2],ObserverStatValue(groups[g][2])+1.0);
+      GlobalVariableSet(groups[g][3],ObserverStatValue(groups[g][3])+money);
+   }
+   string dayKeys[4];
+   dayKeys[0]=ObserverStatKey("DAYN",direction,bucket,scenario,observerChartTF,day);
+   dayKeys[1]=ObserverStatKey("DAYW",direction,bucket,scenario,observerChartTF,day);
+   dayKeys[2]=ObserverStatKey("DAYL",direction,bucket,scenario,observerChartTF,day);
+   dayKeys[3]=ObserverStatKey("DAYP",direction,bucket,scenario,observerChartTF,day);
+   GlobalVariableSet(dayKeys[0],ObserverStatValue(dayKeys[0])+1.0);
+   if(money>0)GlobalVariableSet(dayKeys[1],ObserverStatValue(dayKeys[1])+1.0);
+   if(money<0)GlobalVariableSet(dayKeys[2],ObserverStatValue(dayKeys[2])+1.0);
+   GlobalVariableSet(dayKeys[3],ObserverStatValue(dayKeys[3])+money);
    string row="timeframe="+observerChartTF+", direction="+direction+
-      ", bucket_range="+bucket+", scenario_id="+IntegerToString(scenario)+
-      ", day_server="+day+", total_count="+DoubleToString(ObserverStatValue(keys[0]),0)+
-      ", wins="+DoubleToString(ObserverStatValue(keys[1]),0)+
-      ", losses="+DoubleToString(ObserverStatValue(keys[2]),0)+
-      ", cumulative_net="+DoubleToString(ObserverStatValue(keys[3]),2)+
-      ", daily_count="+DoubleToString(ObserverStatValue(keys[4]),0)+
-      ", daily_wins="+DoubleToString(ObserverStatValue(keys[5]),0)+
-      ", daily_losses="+DoubleToString(ObserverStatValue(keys[6]),0)+
-      ", daily_net="+DoubleToString(ObserverStatValue(keys[7]),2);
+      ", fibo_bucket_range="+bucket+", nearest_fibo_bucket=entry_nearest_level"+
+      ", scenario_id="+IntegerToString(scenario)+", day_server="+day+
+      ", tier1_count="+DoubleToString(ObserverStatValue(a[0]),0)+
+      ", tier1_wins="+DoubleToString(ObserverStatValue(a[1]),0)+
+      ", tier1_losses="+DoubleToString(ObserverStatValue(a[2]),0)+
+      ", tier1_net="+DoubleToString(ObserverStatValue(a[3]),2)+
+      ", tier2_count="+DoubleToString(ObserverStatValue(b[0]),0)+
+      ", tier2_wins="+DoubleToString(ObserverStatValue(b[1]),0)+
+      ", tier2_losses="+DoubleToString(ObserverStatValue(b[2]),0)+
+      ", tier2_net="+DoubleToString(ObserverStatValue(b[3]),2)+
+      ", tier3_count="+DoubleToString(ObserverStatValue(c[0]),0)+
+      ", tier3_wins="+DoubleToString(ObserverStatValue(c[1]),0)+
+      ", tier3_losses="+DoubleToString(ObserverStatValue(c[2]),0)+
+      ", tier3_net="+DoubleToString(ObserverStatValue(c[3]),2)+
+      ", daily_count="+DoubleToString(ObserverStatValue(dayKeys[0]),0)+
+      ", daily_wins="+DoubleToString(ObserverStatValue(dayKeys[1]),0)+
+      ", daily_losses="+DoubleToString(ObserverStatValue(dayKeys[2]),0)+
+      ", daily_net="+DoubleToString(ObserverStatValue(dayKeys[3]),2);
    ObserverWrite(ObserverFiboStatsFile,"bucket_cumulative",row,scenario,TimeCurrent(),0,money);
    ObserverWrite(ObserverDailySummaryFile,"daily_bucket_summary",row,scenario,TimeCurrent(),0,money);
 }
