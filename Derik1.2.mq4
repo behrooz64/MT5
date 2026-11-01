@@ -152,9 +152,11 @@ string ObserverLevelName(double price)
 }
 double ObserverMoneyPerPointPerLot()
 {
-   double pt=MarketInfo(symbol,MODE_POINT),ts=MarketInfo(symbol,MODE_TICKSIZE),tv=MarketInfo(symbol,MODE_TICKVALUE);
-   if(pt<=0||ts<=0||tv<=0)return 0;
-   return tv*pt/ts;
+   // In MQL4 MODE_TICKSIZE is expressed in points, not raw price units.
+   double ts=MarketInfo(symbol,MODE_TICKSIZE);
+   double tv=MarketInfo(symbol,MODE_TICKVALUE);
+   if(ts<=0||tv<=0)return 0;
+   return tv/ts;
 }
 void ObserverAddScenario(int sid,int scenario,int dir,double entry,double arrow,double tp1,double target,double sl)
 {
