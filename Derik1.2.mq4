@@ -627,6 +627,18 @@ int OnInit()
 {
    symbol=Symbol();observerChartTF=ObserverTFName();
    observerStartedAt=TimeCurrent();observerFiboId=ObserverFiboId();
+   // Keep M1 and M5 data in physically separate folders.
+   ObserverFolder="Derik1.2\\"+observerChartTF;
+   ObserverEventsFile=ObserverFolder+"\\Observer_Events.csv";
+   ObserverSummaryFile=ObserverFolder+"\\Observer_Summary.csv";
+   ObserverLevelsFile=ObserverFolder+"\\Observer_Levels.csv";
+   ObserverScenariosFile=ObserverFolder+"\\Observer_Scenarios.csv";
+   ObserverTicksFile=ObserverFolder+"\\Observer_Ticks.csv";
+   ObserverErrorsFile=ObserverFolder+"\\Observer_Errors.csv";
+   ObserverSignalsFile=ObserverFolder+"\\Observer_Signals.csv";
+   ObserverVirtualTradesFile=ObserverFolder+"\\Observer_VirtualTrades.csv";
+   ObserverExcursionsFile=ObserverFolder+"\\Observer_Excursions.csv";
+   FolderCreate("Derik1.2");
    FolderCreate(ObserverFolder);
    ObserverWrite(ObserverEventsFile,"observer_started",
       "version=Derik1.2, mode=OBSERVER_ONLY, symbol="+symbol+
