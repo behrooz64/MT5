@@ -64,6 +64,8 @@ struct VirtualPosition
    datetime openedAt;
    double entry;
    double tp1;
+   double tp2;
+   double tp3;
    double target;
    double stop;
    double initialStop;
@@ -75,6 +77,7 @@ struct VirtualPosition
    bool active;
    bool be;
    bool partial;
+   int partialStage;
 };
 VirtualPosition virtualPositions[];
 int virtualCount=0;
@@ -172,6 +175,8 @@ void ObserverAddScenario(int sid,int scenario,int dir,double entry,double arrow,
    virtualPositions[n].openedAt=TimeCurrent();
    virtualPositions[n].entry=entry;
    virtualPositions[n].tp1=tp1;
+   virtualPositions[n].tp2=0.0;
+   virtualPositions[n].tp3=0.0;
    virtualPositions[n].target=target;
    virtualPositions[n].stop=sl;
    virtualPositions[n].initialStop=sl;
@@ -183,15 +188,37 @@ void ObserverAddScenario(int sid,int scenario,int dir,double entry,double arrow,
    virtualPositions[n].active=true;
    virtualPositions[n].be=false;
    virtualPositions[n].partial=false;
+   virtualPositions[n].partialStage=0;
    string name="TP1";
    if(scenario==2)name="TP2";
    if(scenario==3)name="TP3";
    if(scenario==4)name="BREAKEVEN_TP1_THEN_TP2";
    if(scenario==5)name="PARTIAL_TP1_THEN_TP2";
    if(scenario==6)name="EXIT_ON_OPPOSITE_SIGNAL";
+   if(scenario==7)name="BE_AFTER_10_POINTS";
+   if(scenario==8)name="BE_AFTER_20_POINTS";
+   if(scenario==9)name="BE_AFTER_1R";
+   if(scenario==10)name="BE_AT_TP2_THEN_TP3";
+   if(scenario==11)name="PARTIAL_30_30_40";
+   if(scenario==12)name="PARTIAL_25_25_25_25";
+   if(scenario==20)name="TP2_FIXED_SL_10_POINTS";
+   if(scenario==21)name="TP2_FIXED_SL_20_POINTS";
+   if(scenario==22)name="TP2_FIXED_SL_30_POINTS";
+   if(scenario==23)name="TP2_ATR_SL_1X";
+   if(scenario==24)name="TP2_ATR_SL_1_5X";
+   if(scenario==25)name="TP2_SWING_SL_10_BARS";
+   if(scenario==20)name="TP2_FIXED_SL_10_POINTS";
+   if(scenario==21)name="TP2_FIXED_SL_20_POINTS";
+   if(scenario==22)name="TP2_FIXED_SL_30_POINTS";
+   if(scenario==23)name="TP2_ATR_SL_1X";
+   if(scenario==24)name="TP2_ATR_SL_1_5X";
+   if(scenario==25)name="TP2_SWING_SL_10_BARS";
    string d="signal_id=SIG-"+IntegerToString(sid)+", scenario="+name+
       ", scenario_id="+IntegerToString(scenario)+", timeframe="+observerChartTF+
       ", direction="+(dir==OP_BUY?"BUY":"SELL")+", fibo_id="+observerFiboId+
+      ", entry_time="+TimeToString(TimeCurrent(),TIME_DATE|TIME_SECONDS)+
+      ", entry_hour_server="+IntegerToString(TimeHour(TimeCurrent()))+
+      ", entry_weekday_server="+IntegerToString(TimeDayOfWeek(TimeCurrent()))+
       ", arrow_price="+DoubleToString(arrow,Digits)+", entry_price="+DoubleToString(entry,Digits)+
       ", tp1_price="+DoubleToString(tp1,Digits)+", target_price="+DoubleToString(target,Digits)+
       ", target_fibo="+(target>0?ObserverLevelName(target):"OPPOSITE_SIGNAL")+
@@ -211,6 +238,7 @@ void ObserverMakeScenarios(int sid,int dir,double arrow)
    double tp1=ObserverLevelByRank(entry,dir,true,1);
    double tp2=ObserverLevelByRank(entry,dir,true,2);
    double tp3=ObserverLevelByRank(entry,dir,true,3);
+   double tp4=ObserverLevelByRank(entry,dir,true,4);
    double sl=ObserverLevelByRank(entry,dir,false,1);
    if(tp1<=0)
    {
@@ -220,11 +248,63 @@ void ObserverMakeScenarios(int sid,int dir,double arrow)
          sid,TimeCurrent(),entry,0);
       return;
    }
+
+   // Fibonacci target ladders with the nearest adverse Fibonacci stop.
    ObserverAddScenario(sid,1,dir,entry,arrow,tp1,tp1,sl);
    if(tp2>0)ObserverAddScenario(sid,2,dir,entry,arrow,tp1,tp2,sl);
    if(tp3>0)ObserverAddScenario(sid,3,dir,entry,arrow,tp1,tp3,sl);
-   if(tp2>0)ObserverAddScenario(sid,4,dir,entry,arrow,tp1,tp2,sl);
+
+   // Break-even variations: first target, fixed 10/20 points, 1R, or TP2.
+   if(tp2>0)
+   {
+      ObserverAddScenario(sid,4,dir,entry,arrow,tp1,tp2,sl);
+      ObserverAddScenario(sid,7,dir,entry,arrow,entry+(dir==OP_BUY?1:-1)*10*ObserverPointSize(),tp2,sl);
+      ObserverAddScenario(sid,8,dir,entry,arrow,entry+(dir==OP_BUY?1:-1)*20*ObserverPointSize(),tp2,sl);
+      if(sl>0)
+      {
+         double risk=MathAbs(entry-sl);
+         ObserverAddScenario(sid,9,dir,entry,arrow,entry+(dir==OP_BUY?1:-1)*risk,tp2,sl);
+      }
+   }
+   if(tp2>0&&tp3>0)ObserverAddScenario(sid,10,dir,entry,arrow,tp2,tp3,sl);
+
+   // Partial-close models: 50%, 30/30/40, and 25/25/25/25.
    if(tp2>0)ObserverAddScenario(sid,5,dir,entry,arrow,tp1,tp2,sl);
+   if(tp2>0&&tp3>0)
+   {
+      ObserverAddScenario(sid,11,dir,entry,arrow,tp1,tp3,sl);
+      virtualPositions[virtualCount-1].tp2=tp2;
+   }
+   if(tp2>0&&tp3>0&&tp4>0)
+   {
+      ObserverAddScenario(sid,12,dir,entry,arrow,tp1,tp4,sl);
+      virtualPositions[virtualCount-1].tp2=tp2;
+      virtualPositions[virtualCount-1].tp3=tp3;
+   }
+
+   // Alternative stop models, each compared against the same TP2 target.
+   if(tp2>0)
+   {
+      double pt=ObserverPointSize();
+      ObserverAddScenario(sid,20,dir,entry,arrow,tp2,tp2,entry-(dir==OP_BUY?1:-1)*10*pt);
+      ObserverAddScenario(sid,21,dir,entry,arrow,tp2,tp2,entry-(dir==OP_BUY?1:-1)*20*pt);
+      ObserverAddScenario(sid,22,dir,entry,arrow,tp2,tp2,entry-(dir==OP_BUY?1:-1)*30*pt);
+      double atr=iATR(symbol,Period(),14,1);
+      if(atr>0)
+      {
+         ObserverAddScenario(sid,23,dir,entry,arrow,tp2,tp2,entry-(dir==OP_BUY?1:-1)*atr);
+         ObserverAddScenario(sid,24,dir,entry,arrow,tp2,tp2,entry-(dir==OP_BUY?1:-1)*atr*1.5);
+      }
+      int swing=(dir==OP_BUY?
+         iLowest(symbol,Period(),MODE_LOW,10,1):
+         iHighest(symbol,Period(),MODE_HIGH,10,1));
+      if(swing>=0)
+      {
+         double swingSL=(dir==OP_BUY?iLow(symbol,Period(),swing):iHigh(symbol,Period(),swing));
+         if((dir==OP_BUY&&swingSL<entry)||(dir==OP_SELL&&swingSL>entry))
+            ObserverAddScenario(sid,25,dir,entry,arrow,tp2,tp2,swingSL);
+      }
+   }
    ObserverAddScenario(sid,6,dir,entry,arrow,tp1,0,sl);
 }
 void ObserverCloseVirtual(int i,double price,string reason)
@@ -241,7 +321,10 @@ void ObserverCloseVirtual(int i,double price,string reason)
       ", scenario_id="+IntegerToString(virtualPositions[i].scenario)+
       ", timeframe="+observerChartTF+", direction="+(dir==OP_BUY?"BUY":"SELL")+
       ", entry="+DoubleToString(virtualPositions[i].entry,Digits)+
-      ", exit="+DoubleToString(price,Digits)+", exit_time="+TimeToString(TimeCurrent(),TIME_DATE|TIME_SECONDS)+
+      ", exit="+DoubleToString(price,Digits)+", entry_time="+TimeToString(virtualPositions[i].openedAt,TIME_DATE|TIME_SECONDS)+
+      ", entry_hour_server="+IntegerToString(TimeHour(virtualPositions[i].openedAt))+
+      ", entry_weekday_server="+IntegerToString(TimeDayOfWeek(virtualPositions[i].openedAt))+
+      ", exit_time="+TimeToString(TimeCurrent(),TIME_DATE|TIME_SECONDS)+
       ", duration_seconds="+IntegerToString((int)(TimeCurrent()-virtualPositions[i].openedAt))+
       ", exit_reason="+reason+", result="+result+", average_points="+DoubleToString(avg,1)+
       ", estimated_gross_money="+DoubleToString(money,2)+", currency="+AccountCurrency()+
@@ -310,7 +393,7 @@ void ObserverUpdateVirtual()
       int sc=virtualPositions[i].scenario;
       bool hit1=(virtualPositions[i].tp1>0&&
          (dir==OP_BUY?mark>=virtualPositions[i].tp1:mark<=virtualPositions[i].tp1));
-      if(sc==4&&hit1&&!virtualPositions[i].be)
+      if((sc==4||sc==7||sc==8||sc==9||sc==10)&&hit1&&!virtualPositions[i].be)
       {
          virtualPositions[i].stop=virtualPositions[i].entry;
          virtualPositions[i].be=true;
@@ -337,6 +420,36 @@ void ObserverUpdateVirtual()
             ", closed_lots="+DoubleToString(lots,2)+
             ", remaining_lots="+DoubleToString(virtualPositions[i].remainingLots,2),
             virtualPositions[i].signalId*10+5,TimeCurrent(),virtualPositions[i].tp1,0);
+      }
+      if((sc==11||sc==12)&&virtualPositions[i].partialStage<(sc==11?2:3))
+      {
+         int stage=virtualPositions[i].partialStage;
+         double trigger=(stage==0?virtualPositions[i].tp1:
+                         (stage==1?virtualPositions[i].tp2:virtualPositions[i].tp3));
+         bool stageHit=(trigger>0&&(dir==OP_BUY?mark>=trigger:mark<=trigger));
+         if(stageHit)
+         {
+            double pct=(sc==11?30.0:25.0);
+            double lots=MathMin(virtualPositions[i].lots*pct/100.0,virtualPositions[i].remainingLots);
+            double partPts=(dir==OP_BUY?trigger-virtualPositions[i].entry:
+                                         virtualPositions[i].entry-trigger)/pt;
+            virtualPositions[i].realizedPointsLots+=partPts*lots;
+            virtualPositions[i].remainingLots-=lots;
+            virtualPositions[i].partial=true;
+            virtualPositions[i].partialStage++;
+            virtualPositions[i].be=true;
+            virtualPositions[i].stop=virtualPositions[i].entry;
+            ObserverWrite(ObserverVirtualTradesFile,"staged_partial_close",
+               "signal_id=SIG-"+IntegerToString(virtualPositions[i].signalId)+
+               ", scenario_id="+IntegerToString(sc)+
+               ", stage="+IntegerToString(stage+1)+
+               ", timeframe="+observerChartTF+
+               ", percent="+DoubleToString(pct,1)+
+               ", partial_level="+ObserverLevelName(trigger)+
+               ", closed_lots="+DoubleToString(lots,2)+
+               ", remaining_lots="+DoubleToString(virtualPositions[i].remainingLots,2),
+               virtualPositions[i].signalId*10+sc,TimeCurrent(),trigger,0);
+         }
       }
       bool stopHit=(virtualPositions[i].stop>0&&
          (dir==OP_BUY?mark<=virtualPositions[i].stop:mark>=virtualPositions[i].stop));
