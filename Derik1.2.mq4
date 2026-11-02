@@ -128,7 +128,9 @@ void ObserverResetTouches()
 }
 double ObserverLevelByRank(double entry,int direction,bool favorable,int rank)
 {
-   double candidates[10];int count=0;
+   double candidates[10];
+   ArrayInitialize(candidates,0.0);
+   int count=0;
    double tol=MarketInfo(symbol,MODE_POINT)*ObserverFiboTolerancePoints;
    for(int i=0;i<10;i++)
    {
@@ -171,6 +173,7 @@ string ObserverNearestFiboBucket(double price)
 string ObserverFiboBucketRange(double price)
 {
    double p[10];
+   ArrayInitialize(p,0.0);
    for(int i=0;i<10;i++)p[i]=ObserverFiboPrice(observerRatios[i]);
    for(int i=0;i<9;i++)
    {
@@ -877,9 +880,9 @@ int OnInit()
    ObserverWrite(ObserverSignalsFile,"file_initialized","timeframe="+observerChartTF,-1,TimeCurrent(),Bid,0);
    ObserverWrite(ObserverVirtualTradesFile,"file_initialized","timeframe="+observerChartTF,-1,TimeCurrent(),Bid,0);
    ObserverWrite(ObserverExcursionsFile,"file_initialized","timeframe="+observerChartTF,-1,TimeCurrent(),Bid,0);
-   ObserverWrite(ObserverFiboStatsFile,"file_initialized","timeframe="+observerChartTF",-1,TimeCurrent(),Bid,0);
-   ObserverWrite(ObserverDailySummaryFile,"file_initialized","timeframe="+observerChartTF",-1,TimeCurrent(),Bid,0);
-   ObserverWrite(ObserverLevelReachedFile,"file_initialized","timeframe="+observerChartTF",-1,TimeCurrent(),Bid,0);
+   ObserverWrite(ObserverFiboStatsFile,"file_initialized","timeframe="+observerChartTF,-1,TimeCurrent(),Bid,0);
+   ObserverWrite(ObserverDailySummaryFile,"file_initialized","timeframe="+observerChartTF,-1,TimeCurrent(),Bid,0);
+   ObserverWrite(ObserverLevelReachedFile,"file_initialized","timeframe="+observerChartTF,-1,TimeCurrent(),Bid,0);
    ObserverWrite(ObserverScenariosFile,"file_initialized","timeframe="+observerChartTF,-1,TimeCurrent(),Bid,0);
    ObserverWrite(ObserverLevelsFile,"observer_started",
       "timeframe="+observerChartTF+
