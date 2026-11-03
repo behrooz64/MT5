@@ -13,6 +13,12 @@ input string AllowedBroker = "GTCGlobalTrade-Demo"; // Allowed broker server
 
 #include <Trade\Trade.mqh>
 CTrade m_trade;
+bool Kia64V4EmergencyLock = false;
+double Kia64V4ReferenceBalance = 0.0;
+datetime Kia64V4StartTime = 0;
+string Kia64V4LockKey = "";
+string Kia64V4BalanceKey = "";
+string Kia64V4StartKey = "";
 
 
 input string st ="==Security password=="; // Give Me Code
@@ -25,7 +31,11 @@ int MaxSpread = 500;//Max Spread (for open a trade)             //in
 string Separo0="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 string Money = "IF MONEY MANAGEMENT IS FALSE, Kia64 WORK WITH 'Lots'";//MONEY MANAGEMENT SETTINGS  // in
-input double Lots = 0.01;//Lots 
+input double Lots = 0.01;//Lots
+input string Kia64V4Settings = "===== KIA64 V4 SETTINGS =====";
+input bool EnableKia64V4EmergencyStop = true;
+input double Kia64V4MaximumLossPercent = 10.0;
+input bool ResetKia64V4EmergencyStop = false;
 double LottoDaTradare;
 bool MoneyManagement = false;//Money Management  // in
 double RiskPercent = 1;//Risk Percent    //in
@@ -379,9 +389,25 @@ int OnInit()
      Print(" password is corect ");
 //=================================================================================  
 m_trade.SetExpertMagicNumber(MagicNumber);
+Kia64V4LockKey = "K64V4_LOCK_" + IntegerToString((int)AccountInfoInteger(ACCOUNT_LOGIN)) + "_" + IntegerToString(MagicNumber);
+Kia64V4BalanceKey = "K64V4_BAL_" + IntegerToString((int)AccountInfoInteger(ACCOUNT_LOGIN)) + "_" + IntegerToString(MagicNumber);
+Kia64V4StartKey = "K64V4_START_" + IntegerToString((int)AccountInfoInteger(ACCOUNT_LOGIN)) + "_" + IntegerToString(MagicNumber);
+if(ResetKia64V4EmergencyStop)
+{
+   GlobalVariableDel(Kia64V4LockKey);
+   GlobalVariableDel(Kia64V4BalanceKey);
+   GlobalVariableDel(Kia64V4StartKey);
+}
+if(!GlobalVariableCheck(Kia64V4BalanceKey)) GlobalVariableSet(Kia64V4BalanceKey,AccountInfoDouble(ACCOUNT_BALANCE));
+if(!GlobalVariableCheck(Kia64V4StartKey)) GlobalVariableSet(Kia64V4StartKey,(double)TimeCurrent());
+Kia64V4ReferenceBalance = GlobalVariableGet(Kia64V4BalanceKey);
+Kia64V4StartTime = (datetime)GlobalVariableGet(Kia64V4StartKey);
+Kia64V4EmergencyLock = GlobalVariableCheck(Kia64V4LockKey) && GlobalVariableGet(Kia64V4LockKey)>0.5;
 
 Bid_ = Bid();
 Ask_ = Ask();
+
+if(Kia64V4EmergencyStop()) return;
 
 
 
@@ -2587,6 +2613,76 @@ return lottaggio;
 
 
 
+
+// KIA64 V4: persistent account-loss protection for this EA magic number.
+double Kia64V4NetResultSinceStart()
+{
+   double result = 0.0;
+   if(Kia64V4StartTime > 0 && HistorySelect(Kia64V4StartTime,TimeCurrent()))
+   {
+      for(int i=0;i<HistoryDealsTotal();i++)
+      {
+         ulong deal=HistoryDealGetTicket(i);
+         if(deal==0 || (int)HistoryDealGetInteger(deal,DEAL_MAGIC)!=MagicNumber) continue;
+         result += HistoryDealGetDouble(deal,DEAL_PROFIT)+HistoryDealGetDouble(deal,DEAL_SWAP)+
+                   HistoryDealGetDouble(deal,DEAL_COMMISSION)+HistoryDealGetDouble(deal,DEAL_FEE);
+      }
+   }
+   for(int p=PositionsTotal()-1;p>=0;p--)
+   {
+      ulong ticket=PositionGetTicket(p);
+      if(ticket==0 || (int)PositionGetInteger(POSITION_MAGIC)!=MagicNumber) continue;
+      result += PositionGetDouble(POSITION_PROFIT)+PositionGetDouble(POSITION_SWAP)+
+                PositionGetDouble(POSITION_COMMISSION);
+   }
+   return result;
+}
+
+void Kia64V4CloseAllEAExposure()
+{
+   for(int p=PositionsTotal()-1;p>=0;p--)
+   {
+      ulong ticket=PositionGetTicket(p);
+      if(ticket==0 || (int)PositionGetInteger(POSITION_MAGIC)!=MagicNumber) continue;
+      string sym=PositionGetString(POSITION_SYMBOL);
+      m_trade.SetTypeFillingBySymbol(sym);
+      if(!m_trade.PositionClose(ticket))
+         Kia64TradeDiagnostic("V4 emergency position close failed; ticket="+IntegerToString((int)ticket)+
+                              "; retcode="+IntegerToString((int)m_trade.ResultRetcode())+"; "+m_trade.ResultComment());
+   }
+   for(int o=OrdersTotal()-1;o>=0;o--)
+   {
+      ulong ticket=OrderGetTicket(o);
+      if(ticket==0 || (int)OrderGetInteger(ORDER_MAGIC)!=MagicNumber) continue;
+      if(!m_trade.OrderDelete(ticket))
+         Kia64TradeDiagnostic("V4 emergency pending-order delete failed; ticket="+IntegerToString((int)ticket)+
+                              "; retcode="+IntegerToString((int)m_trade.ResultRetcode())+"; "+m_trade.ResultComment());
+   }
+}
+
+bool Kia64V4EmergencyStop()
+{
+   if(!EnableKia64V4EmergencyStop) return false;
+   if(Kia64V4EmergencyLock || (Kia64V4LockKey!="" && GlobalVariableCheck(Kia64V4LockKey) && GlobalVariableGet(Kia64V4LockKey)>0.5))
+   {
+      Kia64V4EmergencyLock=true;
+      Kia64V4CloseAllEAExposure();
+      return true;
+   }
+   if(Kia64V4ReferenceBalance<=0.0) return false;
+   double netResult=Kia64V4NetResultSinceStart();
+   double lossPercent=(netResult<0.0)?(-netResult/Kia64V4ReferenceBalance)*100.0:0.0;
+   if(lossPercent>=Kia64V4MaximumLossPercent)
+   {
+      Kia64V4EmergencyLock=true;
+      GlobalVariableSet(Kia64V4LockKey,1.0);
+      Kia64TradeDiagnostic("KIA64 V4 EMERGENCY LOCK: EA net loss="+DoubleToString(lossPercent,2)+
+                           "%; limit="+DoubleToString(Kia64V4MaximumLossPercent,2)+"%. Closing all EA positions and deleting pending orders.");
+      Kia64V4CloseAllEAExposure();
+      return true;
+   }
+   return false;
+}
 
 double CalcolaProfitto(int Magic)
 {
