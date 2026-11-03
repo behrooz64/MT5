@@ -2039,12 +2039,7 @@ return ticket;
 #define KIA64_TREND_FILE "Kia64_Trend_Signals.csv"
 #define KIA64_STATE_FILE "Kia64_State_Recovery.csv"
 #define KIA64_OUTCOME_FILE "Kia64_Trade_Outcome.csv"
-#define KIA64_EXECUTION_FILE "Kia64_Execution_Log.csv"
-#define KIA64_RISK_FILE "Kia64_Risk_Protection.csv"
-#define KIA64_GRID_FILE "Kia64_Grid_Analysis.csv"
-#define KIA64_TREND_FILE "Kia64_Trend_Signals.csv"
-#define KIA64_STATE_FILE "Kia64_State_Recovery.csv"
-#define KIA64_OUTCOME_FILE "Kia64_Trade_Outcome.csv"
+
 
 void Kia64AppendCsvRow(string file_name, string row_type, string details)
 {
@@ -2078,17 +2073,6 @@ void Kia64AppendObserverEvent(string file_name,string event_type,string details)
              DoubleToString(AccountInfoDouble(ACCOUNT_EQUITY),2),details);
    FileFlush(handle);
    FileClose(handle);
-}
-
-void Kia64AppendObserverEvent(string file_name,string event_type,string details)
-{
- if(KIA64_TRADE_DIAGNOSTICS!=1) return;
- int h=FileOpen(file_name,FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ|FILE_SHARE_WRITE,';');
- if(h==INVALID_HANDLE) return;
- if(FileSize(h)==0) FileWrite(h,"timestamp","event_type","symbol","timeframe","magic","cycle_mode","spread_points","balance","equity","details");
- FileSeek(h,0,SEEK_END);double sp=(_Point>0.0)?(Ask_-Bid_)/_Point:0.0;
- FileWrite(h,TimeToString(TimeCurrent(),TIME_DATE|TIME_SECONDS),event_type,_Symbol,EnumToString((ENUM_TIMEFRAMES)_Period),IntegerToString(MagicNumber),IntegerToString(Kia64V4CycleMode),DoubleToString(sp,1),DoubleToString(AccountInfoDouble(ACCOUNT_BALANCE),2),DoubleToString(AccountInfoDouble(ACCOUNT_EQUITY),2),details);
- FileFlush(h);FileClose(h);
 }
 
 void Kia64AppendPerformanceRow(string row_type, ulong deal_ticket, datetime deal_time,
