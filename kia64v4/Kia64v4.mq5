@@ -59,6 +59,7 @@ input int Kia64V4TrendTakeProfitPoints = 50;
 input int Kia64V4MaximumTrendEntries = 10;
 input double Kia64V4MaximumTrendLot = 1.00;
 input double Kia64V4ReversalCloseAtOrAboveMoney = 0.0;
+input bool Kia64V4RequireHedgingAccount = true;
 
 int Kia64V4ATRHandle = INVALID_HANDLE;
 int Kia64V4FastEMAHandle = INVALID_HANDLE;
@@ -76,6 +77,10 @@ string Kia64V4TPPendingKey = "";
 int Kia64V4ConfirmedTrend = 0;
 double Kia64V4ADXValue = 0.0;
 bool Kia64V4TrendDataReady = false;
+bool Kia64V4BlockEntryThisTick = false;
+datetime Kia64V4LastSupertrendBar = 0;
+datetime Kia64V4LastEMABar = 0;
+datetime Kia64V4LastADXBar = 0;
 double LottoDaTradare;
 bool MoneyManagement = false;//Money Management  // in
 double RiskPercent = 1;//Risk Percent    //in
@@ -457,8 +462,6 @@ Kia64V4EmergencyLock = GlobalVariableCheck(Kia64V4LockKey) && GlobalVariableGet(
 Bid_ = Bid();
 Ask_ = Ask();
 
-if(Kia64V4EmergencyStop()) return;
-
 
 
 
@@ -499,10 +502,42 @@ TakeTargetSell = TakeTarget;
 // Validate cycle inputs before indicator initialization.
 if(Kia64V4InitialLot <= 0.0 || Kia64V4LinearLotIncrement < 0.0 ||
    Kia64V4TrendTakeProfitPoints < 1 || Kia64V4MaximumTrendEntries < 1 ||
-   Kia64V4MaximumTrendLot <= 0.0)
+   Kia64V4MaximumTrendLot <= 0.0 || Kia64V4ReversalCloseAtOrAboveMoney < -1000000000.0)
 {
    Print("Kia64 v4: invalid trend-cycle input settings.");
    return INIT_PARAMETERS_INCORRECT;
+}
+
+// Independent positions and the legacy multi-level recovery grid require a hedging account.
+if(EnableKia64V4TrendEngine && Kia64V4RequireHedgingAccount &&
+   AccountInfoInteger(ACCOUNT_MARGIN_MODE) != ACCOUNT_MARGIN_MODE_RETAIL_HEDGING)
+{
+   Print("Kia64 v4 trend/recovery engine requires a hedging account. Initialization stopped to avoid incorrect netting-grid behavior.");
+   return INIT_FAILED;
+}
+
+// Restore safely if the EA is attached while positions already exist.
+if(EnableKia64V4TrendEngine && Kia64V4CycleMode == 0)
+{
+   int existingBuy = Kia64V4SidePositionCount(1);
+   int existingSell = Kia64V4SidePositionCount(-1);
+   if(existingBuy > 0 && existingSell == 0)
+   {
+      Kia64V4CycleMode = 2;
+      GlobalVariableSet(Kia64V4ModeKey,2.0);
+      Kia64V4RemoveSideTakeProfits(1);
+   }
+   else if(existingSell > 0 && existingBuy == 0)
+   {
+      Kia64V4CycleMode = -2;
+      GlobalVariableSet(Kia64V4ModeKey,-2.0);
+      Kia64V4RemoveSideTakeProfits(-1);
+   }
+   else if(existingBuy > 0 && existingSell > 0)
+   {
+      Print("Kia64 v4: both BUY and SELL positions already exist for this symbol/magic. Initialization stopped; resolve the existing basket first.");
+      return INIT_FAILED;
+   }
 }
 
 // Initialize indicator handles once and reuse them on ticks.
@@ -818,8 +853,20 @@ bool Kia64V4OpenTrendTrade(int direction)
 // Update reversal/recovery state before any legacy grid or entry logic runs.
 void Kia64V4RefreshCycleState()
 {
-   Kia64V4TrendDataReady = Kia64V4GetConfirmedTrend(Kia64V4ConfirmedTrend,Kia64V4ADXValue);
+   Kia64V4BlockEntryThisTick = false;
    if(!EnableKia64V4TrendEngine) return;
+
+   datetime stBar = iTime(_Symbol,Kia64V4SupertrendTimeframe,0);
+   datetime emaBar = iTime(_Symbol,Kia64V4EMATimeframe,0);
+   datetime adxBar = iTime(_Symbol,Kia64V4ADXTimeframe,0);
+   if(stBar != Kia64V4LastSupertrendBar || emaBar != Kia64V4LastEMABar ||
+      adxBar != Kia64V4LastADXBar || !Kia64V4TrendDataReady)
+   {
+      Kia64V4LastSupertrendBar = stBar;
+      Kia64V4LastEMABar = emaBar;
+      Kia64V4LastADXBar = adxBar;
+      Kia64V4TrendDataReady = Kia64V4GetConfirmedTrend(Kia64V4ConfirmedTrend,Kia64V4ADXValue);
+   }
 
    if(Kia64V4CycleMode == 1 || Kia64V4CycleMode == -1)
    {
@@ -833,6 +880,7 @@ void Kia64V4RefreshCycleState()
             Kia64V4SetCycleMode(0);
             Kia64V4SetEntryCount(0);
             Kia64V4SetTPPending(false);
+            Kia64V4BlockEntryThisTick = true;
             Kia64TradeDiagnostic("V4 trend reversal: non-losing cycle closed; waiting for a fresh Bollinger entry.");
          }
          else
@@ -852,6 +900,7 @@ void Kia64V4RefreshCycleState()
          Kia64V4SetCycleMode(0);
          Kia64V4SetEntryCount(0);
          Kia64V4SetTPPending(false);
+         Kia64V4BlockEntryThisTick = true;
          Kia64TradeDiagnostic("V4 recovery basket completed; cycle reset.");
       }
    }
@@ -876,7 +925,11 @@ return ;
 Bid_ = Bid();
 Ask_ = Ask();
 
+// The emergency lock is checked on every tick before any normal EA logic.
+if(Kia64V4EmergencyStop()) return;
+
 Kia64V4RefreshCycleState();
+if(Kia64V4BlockEntryThisTick) return;
 
 if (MoneyManagement)
 LottoDaTradare = MoneySize();
@@ -1049,9 +1102,9 @@ double profit = CalcolaProfitto(MagicNumber);
 
 
 // Legacy adverse grid is enabled only after a trend reversal has entered recovery mode.
-if (Kia64V4CycleMode == 2 && ordinibuy < MaxBuyOrders && OrdineInPerdita(OP_BUY,ordinibuy))
+if ((!EnableKia64V4TrendEngine || Kia64V4CycleMode == 2) && ordinibuy < MaxBuyOrders && OrdineInPerdita(OP_BUY,ordinibuy))
    OrdinoUn(OP_BUY);
-if (Kia64V4CycleMode == -2 && ordinisell < MaxSellOrders && OrdineInPerdita(OP_SELL,ordinisell))
+if ((!EnableKia64V4TrendEngine || Kia64V4CycleMode == -2) && ordinisell < MaxSellOrders && OrdineInPerdita(OP_SELL,ordinisell))
    OrdinoUn(OP_SELL);
 
 
