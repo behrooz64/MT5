@@ -40,26 +40,25 @@ input bool ResetKia64V4EmergencyStop = false;
 // Trend confirmation defaults. All settings remain editable in EA Inputs.
 input string Kia64V4TrendSettings = "===== TREND CONFIRMATION =====";
 input bool EnableKia64V4TrendEngine = true;
-input ENUM_TIMEFRAMES Kia64V4SupertrendTimeframe = PERIOD_M1;
-input int Kia64V4SupertrendATRPeriod = 7;
-input double Kia64V4SupertrendMultiplier = 2.0;
-input ENUM_TIMEFRAMES Kia64V4EMATimeframe = PERIOD_M5;
-input int Kia64V4FastEMAPeriod = 50;
-input int Kia64V4SlowEMAPeriod = 100;
-input ENUM_TIMEFRAMES Kia64V4ADXTimeframe = PERIOD_M1;
-input int Kia64V4ADXPeriod = 14;
-input double Kia64V4ADXMinimum = 20.0;
-input int Kia64V4TrendCalculationBars = 120;
+input ENUM_TIMEFRAMES Kia64V4SupertrendTimeframe = PERIOD_M1; // Supertrend calculation timeframe
+input int Kia64V4SupertrendATRPeriod = 7; // ATR lookback used by Supertrend
+input double Kia64V4SupertrendMultiplier = 2.0; // ATR band distance multiplier
+input ENUM_TIMEFRAMES Kia64V4EMATimeframe = PERIOD_M5; // Higher-timeframe EMA confirmation
+input int Kia64V4FastEMAPeriod = 50; // Fast EMA
+input int Kia64V4SlowEMAPeriod = 100; // Slow EMA
+input ENUM_TIMEFRAMES Kia64V4ADXTimeframe = PERIOD_M1; // ADX strength timeframe
+input int Kia64V4ADXPeriod = 14; // ADX smoothing period
+input double Kia64V4ADXMinimum = 20.0; // Minimum ADX strength required
+input int Kia64V4TrendCalculationBars = 120; // Historical bars for stable Supertrend calculation
 
 // Sequential trend entries and reversal recovery limits.
 input string Kia64V4CycleSettings = "===== TREND CYCLE / RECOVERY =====";
-input double Kia64V4InitialLot = 0.10;
-input double Kia64V4LinearLotIncrement = 0.10;
-input int Kia64V4TrendTakeProfitPoints = 50;
-input int Kia64V4MaximumTrendEntries = 10;
-input double Kia64V4MaximumTrendLot = 1.00;
-input double Kia64V4ReversalCloseAtOrAboveMoney = 0.0;
-input bool Kia64V4RequireHedgingAccount = true;
+input double Kia64V4InitialLot = 0.10; // Initial trend-cycle lot
+input double Kia64V4LinearLotIncrement = 0.10; // Added to lot after each TP
+input int Kia64V4TrendTakeProfitPoints = 50; // Individual trend-trade TP in points
+input int Kia64V4MaximumTrendEntries = 10; // Includes the initial entry
+input double Kia64V4MaximumTrendLot = 1.00; // Hard cap for trend-cycle lot size
+input double Kia64V4ReversalCloseAtOrAboveMoney = 0.0; // Close at reversal if net result is at/above this account-currency amount
 
 int Kia64V4ATRHandle = INVALID_HANDLE;
 int Kia64V4FastEMAHandle = INVALID_HANDLE;
@@ -514,7 +513,7 @@ if(Kia64V4InitialLot <= 0.0 || Kia64V4LinearLotIncrement < 0.0 ||
 }
 
 // Independent positions and the legacy multi-level recovery grid require a hedging account.
-if(EnableKia64V4TrendEngine && Kia64V4RequireHedgingAccount &&
+if(EnableKia64V4TrendEngine &&
    AccountInfoInteger(ACCOUNT_MARGIN_MODE) != ACCOUNT_MARGIN_MODE_RETAIL_HEDGING)
 {
    Print("Kia64 v4 trend/recovery engine requires a hedging account. Initialization stopped to avoid incorrect netting-grid behavior.");
