@@ -3335,7 +3335,13 @@ double MonetaAccount()
 {
  string c=AccountCurrency();if(c=="USD"||c=="")return 1.0;double live=Kia64V4CurrencyRate("USD",c);if(live>0.0)return live;double fallback=1.0;
  if(c=="RUB")fallback=68.0;else if(c=="JPY")fallback=113.0;else if(c=="AUD")fallback=1.38;else if(c=="HUF")fallback=286.0;else if(c=="PLN")fallback=3.8;else if(c=="CNH"||c=="CNY")fallback=7.0;else if(c=="EUR")fallback=0.87;else if(c=="GBP")fallback=0.77;
- Kia64AppendCsvRow(KIA64_EXECUTION_FILE,"CURRENCY_RATE_FALLBACK","currency="+c+"; rate="+DoubleToString(fallback,6));return fallback;
+ static datetime lastCurrencyFallbackLog=0;
+ if(TimeCurrent()-lastCurrencyFallbackLog>=300)
+ {
+    Kia64AppendCsvRow(KIA64_EXECUTION_FILE,"CURRENCY_RATE_FALLBACK","currency="+c+"; rate="+DoubleToString(fallback,6));
+    lastCurrencyFallbackLog=TimeCurrent();
+ }
+ return fallback;
 }
 
 
