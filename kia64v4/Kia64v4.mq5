@@ -73,6 +73,9 @@ bool Kia64V4TPReentryPending = false;
 string Kia64V4ModeKey = "";
 string Kia64V4EntryCountKey = "";
 string Kia64V4TPPendingKey = "";
+int Kia64V4ConfirmedTrend = 0;
+double Kia64V4ADXValue = 0.0;
+bool Kia64V4TrendDataReady = false;
 double LottoDaTradare;
 bool MoneyManagement = false;//Money Management  // in
 double RiskPercent = 1;//Risk Percent    //in
@@ -429,6 +432,16 @@ m_trade.SetExpertMagicNumber(MagicNumber);
 Kia64V4LockKey = "K64V4_LOCK_" + IntegerToString((int)AccountInfoInteger(ACCOUNT_LOGIN)) + "_" + IntegerToString(MagicNumber);
 Kia64V4BalanceKey = "K64V4_BAL_" + IntegerToString((int)AccountInfoInteger(ACCOUNT_LOGIN)) + "_" + IntegerToString(MagicNumber);
 Kia64V4StartKey = "K64V4_START_" + IntegerToString((int)AccountInfoInteger(ACCOUNT_LOGIN)) + "_" + IntegerToString(MagicNumber);
+string cyclePrefix = "K64V4_CYCLE_" + IntegerToString((int)AccountInfoInteger(ACCOUNT_LOGIN)) + "_" + IntegerToString(MagicNumber) + "_" + _Symbol;
+Kia64V4ModeKey = cyclePrefix + "_MODE";
+Kia64V4EntryCountKey = cyclePrefix + "_COUNT";
+Kia64V4TPPendingKey = cyclePrefix + "_TP";
+if(!GlobalVariableCheck(Kia64V4ModeKey)) GlobalVariableSet(Kia64V4ModeKey,0.0);
+if(!GlobalVariableCheck(Kia64V4EntryCountKey)) GlobalVariableSet(Kia64V4EntryCountKey,0.0);
+if(!GlobalVariableCheck(Kia64V4TPPendingKey)) GlobalVariableSet(Kia64V4TPPendingKey,0.0);
+Kia64V4CycleMode = (int)GlobalVariableGet(Kia64V4ModeKey);
+Kia64V4TrendEntriesOpened = (int)GlobalVariableGet(Kia64V4EntryCountKey);
+Kia64V4TPReentryPending = (GlobalVariableGet(Kia64V4TPPendingKey)>0.5);
 if(ResetKia64V4EmergencyStop)
 {
    GlobalVariableDel(Kia64V4LockKey);
@@ -482,6 +495,15 @@ coefstop = Hour_trade_Calculator(TradingStopHour,TradingStopMinute);
 //Take Target
 TakeTargetBuy = TakeTarget;
 TakeTargetSell = TakeTarget;
+
+// Validate cycle inputs before indicator initialization.
+if(Kia64V4InitialLot <= 0.0 || Kia64V4LinearLotIncrement < 0.0 ||
+   Kia64V4TrendTakeProfitPoints < 1 || Kia64V4MaximumTrendEntries < 1 ||
+   Kia64V4MaximumTrendLot <= 0.0)
+{
+   Print("Kia64 v4: invalid trend-cycle input settings.");
+   return INIT_PARAMETERS_INCORRECT;
+}
 
 // Initialize indicator handles once and reuse them on ticks.
 if(EnableKia64V4TrendEngine)
@@ -675,6 +697,164 @@ bool Kia64V4GetConfirmedTrend(int &direction,double &adxValue)
    else if(supertrendDirection < 0 && emaBearish) direction = -1;
 
    return true;
+}
+
+int Kia64V4SidePositionCount(int direction)
+{
+   int count = 0;
+   ENUM_POSITION_TYPE wanted = (direction > 0) ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
+   for(int i=PositionsTotal()-1; i>=0; i--)
+   {
+      ulong ticket = PositionGetTicket(i);
+      if(ticket == 0) continue;
+      if(PositionGetString(POSITION_SYMBOL) == _Symbol &&
+         (int)PositionGetInteger(POSITION_MAGIC) == MagicNumber &&
+         (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == wanted)
+         count++;
+   }
+   return count;
+}
+
+double Kia64V4SideNetProfit(int direction)
+{
+   double result = 0.0;
+   ENUM_POSITION_TYPE wanted = (direction > 0) ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
+   for(int i=PositionsTotal()-1; i>=0; i--)
+   {
+      ulong ticket = PositionGetTicket(i);
+      if(ticket == 0) continue;
+      if(PositionGetString(POSITION_SYMBOL) == _Symbol &&
+         (int)PositionGetInteger(POSITION_MAGIC) == MagicNumber &&
+         (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == wanted)
+      {
+         result += PositionGetDouble(POSITION_PROFIT) + PositionGetDouble(POSITION_SWAP);
+      }
+   }
+   return result;
+}
+
+void Kia64V4SetCycleMode(int mode)
+{
+   Kia64V4CycleMode = mode;
+   if(Kia64V4ModeKey != "") GlobalVariableSet(Kia64V4ModeKey,(double)mode);
+}
+
+void Kia64V4SetEntryCount(int count)
+{
+   Kia64V4TrendEntriesOpened = count;
+   if(Kia64V4EntryCountKey != "") GlobalVariableSet(Kia64V4EntryCountKey,(double)count);
+}
+
+void Kia64V4SetTPPending(bool pending)
+{
+   Kia64V4TPReentryPending = pending;
+   if(Kia64V4TPPendingKey != "") GlobalVariableSet(Kia64V4TPPendingKey,pending ? 1.0 : 0.0);
+}
+
+void Kia64V4RemoveSideTakeProfits(int direction)
+{
+   ENUM_POSITION_TYPE wanted = (direction > 0) ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
+   for(int i=PositionsTotal()-1; i>=0; i--)
+   {
+      ulong ticket = PositionGetTicket(i);
+      if(ticket == 0) continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol ||
+         (int)PositionGetInteger(POSITION_MAGIC) != MagicNumber ||
+         (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != wanted)
+         continue;
+
+      double sl = PositionGetDouble(POSITION_SL);
+      double tp = PositionGetDouble(POSITION_TP);
+      if(tp > 0.0)
+      {
+         m_trade.SetTypeFillingBySymbol(_Symbol);
+         if(!m_trade.PositionModify(ticket,sl,0.0))
+            Kia64TradeDiagnostic("V4 recovery: failed to remove individual TP; ticket="+
+                                 IntegerToString((int)ticket)+"; retcode="+
+                                 IntegerToString((int)m_trade.ResultRetcode()));
+      }
+   }
+}
+
+double Kia64V4NormalizeTrendLot(double requested)
+{
+   double minVolume = SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MIN);
+   double maxVolume = SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MAX);
+   double step = SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_STEP);
+   if(step <= 0.0 || minVolume <= 0.0 || maxVolume <= 0.0) return 0.0;
+
+   double cap = MathMin(maxVolume,Kia64V4MaximumTrendLot);
+   double volume = MathMin(requested,cap);
+   volume = MathFloor((volume + 1e-10) / step) * step;
+   if(volume < minVolume) return 0.0;
+   return NormalizeDouble(volume,8);
+}
+
+bool Kia64V4OpenTrendTrade(int direction)
+{
+   if(direction != 1 && direction != -1) return false;
+   if(Kia64V4TrendEntriesOpened >= Kia64V4MaximumTrendEntries) return false;
+
+   double requestedLot = Kia64V4InitialLot +
+                         Kia64V4TrendEntriesOpened * Kia64V4LinearLotIncrement;
+   double lot = Kia64V4NormalizeTrendLot(requestedLot);
+   if(lot <= 0.0 || !CheckVolumeValue(lot)) return false;
+
+   double entryPrice = (direction > 0) ? Ask_ : Bid_;
+   double takeProfit = (direction > 0)
+                       ? entryPrice + Kia64V4TrendTakeProfitPoints * _Point
+                       : entryPrice - Kia64V4TrendTakeProfitPoints * _Point;
+   takeProfit = NormalizeDouble(takeProfit,_Digits);
+
+   int ticket = Ordine((direction > 0) ? OP_BUY : OP_SELL,
+                       lot,entryPrice,0.0,takeProfit,MagicNumber,0);
+   if(ticket <= 0) return false;
+
+   Kia64V4SetEntryCount(Kia64V4TrendEntriesOpened + 1);
+   Kia64V4SetTPPending(false);
+   return true;
+}
+
+// Update reversal/recovery state before any legacy grid or entry logic runs.
+void Kia64V4RefreshCycleState()
+{
+   Kia64V4TrendDataReady = Kia64V4GetConfirmedTrend(Kia64V4ConfirmedTrend,Kia64V4ADXValue);
+   if(!EnableKia64V4TrendEngine) return;
+
+   if(Kia64V4CycleMode == 1 || Kia64V4CycleMode == -1)
+   {
+      int activeDirection = (Kia64V4CycleMode > 0) ? 1 : -1;
+      if(Kia64V4TrendDataReady && Kia64V4ConfirmedTrend == -activeDirection)
+      {
+         double sideProfit = Kia64V4SideNetProfit(activeDirection);
+         if(sideProfit >= Kia64V4ReversalCloseAtOrAboveMoney)
+         {
+            EliminaOrdiniFifo(MagicNumber,(activeDirection > 0) ? OP_BUY : OP_SELL);
+            Kia64V4SetCycleMode(0);
+            Kia64V4SetEntryCount(0);
+            Kia64V4SetTPPending(false);
+            Kia64TradeDiagnostic("V4 trend reversal: non-losing cycle closed; waiting for a fresh Bollinger entry.");
+         }
+         else
+         {
+            Kia64V4RemoveSideTakeProfits(activeDirection);
+            Kia64V4SetCycleMode((activeDirection > 0) ? 2 : -2);
+            Kia64V4SetTPPending(false);
+            Kia64TradeDiagnostic("V4 trend reversal: losing position moved to legacy basket-recovery mode.");
+         }
+      }
+   }
+   else if(Kia64V4CycleMode == 2 || Kia64V4CycleMode == -2)
+   {
+      int recoveryDirection = (Kia64V4CycleMode > 0) ? 1 : -1;
+      if(Kia64V4SidePositionCount(recoveryDirection) == 0)
+      {
+         Kia64V4SetCycleMode(0);
+         Kia64V4SetEntryCount(0);
+         Kia64V4SetTPPending(false);
+         Kia64TradeDiagnostic("V4 recovery basket completed; cycle reset.");
+      }
+   }
 }
 
 //+------------------------------------------------------------------+
