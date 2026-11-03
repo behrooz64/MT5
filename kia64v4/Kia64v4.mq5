@@ -51,10 +51,28 @@ input int Kia64V4ADXPeriod = 14;
 input double Kia64V4ADXMinimum = 20.0;
 input int Kia64V4TrendCalculationBars = 120;
 
+// Sequential trend entries and reversal recovery limits.
+input string Kia64V4CycleSettings = "===== TREND CYCLE / RECOVERY =====";
+input double Kia64V4InitialLot = 0.10;
+input double Kia64V4LinearLotIncrement = 0.10;
+input int Kia64V4TrendTakeProfitPoints = 50;
+input int Kia64V4MaximumTrendEntries = 10;
+input double Kia64V4MaximumTrendLot = 1.00;
+input double Kia64V4ReversalCloseAtOrAboveMoney = 0.0;
+
 int Kia64V4ATRHandle = INVALID_HANDLE;
 int Kia64V4FastEMAHandle = INVALID_HANDLE;
 int Kia64V4SlowEMAHandle = INVALID_HANDLE;
 int Kia64V4ADXHandle = INVALID_HANDLE;
+
+// Persistent cycle state: 0=idle, 1=trend buy, -1=trend sell,
+// 2=recovery buy, -2=recovery sell.
+int Kia64V4CycleMode = 0;
+int Kia64V4TrendEntriesOpened = 0;
+bool Kia64V4TPReentryPending = false;
+string Kia64V4ModeKey = "";
+string Kia64V4EntryCountKey = "";
+string Kia64V4TPPendingKey = "";
 double LottoDaTradare;
 bool MoneyManagement = false;//Money Management  // in
 double RiskPercent = 1;//Risk Percent    //in
