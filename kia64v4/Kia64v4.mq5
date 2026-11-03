@@ -54,8 +54,7 @@ input int Kia64V4TrendCalculationBars = 120; // Historical bars for stable Super
 // Sequential trend entries and reversal recovery limits.
 input string Kia64V4CycleSettings = "===== TREND CYCLE / RECOVERY =====";
 input double Kia64V4InitialLot = 0.10; // Initial trend-cycle lot
-input double Kia64V4LinearLotIncrement = 0.10; // Added to lot after each TP
-input int Kia64V4TrendTakeProfitPoints = 50; // Individual trend-trade TP in points
+// Trend continuation uses the original grid lot-sizing model; fixed trend TP is disabled.
 input int Kia64V4MaximumTrendEntries = 10; // Includes the initial entry
 input double Kia64V4MaximumTrendLot = 1.00; // Hard cap for trend-cycle lot size
 input double Kia64V4ReversalCloseAtOrAboveMoney = 0.0; // Close at reversal if net result is at/above this account-currency amount
@@ -252,7 +251,7 @@ tipigestione GridManagement = LotsSum;//Grid Management  // in
 
 double CoefficientGridManagement = 1;//Coefficient Grid Management  // in
 
-int MinDistanzaPiramide = 50;//Min Distance (for the grid orders)    // in
+input int MinDistanzaPiramide = 250;//Grid distance in points for trend profit grid and legacy recovery grid    // in
 double MinDistanceMultiplier = 1;   //Min Distance Multiplier (multiply Min Distance for each order) // in
 bool OneTradeBarGrid = true;//One Trade Bar Grid (if true, open max one trade for bar)   // in
 
@@ -504,8 +503,7 @@ TakeTargetBuy = TakeTarget;
 TakeTargetSell = TakeTarget;
 
 // Validate cycle inputs before indicator initialization.
-if(Kia64V4InitialLot <= 0.0 || Kia64V4LinearLotIncrement < 0.0 ||
-   Kia64V4TrendTakeProfitPoints < 1 || Kia64V4MaximumTrendEntries < 1 ||
+if(Kia64V4InitialLot <= 0.0 || Kia64V4MaximumTrendEntries < 1 ||
    Kia64V4MaximumTrendLot <= 0.0 || Kia64V4MaximumLossPercent <= 0.0)
 {
    Print("Kia64 v4: invalid trend-cycle input settings.");
@@ -649,9 +647,10 @@ ObjectsDeleteAll(0,-1,OBJ_RECTANGLE_LABEL);
 // KIA64 V4 trend engine.
 // Supertrend is calculated from ATR bands because MT5 has no universal built-in
 // Supertrend handle. Only completed candles (bar 1) are used for confirmation.
-bool Kia64V4CalculateSupertrend(int &direction)
+bool Kia64V4CalculateSupertrend(int &direction,int &previousDirection)
 {
    direction = 0;
+   previousDirection = 0;
    if(Kia64V4ATRHandle == INVALID_HANDLE) return false;
 
    int bars = Kia64V4TrendCalculationBars;
@@ -702,7 +701,9 @@ bool Kia64V4CalculateSupertrend(int &direction)
    }
 
    direction = trend[1];
-   return (direction == 1 || direction == -1);
+   previousDirection = trend[2];
+   return ((direction == 1 || direction == -1) &&
+           (previousDirection == 1 || previousDirection == -1));
 }
 
 bool Kia64V4GetConfirmedTrend(int &direction,double &adxValue)
@@ -714,7 +715,8 @@ bool Kia64V4GetConfirmedTrend(int &direction,double &adxValue)
       Kia64V4ADXHandle == INVALID_HANDLE) return false;
 
    int supertrendDirection = 0;
-   if(!Kia64V4CalculateSupertrend(supertrendDirection)) return false;
+   int previousSupertrendDirection = 0;
+   if(!Kia64V4CalculateSupertrend(supertrendDirection,previousSupertrendDirection)) return false;
 
    double fastEMA[1], slowEMA[1], adx[1];
    if(CopyBuffer(Kia64V4FastEMAHandle,0,1,1,fastEMA) != 1 ||
@@ -841,19 +843,12 @@ bool Kia64V4OpenTrendTrade(int direction)
    if(direction != 1 && direction != -1) return false;
    if(Kia64V4TrendEntriesOpened >= Kia64V4MaximumTrendEntries) return false;
 
-   double requestedLot = Kia64V4InitialLot +
-                         Kia64V4TrendEntriesOpened * Kia64V4LinearLotIncrement;
-   double lot = Kia64V4NormalizeTrendLot(requestedLot);
+   int command = (direction > 0) ? OP_BUY : OP_SELL;
+   double lot = GestioneOrdini(Kia64V4InitialLot,command);
    if(lot <= 0.0 || !CheckVolumeValue(lot)) return false;
 
    double entryPrice = (direction > 0) ? Ask_ : Bid_;
-   double takeProfit = (direction > 0)
-                       ? entryPrice + Kia64V4TrendTakeProfitPoints * _Point
-                       : entryPrice - Kia64V4TrendTakeProfitPoints * _Point;
-   takeProfit = NormalizeDouble(takeProfit,_Digits);
-
-   int ticket = Ordine((direction > 0) ? OP_BUY : OP_SELL,
-                       lot,entryPrice,0.0,takeProfit,MagicNumber,0);
+   int ticket = Ordine(command,lot,entryPrice,0.0,0.0,MagicNumber,0);
    if(ticket <= 0) return false;
 
    Kia64V4SetEntryCount(Kia64V4TrendEntriesOpened + 1);
@@ -862,6 +857,109 @@ bool Kia64V4OpenTrendTrade(int direction)
 }
 
 // Update reversal/recovery state before any legacy grid or entry logic runs.
+
+// Reversal requires two consecutive CLOSED Supertrend bars against the cycle
+// plus confirmation from the M5 EMA pair. ADX does not trigger exits.
+bool Kia64V4IsConfirmedReversal(int activeDirection)
+{
+   if(activeDirection != 1 && activeDirection != -1) return false;
+   int latestST = 0, previousST = 0;
+   if(!Kia64V4CalculateSupertrend(latestST,previousST) ||
+      latestST != -activeDirection || previousST != -activeDirection)
+      return false;
+
+   double fastEMA[1], slowEMA[1];
+   if(Kia64V4FastEMAHandle == INVALID_HANDLE || Kia64V4SlowEMAHandle == INVALID_HANDLE ||
+      CopyBuffer(Kia64V4FastEMAHandle,0,1,1,fastEMA) != 1 ||
+      CopyBuffer(Kia64V4SlowEMAHandle,0,1,1,slowEMA) != 1)
+      return false;
+   double emaClose = iClose(_Symbol,Kia64V4EMATimeframe,1);
+   if(emaClose <= 0.0 || fastEMA[0] <= 0.0 || slowEMA[0] <= 0.0) return false;
+
+   if(activeDirection > 0)
+      return (fastEMA[0] < slowEMA[0] && emaClose < fastEMA[0]);
+   return (fastEMA[0] > slowEMA[0] && emaClose > fastEMA[0]);
+}
+
+bool Kia64V4GetLatestSidePosition(int direction,double &openPrice,double &netProfit,datetime &openTime)
+{
+   openPrice = 0.0;
+   netProfit = 0.0;
+   openTime = 0;
+   bool found = false;
+   ENUM_POSITION_TYPE wanted = (direction > 0) ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
+   for(int i=PositionsTotal()-1; i>=0; i--)
+   {
+      ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || PositionGetString(POSITION_SYMBOL) != _Symbol ||
+         (int)PositionGetInteger(POSITION_MAGIC) != MagicNumber ||
+         (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != wanted)
+         continue;
+      datetime candidateTime = (datetime)PositionGetInteger(POSITION_TIME);
+      if(!found || candidateTime >= openTime)
+      {
+         found = true;
+         openTime = candidateTime;
+         openPrice = PositionGetDouble(POSITION_PRICE_OPEN);
+         netProfit = PositionGetDouble(POSITION_PROFIT) +
+                     PositionGetDouble(POSITION_SWAP) +
+                     PositionGetDouble(POSITION_COMMISSION);
+      }
+   }
+   return found;
+}
+
+// Same distance progression and per-bar protection as the original loss grid.
+// Profit-grid anchor is the latest order, which must have positive net P/L.
+bool Kia64V4ProfitGridTriggered(int direction,int sideCount)
+{
+   if(sideCount <= 0 || (direction != 1 && direction != -1) || !EnableGrid) return false;
+   int command = (direction > 0) ? OP_BUY : OP_SELL;
+   if(ordiniapertichiusisubarragrid(MagicNumber,command) ||
+      OrdiniApertiSuBarraGrid(MagicNumber,command))
+      return false;
+
+   double latestOpen = 0.0, latestProfit = 0.0;
+   datetime latestTime = 0;
+   if(!Kia64V4GetLatestSidePosition(direction,latestOpen,latestProfit,latestTime) ||
+      latestOpen <= 0.0 || latestProfit <= 0.0)
+      return false;
+
+   double distance = MinDistanceOnAtr
+                     ? AtrMultiplier*iatr(_Symbol,DistanceAtrTimeframe,DistanceAtrPeriod,1)
+                     : MinDistanzaPiramide*_Point;
+   if(distance <= 0.0) return false;
+   for(int i=1; i<sideCount; i++) distance *= MinDistanceMultiplier;
+
+   if(direction > 0)
+   {
+      if(OneTradeBarGrid)
+         return (iOpen(_Symbol,NewOpenPeriod,0) > latestOpen + distance + (Ask_-Bid_));
+      return (Bid_ > latestOpen + distance);
+   }
+   if(OneTradeBarGrid)
+      return (iOpen(_Symbol,NewOpenPeriod,0) < latestOpen - distance - (Ask_-Bid_));
+   return (Ask_ < latestOpen - distance);
+}
+
+bool Kia64V4OpenProfitGridTrade(int direction)
+{
+   if(direction != 1 && direction != -1) return false;
+   int command = (direction > 0) ? OP_BUY : OP_SELL;
+   double sendLot = GestioneOrdini(Kia64V4InitialLot,command);
+   if(!CheckVolumeValue(sendLot) || !EnableGrid) return false;
+   if(GridOrdersComplyMaxSpreadConditions && MaxSpread*_Point < Ask_-Bid_) return false;
+   if(GridOrdersComplyIndicatorsConditions &&
+      !(direction > 0 ? extraindicatorsbuy() : extraindicatorssell())) return false;
+   if(GridOrdersComplyHoursConditions && !Hour_trade_allowed(coefstart,coefstop)) return false;
+   if(GridOrdersComplyWeekDaysConditions && !DayCheck(DayOfWeek())) return false;
+
+   int ticket = Ordine(command,sendLot,(direction > 0) ? Ask_ : Bid_,0.0,0.0,MagicNumber,0);
+   if(ticket <= 0) return false;
+   Kia64V4SetEntryCount(Kia64V4TrendEntriesOpened + 1);
+   return true;
+}
+
 void Kia64V4RefreshCycleState()
 {
    Kia64V4BlockEntryThisTick = false;
@@ -882,7 +980,7 @@ void Kia64V4RefreshCycleState()
    if(Kia64V4CycleMode == 1 || Kia64V4CycleMode == -1)
    {
       int activeDirection = (Kia64V4CycleMode > 0) ? 1 : -1;
-      if(Kia64V4TrendDataReady && Kia64V4ConfirmedTrend == -activeDirection)
+      if(Kia64V4IsConfirmedReversal(activeDirection))
       {
          double sideProfit = Kia64V4SideNetProfit(activeDirection);
          if(sideProfit >= Kia64V4ReversalCloseAtOrAboveMoney)
@@ -1206,32 +1304,22 @@ if(EnableKia64V4TrendEngine && Kia64V4CycleMode == 0 && Kia64V4AwaitFreshBolling
       return;
 }
 
-// A trend cycle may re-enter only after its previous position was closed by TP.
-// No new Bollinger signal is required for these sequential continuation entries.
+// Trend-cycle continuation uses a profit grid, not TP-based re-entry.
 if(EnableKia64V4TrendEngine && (Kia64V4CycleMode == 1 || Kia64V4CycleMode == -1))
 {
    int cycleDirection = (Kia64V4CycleMode > 0) ? 1 : -1;
    if(!Kia64V4TrendDataReady || Kia64V4ConfirmedTrend != cycleDirection) return;
 
-   if(Kia64V4SidePositionCount(cycleDirection) == 0 && Kia64V4TPReentryPending)
+   int cycleSideCount = Kia64V4SidePositionCount(cycleDirection);
+   int sideMaximum = (cycleDirection > 0) ? MaxBuyOrders : MaxSellOrders;
+   bool directionAllowed = (cycleDirection > 0) ? AllowBuy : AllowSell;
+   if(cycleSideCount > 0 && directionAllowed &&
+      Kia64V4TrendEntriesOpened < Kia64V4MaximumTrendEntries &&
+      cycleSideCount < sideMaximum && DayCheck(DayOfWeek()) &&
+      OrdiniApertiGlobale() && Kia64V4ProfitGridTriggered(cycleDirection,cycleSideCount))
    {
-      if((cycleDirection > 0 && !AllowBuy) || (cycleDirection < 0 && !AllowSell) ||
-         !DayCheck(DayOfWeek()) || !OrdiniApertiGlobale())
-         return;
-
-      if(Kia64V4TrendEntriesOpened < Kia64V4MaximumTrendEntries)
-      {
-         if(!Kia64V4OpenTrendTrade(cycleDirection))
-            Kia64TradeDiagnostic("V4 trend continuation entry failed or volume was outside broker limits.");
-      }
-      else
-      {
-         Kia64V4SetCycleMode(0);
-         Kia64V4SetEntryCount(0);
-         Kia64V4SetTPPending(false);
-         Kia64V4SetAwaitFreshBollinger(true);
-          Kia64TradeDiagnostic("V4 maximum trend entries reached; cycle reset.");
-      }
+      if(!Kia64V4OpenProfitGridTrade(cycleDirection))
+         Kia64TradeDiagnostic("V4 profit-grid entry failed or volume/filter conditions were not satisfied.");
    }
    return;
 }
@@ -1253,7 +1341,7 @@ bool Kia64BuyEntryAllowed = ordiniapertibuy && ExtraIndicatorsBuy && !OrdiniAper
                           (!EnableKia64V4TrendEngine || (Kia64V4TrendDataReady && Kia64V4ConfirmedTrend == 1));
 if(Kia64BuyEntryAllowed)
 {
-   double initialTP = EnableKia64V4TrendEngine ? NormalizeDouble(Ask_ + Kia64V4TrendTakeProfitPoints*_Point,_Digits) : 0.0;
+   double initialTP = 0.0; // Trend exits use confirmed indicator reversal.
    int initialTicket = Ordine(OP_BUY,EnableKia64V4TrendEngine ? Kia64V4NormalizeTrendLot(Kia64V4InitialLot) : LottoDaTradare,Ask_,0,initialTP,MagicNumber,0);
    if(initialTicket > 0 && EnableKia64V4TrendEngine)
    {
@@ -1268,7 +1356,7 @@ bool Kia64SellEntryAllowed = ordiniapertisell && ExtraIndicatorsSell && !OrdiniA
                            (!EnableKia64V4TrendEngine || (Kia64V4TrendDataReady && Kia64V4ConfirmedTrend == -1));
 if(Kia64SellEntryAllowed)
 {
-   double initialTP = EnableKia64V4TrendEngine ? NormalizeDouble(Bid_ - Kia64V4TrendTakeProfitPoints*_Point,_Digits) : 0.0;
+   double initialTP = 0.0; // Trend exits use confirmed indicator reversal.
    int initialTicket = Ordine(OP_SELL,EnableKia64V4TrendEngine ? Kia64V4NormalizeTrendLot(Kia64V4InitialLot) : LottoDaTradare,Bid_,0,initialTP,MagicNumber,0);
    if(initialTicket > 0 && EnableKia64V4TrendEngine)
    {
