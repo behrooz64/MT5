@@ -507,7 +507,7 @@ TakeTargetSell = TakeTarget;
 // Validate cycle inputs before indicator initialization.
 if(Kia64V4InitialLot <= 0.0 || Kia64V4LinearLotIncrement < 0.0 ||
    Kia64V4TrendTakeProfitPoints < 1 || Kia64V4MaximumTrendEntries < 1 ||
-   Kia64V4MaximumTrendLot <= 0.0)
+   Kia64V4MaximumTrendLot <= 0.0 || Kia64V4MaximumLossPercent <= 0.0)
 {
    Print("Kia64 v4: invalid trend-cycle input settings.");
    return INIT_PARAMETERS_INCORRECT;
@@ -917,6 +917,7 @@ void Kia64V4RefreshCycleState()
    else if(Kia64V4CycleMode == 2 || Kia64V4CycleMode == -2)
    {
       int recoveryDirection = (Kia64V4CycleMode > 0) ? 1 : -1;
+      Kia64V4RemoveSideTakeProfits(recoveryDirection); // retry if broker rejected TP removal on the reversal tick
       if(Kia64V4SidePositionCount(recoveryDirection) == 0)
       {
          Kia64V4SetCycleMode(0);
@@ -1200,7 +1201,7 @@ bool ExtraIndicatorsSell = extraindicatorssell();
 
 if(EnableKia64V4TrendEngine && Kia64V4CycleMode == 0 && Kia64V4AwaitFreshBollinger)
 {
-   if(!ExtraIndicatorsBuy && !ExtraIndicatorsSell)
+   if(!EnableBollingerBands || (!ExtraIndicatorsBuy && !ExtraIndicatorsSell))
       Kia64V4SetAwaitFreshBollinger(false);
    else
       return;
@@ -1215,6 +1216,10 @@ if(EnableKia64V4TrendEngine && (Kia64V4CycleMode == 1 || Kia64V4CycleMode == -1)
 
    if(Kia64V4SidePositionCount(cycleDirection) == 0 && Kia64V4TPReentryPending)
    {
+      if((cycleDirection > 0 && !AllowBuy) || (cycleDirection < 0 && !AllowSell) ||
+         !DayCheck(DayOfWeek()) || !OrdiniApertiGlobale())
+         return;
+
       if(Kia64V4TrendEntriesOpened < Kia64V4MaximumTrendEntries)
       {
          if(!Kia64V4OpenTrendTrade(cycleDirection))
