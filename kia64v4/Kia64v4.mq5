@@ -461,6 +461,15 @@ if(!GlobalVariableCheck(Kia64V4StartKey)) GlobalVariableSet(Kia64V4StartKey,(dou
 Kia64V4ReferenceBalance = GlobalVariableGet(Kia64V4BalanceKey);
 Kia64V4StartTime = (datetime)GlobalVariableGet(Kia64V4StartKey);
 Kia64V4EmergencyLock = GlobalVariableCheck(Kia64V4LockKey) && GlobalVariableGet(Kia64V4LockKey)>0.5;
+Kia64AppendObserverEvent(KIA64_STATE_FILE,"INIT_STATE",
+                         "cycle_mode="+IntegerToString(Kia64V4CycleMode)+
+                         "; trend_entries="+IntegerToString(Kia64V4TrendEntriesOpened)+
+                         "; tp_pending="+string(Kia64V4TPReentryPending ? "true" : "false")+
+                         "; wait_fresh_bb="+string(Kia64V4AwaitFreshBollinger ? "true" : "false")+
+                         "; emergency_lock="+string(Kia64V4EmergencyLock ? "true" : "false")+
+                         "; reference_balance="+DoubleToString(Kia64V4ReferenceBalance,2)+
+                         "; start_time="+TimeToString(Kia64V4StartTime,TIME_DATE|TIME_SECONDS)+
+                         "; server="+AccountInfoString(ACCOUNT_SERVER));
 
 Bid_ = Bid();
 Ask_ = Ask();
@@ -946,16 +955,42 @@ bool Kia64V4OpenProfitGridTrade(int direction)
 {
    if(direction != 1 && direction != -1) return false;
    int command = (direction > 0) ? OP_BUY : OP_SELL;
-   double sendLot = GestioneOrdini(Kia64V4InitialLot,command);
-   if(!CheckVolumeValue(sendLot) || !EnableGrid) return false;
+   double requestedLot = GestioneOrdini(Kia64V4InitialLot,command);
+   double sendLot = Kia64V4NormalizeTrendLot(requestedLot);
+   if(sendLot<=0.0 || !CheckVolumeValue(sendLot) || !EnableGrid)
+   {
+      Kia64AppendObserverEvent(KIA64_GRID_FILE,"PROFIT_GRID_BLOCKED",
+                               "direction="+IntegerToString(direction)+
+                               "; requested_lot="+DoubleToString(requestedLot,8)+
+                               "; capped_lot="+DoubleToString(sendLot,8)+
+                               "; trend_lot_cap="+DoubleToString(Kia64V4MaximumTrendLot,8));
+      return false;
+   }
    if(GridOrdersComplyMaxSpreadConditions && MaxSpread*_Point < Ask_-Bid_) return false;
    if(GridOrdersComplyIndicatorsConditions &&
       !(direction > 0 ? extraindicatorsbuy() : extraindicatorssell())) return false;
    if(GridOrdersComplyHoursConditions && !Hour_trade_allowed(coefstart,coefstop)) return false;
    if(GridOrdersComplyWeekDaysConditions && !DayCheck(DayOfWeek())) return false;
 
+   Kia64AppendObserverEvent(KIA64_GRID_FILE,"PROFIT_GRID_SEND",
+                            "direction="+IntegerToString(direction)+
+                            "; requested_lot="+DoubleToString(requestedLot,8)+
+                            "; sent_lot="+DoubleToString(sendLot,8)+
+                            "; grid_points="+IntegerToString(MinDistanzaPiramide)+
+                            "; distance_multiplier="+DoubleToString(MinDistanceMultiplier,4));
    int ticket = Ordine(command,sendLot,(direction > 0) ? Ask_ : Bid_,0.0,0.0,MagicNumber,0);
-   if(ticket <= 0) return false;
+   if(ticket <= 0)
+   {
+      Kia64AppendObserverEvent(KIA64_GRID_FILE,"PROFIT_GRID_SEND_FAILED",
+                               "direction="+IntegerToString(direction)+
+                               "; requested_lot="+DoubleToString(requestedLot,8)+
+                               "; sent_lot="+DoubleToString(sendLot,8));
+      return false;
+   }
+   Kia64AppendObserverEvent(KIA64_GRID_FILE,"PROFIT_GRID_OPENED",
+                            "direction="+IntegerToString(direction)+
+                            "; ticket="+IntegerToString(ticket)+
+                            "; volume="+DoubleToString(sendLot,8));
    Kia64V4SetEntryCount(Kia64V4TrendEntriesOpened + 1);
    return true;
 }
@@ -975,6 +1010,13 @@ void Kia64V4RefreshCycleState()
       Kia64V4LastEMABar = emaBar;
       Kia64V4LastADXBar = adxBar;
       Kia64V4TrendDataReady = Kia64V4GetConfirmedTrend(Kia64V4ConfirmedTrend,Kia64V4ADXValue);
+      Kia64AppendObserverEvent(KIA64_TREND_FILE,"CONFIRMED_TREND_SNAPSHOT",
+                               "trend_ready="+string(Kia64V4TrendDataReady ? "true" : "false")+
+                               "; direction="+IntegerToString(Kia64V4ConfirmedTrend)+
+                               "; adx="+DoubleToString(Kia64V4ADXValue,2)+
+                               "; supertrend_tf="+EnumToString(Kia64V4SupertrendTimeframe)+
+                               "; ema_tf="+EnumToString(Kia64V4EMATimeframe)+
+                               "; adx_tf="+EnumToString(Kia64V4ADXTimeframe));
    }
 
    if(Kia64V4CycleMode == 1 || Kia64V4CycleMode == -1)
@@ -1617,171 +1659,119 @@ for(int i=0;i<5;i++)
 
 void EliminaOrdiniFifo(int Magic,int cmd)
 {
-
-int Ticket[];
-ArrayResize(Ticket,PositionsTotal());
-
-   for(int i = PositionsTotal()-1; i >= 0; i--)
+   ulong tickets[];
+   datetime openTimes[];
+   int count=0;
+   for(int i=0; i<PositionsTotal(); i++)
    {
-      if(PositionGetTicket(i)>0)
-      {
-         if(OrderMagicNumber()== Magic && OrderSymbol() == Symbol())
+      ulong ticket=PositionGetTicket(i);
+      if(ticket==0) continue;
+      if((int)PositionGetInteger(POSITION_MAGIC)!=Magic ||
+         PositionGetString(POSITION_SYMBOL)!=_Symbol ||
+         (int)PositionGetInteger(POSITION_TYPE)!=cmd) continue;
+      ArrayResize(tickets,count+1);
+      ArrayResize(openTimes,count+1);
+      tickets[count]=ticket;
+      openTimes[count]=(datetime)PositionGetInteger(POSITION_TIME);
+      count++;
+   }
+   for(int i=0; i<count-1; i++)
+      for(int j=i+1; j<count; j++)
+         if(openTimes[j]<openTimes[i] ||
+            (openTimes[j]==openTimes[i] && tickets[j]<tickets[i]))
          {
-            if (MathAbs(OrderType()-cmd)<0.1)
-            Ticket[i] = OrderTicket();
+            datetime timeTmp=openTimes[i]; openTimes[i]=openTimes[j]; openTimes[j]=timeTmp;
+            ulong ticketTmp=tickets[i]; tickets[i]=tickets[j]; tickets[j]=ticketTmp;
          }
-      }
-   }
-
-
-
-   for(int i = 0; i < ArraySize(Ticket); i++)
+   for(int i=0; i<count; i++)
    {
-            if(PositionGetTicket(Ticket[i]))
-            EliminaFifo(Ticket[i],OrderLots(),0,clrBlack,OrderType());
+      if(!PositionSelectByTicket(tickets[i])) continue;
+      EliminaFifo(tickets[i],PositionGetDouble(POSITION_VOLUME),10,clrBlack,cmd);
    }
-
-
-//Elimina(OrderType());
-EliminaOrdini(Magic,cmd);
 }
-
-
 
 void EliminaOrdiniFifo(int Magic)
 {
-
-int Ticket[];
-ArrayResize(Ticket,PositionsTotal());
-
-   for(int i = PositionsTotal()-1; i >= 0; i--)
+   ulong tickets[];
+   datetime openTimes[];
+   int count=0;
+   for(int i=0; i<PositionsTotal(); i++)
    {
-      if(PositionGetTicket(i)>0)
-      {
-         if(OrderMagicNumber()== Magic && OrderSymbol() == Symbol())
+      ulong ticket=PositionGetTicket(i);
+      if(ticket==0) continue;
+      if((int)PositionGetInteger(POSITION_MAGIC)!=Magic ||
+         PositionGetString(POSITION_SYMBOL)!=_Symbol) continue;
+      ArrayResize(tickets,count+1);
+      ArrayResize(openTimes,count+1);
+      tickets[count]=ticket;
+      openTimes[count]=(datetime)PositionGetInteger(POSITION_TIME);
+      count++;
+   }
+   for(int i=0; i<count-1; i++)
+      for(int j=i+1; j<count; j++)
+         if(openTimes[j]<openTimes[i] ||
+            (openTimes[j]==openTimes[i] && tickets[j]<tickets[i]))
          {
-            Ticket[i] = OrderTicket();
+            datetime timeTmp=openTimes[i]; openTimes[i]=openTimes[j]; openTimes[j]=timeTmp;
+            ulong ticketTmp=tickets[i]; tickets[i]=tickets[j]; tickets[j]=ticketTmp;
          }
-      }
-   }
-
-
-
-   for(int i = 0; i < ArraySize(Ticket); i++)
+   for(int i=0; i<count; i++)
    {
-            if(PositionGetTicket(Ticket[i]))
-            EliminaFifo(Ticket[i],OrderLots(),0,clrBlack,OrderType());
+      if(!PositionSelectByTicket(tickets[i])) continue;
+      EliminaFifo(tickets[i],PositionGetDouble(POSITION_VOLUME),10,clrBlack,
+                  (int)PositionGetInteger(POSITION_TYPE));
    }
-
-
-//Elimina(OrderType());
-
-EliminaOrdini(Magic);
 }
 
-
-
-
-
-void EliminaFifo(int Ticket,double Orderlots,int slippage,color colore,int cmd)
+void EliminaFifo(ulong Ticket,double Orderlots,int slippage,color colore,int cmd)
 {
-
-if ( cmd < 1.5)
-{
-if (!OrderClose(Ticket,Orderlots,slippage,colore))
-{
-for(int i=0;i<5;i++)
-  {
-   Sleep(5000);
-   if (OrderClose(Ticket,Orderlots,slippage,colore))
-   return;
-  }
+   if(cmd!=POSITION_TYPE_BUY && cmd!=POSITION_TYPE_SELL) return;
+   for(int attempt=0; attempt<3; attempt++)
+   {
+      if(!PositionSelectByTicket(Ticket)) return;
+      double currentVolume=PositionGetDouble(POSITION_VOLUME);
+      if(currentVolume<=0.0) return;
+      if(OrderClose(Ticket,currentVolume,slippage,colore))
+      {
+         if(!PositionSelectByTicket(Ticket)) return;
+      }
+      else
+         Kia64TradeDiagnostic("FIFO close attempt failed; ticket="+IntegerToString((long)Ticket)+
+                              "; attempt="+IntegerToString(attempt+1));
+      Sleep(200);
+   }
+   if(PositionSelectByTicket(Ticket))
+      Kia64AppendObserverEvent(KIA64_RISK_FILE,"POSITION_CLOSE_UNRESOLVED",
+                               "ticket="+IntegerToString((long)Ticket)+
+                               "; remaining_volume="+DoubleToString(PositionGetDouble(POSITION_VOLUME),8));
 }
-}
-}
-
-
-
 
 bool OrderClose(ulong ticketordine, double lottidachiudere, int slippage,color colore)
 {
+   if(!PositionSelectByTicket(ticketordine)) return true;
+   string symbol=PositionGetString(POSITION_SYMBOL);
+   if(symbol=="") return false;
 
-
-
-
-
-return m_trade.PositionClose(ticketordine);
-
-
-MqlTradeRequest Trade;
-    ZeroMemory(Trade);
-MqlTradeResult Risultati;
-    ZeroMemory(Risultati);
-
-
-   if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE)==POSITION_TYPE_BUY)
-     {
-      //--- prepare request for close BUY position
-      Trade.type =ORDER_TYPE_SELL;
-      Trade.price=SymbolInfoDouble(_Symbol,SYMBOL_BID);
-     }
-   else
-     {
-      //--- prepare request for close SELL position
-      Trade.type =ORDER_TYPE_BUY;
-      Trade.price=SymbolInfoDouble(_Symbol,SYMBOL_ASK);
-     }
-//--- setting request
-   Trade.action   =TRADE_ACTION_DEAL;
-   Trade.position =ticketordine;
-   Trade.symbol   =_Symbol;
-   Trade.volume   =PositionGetDouble(POSITION_VOLUME);
-   Trade.magic    =MagicNumber;
-   Trade.deviation=10;
-          Trade.type_filling = ORDER_FILLING_IOC;
-//--- close position
-bool invio= OrderSend(Trade,Risultati);
-
-
-
-if (Risultati.retcode == 10030 )
-{
-Sleep(1000);
-   Trade.type_filling = ORDER_FILLING_RETURN;
-   ZeroMemory(Risultati);
-
-   bool ritentoprimo = OrderSend(Trade,Risultati);
-
-      if (Risultati.retcode == 10030 )
-      {
-      Sleep(1000);
-      Trade.type_filling = ORDER_FILLING_FOK;
-      ZeroMemory(Risultati);      
-      bool ritentosecondo = OrderSend(Trade,Risultati); 
-      }
+   m_trade.SetTypeFillingBySymbol(symbol);
+   m_trade.SetDeviationInPoints((ulong)MathMax(0,slippage));
+   bool closeSent=m_trade.PositionClose(ticketordine,(ulong)MathMax(0,slippage));
+   uint retcode=m_trade.ResultRetcode();
+   bool completed=(closeSent &&
+                   (retcode==TRADE_RETCODE_DONE ||
+                    retcode==TRADE_RETCODE_DONE_PARTIAL ||
+                    retcode==TRADE_RETCODE_PLACED));
+   if(!completed)
+   {
+      string details="ticket="+IntegerToString((long)ticketordine)+
+                     "; symbol="+symbol+
+                     "; requested_volume="+DoubleToString(lottidachiudere,8)+
+                     "; retcode="+IntegerToString((int)retcode)+
+                     "; comment="+m_trade.ResultComment();
+      Kia64TradeDiagnostic("Position close failed; "+details);
+      Kia64AppendObserverEvent(KIA64_EXECUTION_FILE,"POSITION_CLOSE_FAILED",details);
+   }
+   return completed;
 }
-
-
-
-
-/*
-
-
-
-Gestore.PositionClose(ticketordine);
-*/
-if (Risultati.deal > 1)
-return true;
-else
-return false;
-
-}
-
-
-
-
-
-
 
 //////////////////////////////////////////////FINE SEZIONE CHIUSURA ORDINI///////////////////////////////////////
 
@@ -2143,6 +2133,12 @@ return ticket;
 #define KIA64_TRADE_DIAGNOSTICS 1
 #define KIA64_EVENT_LOG_FILE "Kia64_TradeHistory.csv"
 #define KIA64_PERFORMANCE_FILE "Kia64_Performance.csv"
+#define KIA64_EXECUTION_FILE "Kia64_Execution_Log.csv"
+#define KIA64_RISK_FILE "Kia64_Risk_Protection.csv"
+#define KIA64_GRID_FILE "Kia64_Grid_Analysis.csv"
+#define KIA64_TREND_FILE "Kia64_Trend_Signals.csv"
+#define KIA64_STATE_FILE "Kia64_State_Recovery.csv"
+#define KIA64_OUTCOME_FILE "Kia64_Trade_Outcome.csv"
 
 void Kia64AppendCsvRow(string file_name, string row_type, string details)
 {
@@ -2155,6 +2151,25 @@ void Kia64AppendCsvRow(string file_name, string row_type, string details)
    FileSeek(handle, 0, SEEK_END);
    FileWrite(handle, TimeToString(TimeCurrent(), TIME_DATE|TIME_SECONDS), row_type, _Symbol,
              EnumToString((ENUM_TIMEFRAMES)_Period), IntegerToString(MagicNumber), details);
+   FileFlush(handle);
+   FileClose(handle);
+}
+
+void Kia64AppendObserverEvent(string file_name,string event_type,string details)
+{
+   if(KIA64_TRADE_DIAGNOSTICS!=1) return;
+   int handle=FileOpen(file_name,FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_SHARE_READ|FILE_SHARE_WRITE,';');
+   if(handle==INVALID_HANDLE) return;
+   if(FileSize(handle)==0)
+      FileWrite(handle,"timestamp","event_type","symbol","timeframe","magic",
+                "cycle_mode","spread_points","balance","equity","details");
+   FileSeek(handle,0,SEEK_END);
+   double spreadPoints=(_Point>0.0)?(Ask_-Bid_)/_Point:0.0;
+   FileWrite(handle,TimeToString(TimeCurrent(),TIME_DATE|TIME_SECONDS),event_type,
+             _Symbol,EnumToString((ENUM_TIMEFRAMES)_Period),IntegerToString(MagicNumber),
+             IntegerToString(Kia64V4CycleMode),DoubleToString(spreadPoints,1),
+             DoubleToString(AccountInfoDouble(ACCOUNT_BALANCE),2),
+             DoubleToString(AccountInfoDouble(ACCOUNT_EQUITY),2),details);
    FileFlush(handle);
    FileClose(handle);
 }
@@ -2237,13 +2252,17 @@ void OnTradeTransaction(const MqlTradeTransaction &trans, const MqlTradeRequest 
                      result.retcode != TRADE_RETCODE_PLACED &&
                      result.retcode != TRADE_RETCODE_DONE_PARTIAL);
       if(failed)
-         Kia64AppendCsvRow(KIA64_EVENT_LOG_FILE, "ORDER_REJECTED",
-                           "symbol="+request.symbol+"; type="+IntegerToString((int)request.type)+
-                           "; volume="+DoubleToString(request.volume,2)+
-                           "; retcode="+IntegerToString((int)result.retcode)+
-                           "; comment="+result.comment+
-                           "; order="+IntegerToString((long)result.order)+
-                           "; deal="+IntegerToString((long)result.deal));
+      {
+         string rejectedDetails="symbol="+request.symbol+
+                                "; type="+IntegerToString((int)request.type)+
+                                "; volume="+DoubleToString(request.volume,8)+
+                                "; retcode="+IntegerToString((int)result.retcode)+
+                                "; comment="+result.comment+
+                                "; order="+IntegerToString((long)result.order)+
+                                "; deal="+IntegerToString((long)result.deal);
+         Kia64AppendCsvRow(KIA64_EVENT_LOG_FILE,"ORDER_REJECTED",rejectedDetails);
+         Kia64AppendObserverEvent(KIA64_EXECUTION_FILE,"ORDER_REJECTED",rejectedDetails);
+      }
    }
 
    if(trans.type == TRADE_TRANSACTION_DEAL_ADD && trans.deal > 0 && HistoryDealSelect(trans.deal))
@@ -2260,8 +2279,20 @@ void OnTradeTransaction(const MqlTradeTransaction &trans, const MqlTradeRequest 
          double commission = HistoryDealGetDouble(trans.deal, DEAL_COMMISSION);
          long entry = HistoryDealGetInteger(trans.deal, DEAL_ENTRY);
          string kind = (entry == DEAL_ENTRY_OUT || entry == DEAL_ENTRY_OUT_BY) ? "CLOSED_DEAL" : "OPEN_OR_IN_DEAL";
-         Kia64AppendPerformanceRow(kind, trans.deal, deal_time, volume, price, profit, swap,
-                                   commission, "entry="+IntegerToString((int)entry)+"; deal_symbol="+deal_symbol);
+         double fee=HistoryDealGetDouble(trans.deal,DEAL_FEE);
+         long reason=HistoryDealGetInteger(trans.deal,DEAL_REASON);
+         ulong positionId=(ulong)HistoryDealGetInteger(trans.deal,DEAL_POSITION_ID);
+         string outcomeDetails="entry="+IntegerToString((int)entry)+
+                               "; reason="+IntegerToString((int)reason)+
+                               "; position_id="+IntegerToString((long)positionId)+
+                               "; fee="+DoubleToString(fee,2)+
+                               "; net="+DoubleToString(profit+swap+commission+fee,2)+
+                               "; deal_symbol="+deal_symbol;
+         Kia64AppendPerformanceRow(kind,trans.deal,deal_time,volume,price,profit,swap,
+                                   commission,outcomeDetails);
+         Kia64AppendObserverEvent(KIA64_OUTCOME_FILE,kind,
+                                  "deal_ticket="+IntegerToString((long)trans.deal)+
+                                  "; "+outcomeDetails);
       }
    }
 }
@@ -2461,6 +2492,7 @@ int InvioOrdine(string simbolo,int cmd,double lotti, double prezzo, double stopl
                         "; filling_flags="+IntegerToString((int)fillingFlags)+
                         "; execution="+IntegerToString((int)executionMode));
 
+   uint requestStartMs=GetTickCount();
    for(int attempt=0; attempt<fillingCount; attempt++)
    {
       Trade.type_filling = fillingModes[attempt];
@@ -2468,6 +2500,14 @@ int InvioOrdine(string simbolo,int cmd,double lotti, double prezzo, double stopl
       ResetLastError();
 
       bool sent = OrderSend(Trade,Risultati);
+      uint elapsedMs=GetTickCount()-requestStartMs;
+      Kia64AppendObserverEvent(KIA64_EXECUTION_FILE,"EXECUTION_ATTEMPT",
+                               "attempt="+IntegerToString(attempt+1)+
+                               "; filling="+IntegerToString((int)Trade.type_filling)+
+                               "; order_send="+string(sent ? "true" : "false")+
+                               "; elapsed_ms="+IntegerToString((int)elapsedMs)+
+                               "; retcode="+IntegerToString((int)Risultati.retcode)+
+                               "; comment="+Risultati.comment);
 
       Kia64TradeDiagnostic("Attempt "+IntegerToString(attempt+1)+
                            "; filling="+IntegerToString((int)Trade.type_filling)+
@@ -2489,13 +2529,25 @@ int InvioOrdine(string simbolo,int cmd,double lotti, double prezzo, double stopl
       Risultati.retcode != TRADE_RETCODE_DONE_PARTIAL &&
       Risultati.retcode != TRADE_RETCODE_PLACED)
    {
-      Kia64TradeDiagnostic("Trade request failed; final retcode="+
-                           IntegerToString((int)Risultati.retcode)+
-                           "; comment="+Risultati.comment);
+      string failureDetails="symbol="+simbolo+
+                            "; side="+string(cmd==ORDER_TYPE_BUY ? "BUY" : "SELL")+
+                            "; volume="+DoubleToString(lotti,8)+
+                            "; elapsed_ms="+IntegerToString((int)(GetTickCount()-requestStartMs))+
+                            "; retcode="+IntegerToString((int)Risultati.retcode)+
+                            "; comment="+Risultati.comment;
+      Kia64TradeDiagnostic("Trade request failed; "+failureDetails);
+      Kia64AppendObserverEvent(KIA64_EXECUTION_FILE,"ORDER_FAILED",failureDetails);
       return -1;
    }
 
    int ticket = (int)Risultati.deal;
+   Kia64AppendObserverEvent(KIA64_EXECUTION_FILE,"ORDER_ACCEPTED",
+                            "symbol="+simbolo+
+                            "; side="+string(cmd==ORDER_TYPE_BUY ? "BUY" : "SELL")+
+                            "; volume="+DoubleToString(lotti,8)+
+                            "; elapsed_ms="+IntegerToString((int)(GetTickCount()-requestStartMs))+
+                            "; order="+IntegerToString((int)Risultati.order)+
+                            "; deal="+IntegerToString((int)Risultati.deal));
    Sleep(800);
    return ticket;
 }
@@ -2503,62 +2555,39 @@ int InvioOrdine(string simbolo,int cmd,double lotti, double prezzo, double stopl
 
 
 bool CheckVolumeValue(double &volume)
-  {
+{
+   double minVolume=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MIN);
+   double maxVolume=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MAX);
+   double step=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_STEP);
+   if(minVolume<=0.0 || maxVolume<=0.0 || step<=0.0 || volume<=0.0)
+   {
+      Kia64TradeDiagnostic("Invalid volume metadata; min="+DoubleToString(minVolume,8)+
+                           "; max="+DoubleToString(maxVolume,8)+
+                           "; step="+DoubleToString(step,8)+
+                           "; requested="+DoubleToString(volume,8));
+      return false;
+   }
+   double effectiveMax=maxVolume;
+   if(MaxLot>0.0) effectiveMax=MathMin(effectiveMax,MaxLot);
+   if(effectiveMax<minVolume || volume<minVolume) return false;
 
-int LotDigit=2;
-if ( MathAbs( SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_STEP) - 0.1 ) < 0.001  )
-LotDigit = 1;
-if ( MathAbs( SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_STEP) - 1 ) < 0.001  )
-LotDigit = 0;
-if ( MathAbs( SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_STEP) - 0.01 ) < 0.001  )
-LotDigit = 2;
+   volume=MathMin(volume,effectiveMax);
+   volume=MathFloor((volume/step)+1e-10)*step;
+
+   int volumeDigits=0;
+   double scaledStep=step;
+   while(volumeDigits<8 && MathAbs(scaledStep-MathRound(scaledStep))>1e-8)
+   {
+      scaledStep*=10.0;
+      volumeDigits++;
+   }
+   volume=NormalizeDouble(volume,volumeDigits);
+   if(volume<minVolume-1e-8 || volume>effectiveMax+1e-8) return false;
+   if(MathAbs((volume/step)-MathRound(volume/step))>1e-7) return false;
+   return true;
+}
 
 
-volume = NormalizeDouble(volume,LotDigit);
-
-//--- minimal allowed volume for trade operations
-   double min_volume=SymbolInfoDouble(Symbol(),SYMBOL_VOLUME_MIN);
-   if(volume<min_volume)
-     {
-     volume = min_volume;
-     if(volume<min_volume)
-      return(false);
-     }
-
-//--- maximal allowed volume of trade operations
-   double max_volume= (MaxLot==0)?SymbolInfoDouble(Symbol(),SYMBOL_VOLUME_MAX):MaxLot;
-   if(volume>max_volume)
-     {
-      if (max_volume != 0)
-      {
-     
-          volume = max_volume;
-          if(volume>max_volume)
-          return(false);
-
-      }
-
-     }
-
-//--- get minimal step of volume changing
-   double volume_step=SymbolInfoDouble(Symbol(),SYMBOL_VOLUME_STEP);
-
-   if ( volume_step < 0.01 )
-   volume_step = 0.01;
-   if ( volume < 0.01 )
-   volume = 0.01;
-
-   int ratio=(int)MathRound(volume/volume_step);
-   if(MathAbs(ratio*volume_step-volume)>0.0000001)
-     {
-         
-      return(false);
-     }
-
-volume = NormalizeDouble(volume,LotDigit);
-
-   return(true);
-  }
 
 bool CheckMoneyForTrade(string symb, double lots,int type)
   {
@@ -3232,16 +3261,27 @@ void Kia64V4CloseAllEAExposure()
       string sym=PositionGetString(POSITION_SYMBOL);
       m_trade.SetTypeFillingBySymbol(sym);
       if(!m_trade.PositionClose(ticket))
-         Kia64TradeDiagnostic("V4 emergency position close failed; ticket="+IntegerToString((int)ticket)+
-                              "; retcode="+IntegerToString((int)m_trade.ResultRetcode())+"; "+m_trade.ResultComment());
+      {
+         string closeDetails="ticket="+IntegerToString((int)ticket)+
+                             "; symbol="+sym+
+                             "; retcode="+IntegerToString((int)m_trade.ResultRetcode())+
+                             "; comment="+m_trade.ResultComment();
+         Kia64TradeDiagnostic("V4 emergency position close failed; "+closeDetails);
+         Kia64AppendObserverEvent(KIA64_RISK_FILE,"EMERGENCY_CLOSE_FAILED",closeDetails);
+      }
    }
    for(int o=OrdersTotal()-1;o>=0;o--)
    {
       ulong ticket=OrderGetTicket(o);
       if(ticket==0 || (int)OrderGetInteger(ORDER_MAGIC)!=MagicNumber) continue;
       if(!m_trade.OrderDelete(ticket))
-         Kia64TradeDiagnostic("V4 emergency pending-order delete failed; ticket="+IntegerToString((int)ticket)+
-                              "; retcode="+IntegerToString((int)m_trade.ResultRetcode())+"; "+m_trade.ResultComment());
+      {
+         string deleteDetails="ticket="+IntegerToString((int)ticket)+
+                              "; retcode="+IntegerToString((int)m_trade.ResultRetcode())+
+                              "; comment="+m_trade.ResultComment();
+         Kia64TradeDiagnostic("V4 emergency pending-order delete failed; "+deleteDetails);
+         Kia64AppendObserverEvent(KIA64_RISK_FILE,"EMERGENCY_ORDER_DELETE_FAILED",deleteDetails);
+      }
    }
 }
 
@@ -3261,8 +3301,14 @@ bool Kia64V4EmergencyStop()
    {
       Kia64V4EmergencyLock=true;
       GlobalVariableSet(Kia64V4LockKey,1.0);
+      string riskDetails="loss_percent="+DoubleToString(lossPercent,2)+
+                         "; limit_percent="+DoubleToString(Kia64V4MaximumLossPercent,2)+
+                         "; net_result="+DoubleToString(netResult,2)+
+                         "; reference_balance="+DoubleToString(Kia64V4ReferenceBalance,2)+
+                         "; start_time="+TimeToString(Kia64V4StartTime,TIME_DATE|TIME_SECONDS);
       Kia64TradeDiagnostic("KIA64 V4 EMERGENCY LOCK: EA net loss="+DoubleToString(lossPercent,2)+
                            "%; limit="+DoubleToString(Kia64V4MaximumLossPercent,2)+"%. Closing all EA positions and deleting pending orders.");
+      Kia64AppendObserverEvent(KIA64_RISK_FILE,"EMERGENCY_STOP_TRIGGERED",riskDetails);
       Kia64V4CloseAllEAExposure();
       return true;
    }
@@ -3455,38 +3501,52 @@ if (OrderMagicNumber() == MagicNumber && OrderSymbol() == Symbol())
 
 
 
-double MonetaAccount()
+double Kia64V4LiveCurrencyRate(string fromCurrency,string toCurrency)
 {
-double Risultato=1;
-string moneta = AccountCurrency();
-
-if (moneta == "RUB")
-Risultato = 68;
-if (moneta == "JPY")
-Risultato = 113;
-if (moneta == "AUD")
-Risultato = 1.38;
-if (moneta == "HUF")
-Risultato = 286;
-if (moneta == "PLN")
-Risultato = 3.8;
-if (moneta == "CNH")
-Risultato = 7;
-if (moneta == "CNY")
-Risultato = 7;
-if (moneta == "EUR")
-Risultato = 0.87;
-if (moneta == "GBP")
-Risultato = 0.77;
-
-if(Risultato < 0.5)
-Risultato = 1;
-return Risultato;
+   if(fromCurrency==toCurrency) return 1.0;
+   int total=SymbolsTotal(false);
+   for(int i=0; i<total; i++)
+   {
+      string symbolName=SymbolName(i,false);
+      if(symbolName=="") continue;
+      string base=SymbolInfoString(symbolName,SYMBOL_CURRENCY_BASE);
+      string profit=SymbolInfoString(symbolName,SYMBOL_CURRENCY_PROFIT);
+      bool direct=(base==fromCurrency && profit==toCurrency);
+      bool inverse=(base==toCurrency && profit==fromCurrency);
+      if(!direct && !inverse) continue;
+      if(!SymbolSelect(symbolName,true)) continue;
+      MqlTick quote;
+      if(!SymbolInfoTick(symbolName,quote)) continue;
+      if(direct && quote.bid>0.0) return quote.bid;
+      if(inverse && quote.ask>0.0) return 1.0/quote.ask;
+   }
+   return 0.0;
 }
 
+double MonetaAccount()
+{
+   string currency=AccountCurrency();
+   if(currency=="USD" || currency=="") return 1.0;
 
+   double liveRate=Kia64V4LiveCurrencyRate("USD",currency);
+   if(liveRate>0.0) return liveRate;
 
+   // Retain the historical broker-independent fallback only when no live cross is available.
+   double fallback=1.0;
+   if(currency=="RUB") fallback=68.0;
+   else if(currency=="JPY") fallback=113.0;
+   else if(currency=="AUD") fallback=1.38;
+   else if(currency=="HUF") fallback=286.0;
+   else if(currency=="PLN") fallback=3.8;
+   else if(currency=="CNH" || currency=="CNY") fallback=7.0;
+   else if(currency=="EUR") fallback=0.87;
+   else if(currency=="GBP") fallback=0.77;
 
+   Kia64AppendObserverEvent(KIA64_EXECUTION_FILE,"CURRENCY_RATE_FALLBACK",
+                            "account_currency="+currency+
+                            "; fallback_rate="+DoubleToString(fallback,6));
+   return fallback;
+}
 
 
 
