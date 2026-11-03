@@ -876,6 +876,7 @@ return ;
 Bid_ = Bid();
 Ask_ = Ask();
 
+Kia64V4RefreshCycleState();
 
 if (MoneyManagement)
 LottoDaTradare = MoneySize();
@@ -931,7 +932,8 @@ if ( ordiniapertisell )
 HLineMove(0,"TargetLineSell",EMPTY_VALUE);
 HLineMove(0,"StopLineSell",EMPTY_VALUE);
 }
-if (!OnlyEndOfBar || (EndBar < iTime(_Symbol,OrderTimeframe,0)) )
+if (Kia64V4CycleMode != 1 && Kia64V4CycleMode != -1 &&
+    (!OnlyEndOfBar || (EndBar < iTime(_Symbol,OrderTimeframe,0))) )
 {
 
       if ( TakeTargetOnAtr )
@@ -1046,11 +1048,11 @@ double profit = CalcolaProfitto(MagicNumber);
 
 
 
-//APERTURA ORDINI PIRAMIDALI
-if (ordinibuy < MaxBuyOrders && OrdineInPerdita(OP_BUY,ordinibuy))
-OrdinoUn(OP_BUY);
-if (ordinisell < MaxSellOrders && OrdineInPerdita(OP_SELL,ordinisell))
-OrdinoUn(OP_SELL);
+// Legacy adverse grid is enabled only after a trend reversal has entered recovery mode.
+if (Kia64V4CycleMode == 2 && ordinibuy < MaxBuyOrders && OrdineInPerdita(OP_BUY,ordinibuy))
+   OrdinoUn(OP_BUY);
+if (Kia64V4CycleMode == -2 && ordinisell < MaxSellOrders && OrdineInPerdita(OP_SELL,ordinisell))
+   OrdinoUn(OP_SELL);
 
 
 
@@ -1120,6 +1122,36 @@ if (!AtrAbilitato)
 bool ExtraIndicatorsBuy = extraindicatorsbuy();
 bool ExtraIndicatorsSell = extraindicatorssell();
 
+// A trend cycle may re-enter only after its previous position was closed by TP.
+// No new Bollinger signal is required for these sequential continuation entries.
+if(EnableKia64V4TrendEngine && (Kia64V4CycleMode == 1 || Kia64V4CycleMode == -1))
+{
+   int cycleDirection = (Kia64V4CycleMode > 0) ? 1 : -1;
+   if(!Kia64V4TrendDataReady || Kia64V4ConfirmedTrend != cycleDirection) return;
+
+   if(Kia64V4SidePositionCount(cycleDirection) == 0 && Kia64V4TPReentryPending)
+   {
+      if(Kia64V4TrendEntriesOpened < Kia64V4MaximumTrendEntries)
+      {
+         if(!Kia64V4OpenTrendTrade(cycleDirection))
+            Kia64TradeDiagnostic("V4 trend continuation entry failed or volume was outside broker limits.");
+      }
+      else
+      {
+         Kia64V4SetCycleMode(0);
+         Kia64V4SetEntryCount(0);
+         Kia64V4SetTPPending(false);
+         Kia64TradeDiagnostic("V4 maximum trend entries reached; cycle reset.");
+      }
+   }
+   return;
+}
+
+// Recovery mode never starts a fresh Bollinger entry. The old basket TP/grid
+// logic above remains responsible for completing the recovery basket.
+if(EnableKia64V4TrendEngine && (Kia64V4CycleMode == 2 || Kia64V4CycleMode == -2))
+   return;
+
 
 
 
@@ -1128,13 +1160,35 @@ LottoDaTradare = NormalizeDouble( LottoDaTradare+ (LottoDaTradare *OrdiniAperti(
 
 
 
-bool Kia64BuyEntryAllowed = ordiniapertibuy && ExtraIndicatorsBuy && !OrdiniApertiSuBarra(MagicNumber,AlternationOpeningBars) && !ordiniapertichiusisubarra(MagicNumber,AlternationOpeningBars) && !ordinichiusisubarra(MagicNumber,AlternationOpeningBars,"OP BUY") && OrdiniApertiGlobale() && FifoModality(OP_BUY,ordinibuy,ordinisell) && DayCheck(Oggi) && AllowBuy;
-if(Kia64BuyEntryAllowed) Ordine(OP_BUY,LottoDaTradare,Ask_,0,0,MagicNumber,0);
-else Kia64TradeDiagnostic("BUY not sent: one or more original entry conditions are false; open_buy="+string(ordiniapertibuy)+"; indicators="+string(ExtraIndicatorsBuy)+"; allowed="+string(AllowBuy));
+bool Kia64BuyEntryAllowed = ordiniapertibuy && ExtraIndicatorsBuy && !OrdiniApertiSuBarra(MagicNumber,AlternationOpeningBars) && !ordiniapertichiusisubarra(MagicNumber,AlternationOpeningBars) && !ordinichiusisubarra(MagicNumber,AlternationOpeningBars,"OP BUY") && OrdiniApertiGlobale() && FifoModality(OP_BUY,ordinibuy,ordinisell) && DayCheck(Oggi) && AllowBuy &&
+                          (!EnableKia64V4TrendEngine || (Kia64V4TrendDataReady && Kia64V4ConfirmedTrend == 1));
+if(Kia64BuyEntryAllowed)
+{
+   double initialTP = EnableKia64V4TrendEngine ? NormalizeDouble(Ask_ + Kia64V4TrendTakeProfitPoints*_Point,_Digits) : 0.0;
+   int initialTicket = Ordine(OP_BUY,EnableKia64V4TrendEngine ? Kia64V4NormalizeTrendLot(Kia64V4InitialLot) : LottoDaTradare,Ask_,0,initialTP,MagicNumber,0);
+   if(initialTicket > 0 && EnableKia64V4TrendEngine)
+   {
+      Kia64V4SetCycleMode(1);
+      Kia64V4SetEntryCount(1);
+      Kia64V4SetTPPending(false);
+   }
+}
+else Kia64TradeDiagnostic("BUY not sent: original Bollinger/filter conditions or confirmed uptrend are false.");
 
-bool Kia64SellEntryAllowed = ordiniapertisell && ExtraIndicatorsSell && !OrdiniApertiSuBarra(MagicNumber,AlternationOpeningBars) && !ordiniapertichiusisubarra(MagicNumber,AlternationOpeningBars) && !ordinichiusisubarra(MagicNumber,AlternationOpeningBars, "OP SELL") && OrdiniApertiGlobale() && FifoModality(OP_SELL,ordinibuy,ordinisell) && DayCheck(Oggi) && AllowSell;
-if(Kia64SellEntryAllowed) Ordine(OP_SELL,LottoDaTradare,Bid_,0,0,MagicNumber,0);
-else Kia64TradeDiagnostic("SELL not sent: one or more original entry conditions are false; open_sell="+string(ordiniapertisell)+"; indicators="+string(ExtraIndicatorsSell)+"; allowed="+string(AllowSell));
+bool Kia64SellEntryAllowed = ordiniapertisell && ExtraIndicatorsSell && !OrdiniApertiSuBarra(MagicNumber,AlternationOpeningBars) && !ordiniapertichiusisubarra(MagicNumber,AlternationOpeningBars) && !ordinichiusisubarra(MagicNumber,AlternationOpeningBars, "OP SELL") && OrdiniApertiGlobale() && FifoModality(OP_SELL,ordinibuy,ordinisell) && DayCheck(Oggi) && AllowSell &&
+                           (!EnableKia64V4TrendEngine || (Kia64V4TrendDataReady && Kia64V4ConfirmedTrend == -1));
+if(Kia64SellEntryAllowed)
+{
+   double initialTP = EnableKia64V4TrendEngine ? NormalizeDouble(Bid_ - Kia64V4TrendTakeProfitPoints*_Point,_Digits) : 0.0;
+   int initialTicket = Ordine(OP_SELL,EnableKia64V4TrendEngine ? Kia64V4NormalizeTrendLot(Kia64V4InitialLot) : LottoDaTradare,Bid_,0,initialTP,MagicNumber,0);
+   if(initialTicket > 0 && EnableKia64V4TrendEngine)
+   {
+      Kia64V4SetCycleMode(-1);
+      Kia64V4SetEntryCount(1);
+      Kia64V4SetTPPending(false);
+   }
+}
+else Kia64TradeDiagnostic("SELL not sent: original Bollinger/filter conditions or confirmed downtrend are false.");
 
 
 //Resetto Lotto
@@ -1889,9 +1943,9 @@ return -1;
 
 
 if(cmd == OP_BUY )
-ticket = InvioOrdine(Symbol(),cmd,lotti,prezzo,0,0,CustomComment,Magic,expiration,Blue);
+ticket = InvioOrdine(Symbol(),cmd,lotti,prezzo,stoploss,takeprofit,CustomComment,Magic,expiration,Blue);
 else
-ticket = InvioOrdine(Symbol(),cmd,lotti,prezzo,0,0,CustomComment,Magic,expiration,Red);
+ticket = InvioOrdine(Symbol(),cmd,lotti,prezzo,stoploss,takeprofit,CustomComment,Magic,expiration,Red);
 
 
 return ticket;
@@ -1980,6 +2034,24 @@ void Kia64TradeDiagnostic(string message)
 // Independent observer: request failures and actual deal events are written to files only.
 void OnTradeTransaction(const MqlTradeTransaction &trans, const MqlTradeRequest &request, const MqlTradeResult &result)
 {
+   // Detect only a genuine server-side TP exit for the active trend-cycle direction.
+   if(trans.type == TRADE_TRANSACTION_DEAL_ADD && trans.deal > 0 && HistoryDealSelect(trans.deal))
+   {
+      if((int)HistoryDealGetInteger(trans.deal,DEAL_MAGIC) == MagicNumber &&
+         HistoryDealGetString(trans.deal,DEAL_SYMBOL) == _Symbol)
+      {
+         long entryType = HistoryDealGetInteger(trans.deal,DEAL_ENTRY);
+         long reason = HistoryDealGetInteger(trans.deal,DEAL_REASON);
+         long dealType = HistoryDealGetInteger(trans.deal,DEAL_TYPE);
+         if(reason == DEAL_REASON_TP && (entryType == DEAL_ENTRY_OUT || entryType == DEAL_ENTRY_OUT_BY))
+         {
+            if((Kia64V4CycleMode == 1 && dealType == DEAL_TYPE_SELL) ||
+               (Kia64V4CycleMode == -1 && dealType == DEAL_TYPE_BUY))
+               Kia64V4SetTPPending(true);
+         }
+      }
+   }
+
    if(KIA64_TRADE_DIAGNOSTICS != 1) return;
 
    if(trans.type == TRADE_TRANSACTION_REQUEST)
