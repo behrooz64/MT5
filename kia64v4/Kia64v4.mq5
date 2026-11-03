@@ -11,6 +11,16 @@ input string AllowedBroker = "GTCGlobalTrade-Demo"; // Allowed broker server
 #define EXPIRATION_DATE "2027.01.20"
 #define CORRECT_PASSWORD "Kia64"
 
+#define KIA64_TRADE_DIAGNOSTICS 1
+#define KIA64_EVENT_LOG_FILE "Kia64_TradeHistory.csv"
+#define KIA64_PERFORMANCE_FILE "Kia64_Performance.csv"
+#define KIA64_EXECUTION_FILE "Kia64_Execution_Log.csv"
+#define KIA64_RISK_FILE "Kia64_Risk_Protection.csv"
+#define KIA64_GRID_FILE "Kia64_Grid_Analysis.csv"
+#define KIA64_TREND_FILE "Kia64_Trend_Signals.csv"
+#define KIA64_STATE_FILE "Kia64_State_Recovery.csv"
+#define KIA64_OUTCOME_FILE "Kia64_Trade_Outcome.csv"
+
 #include <Trade\Trade.mqh>
 CTrade m_trade;
 bool Kia64V4EmergencyLock = false;
@@ -767,6 +777,23 @@ int Kia64V4SidePositionCount(int direction)
    return count;
 }
 
+double Kia64V4SelectedPositionCommission()
+{
+   ulong positionId = (ulong)PositionGetInteger(POSITION_IDENTIFIER);
+   if(positionId == 0 || !HistorySelectByPosition(positionId))
+      return 0.0;
+
+   double commission = 0.0;
+   int deals = HistoryDealsTotal();
+   for(int i=0; i<deals; i++)
+   {
+      ulong dealTicket = HistoryDealGetTicket(i);
+      if(dealTicket == 0) continue;
+      commission += HistoryDealGetDouble(dealTicket,DEAL_COMMISSION);
+   }
+   return commission;
+}
+
 double Kia64V4SideNetProfit(int direction)
 {
    double result = 0.0;
@@ -780,7 +807,7 @@ double Kia64V4SideNetProfit(int direction)
          (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == wanted)
       {
          result += PositionGetDouble(POSITION_PROFIT) + PositionGetDouble(POSITION_SWAP) +
-                   PositionGetDouble(POSITION_COMMISSION);
+                   Kia64V4SelectedPositionCommission();
       }
    }
    return result;
@@ -914,7 +941,7 @@ bool Kia64V4GetLatestSidePosition(int direction,double &openPrice,double &netPro
          openPrice = PositionGetDouble(POSITION_PRICE_OPEN);
          netProfit = PositionGetDouble(POSITION_PROFIT) +
                      PositionGetDouble(POSITION_SWAP) +
-                     PositionGetDouble(POSITION_COMMISSION);
+                     Kia64V4SelectedPositionCommission();
       }
    }
    return found;
@@ -1140,8 +1167,8 @@ if (Kia64V4CycleMode != 1 && Kia64V4CycleMode != -1 &&
 
       if ( TakeTargetOnAtr )
       {
-      TakeTargetBuy = NormalizeDouble(TakeTargetAtrMultiplier*iatr(_Symbol,TakeTargetAtrTimeframe,TakeTargetAtrPeriod,1),_Digits);
-      TakeTargetSell = NormalizeDouble(TakeTargetAtrMultiplier*iatr(_Symbol,TakeTargetAtrTimeframe,TakeTargetAtrPeriod,1),_Digits);
+      TakeTargetBuy = (int)NormalizeDouble(TakeTargetAtrMultiplier*iatr(_Symbol,TakeTargetAtrTimeframe,TakeTargetAtrPeriod,1),_Digits);
+      TakeTargetSell = (int)NormalizeDouble(TakeTargetAtrMultiplier*iatr(_Symbol,TakeTargetAtrTimeframe,TakeTargetAtrPeriod,1),_Digits);
       }
       
       
@@ -1435,7 +1462,7 @@ return true;
       {
          if ( OrderSymbol() == _Symbol && OrderMagicNumber() == MagicNumber )
          continue;
-         if (OrderMagicNumber() < MagicNumber+10 && OrderMagicNumber() > MagicNumber-10 )
+         if ((long)OrderMagicNumber() < (long)MagicNumber+10 && (long)OrderMagicNumber() > (long)MagicNumber-10 )
          return false;
       }
    }
@@ -2030,15 +2057,6 @@ return ticket;
 // entry/exit signals or change money-management rules.
 //==================================================================
 // File-based diagnostics and performance journal. No diagnostic text is sent to Experts.
-#define KIA64_TRADE_DIAGNOSTICS 1
-#define KIA64_EVENT_LOG_FILE "Kia64_TradeHistory.csv"
-#define KIA64_PERFORMANCE_FILE "Kia64_Performance.csv"
-#define KIA64_EXECUTION_FILE "Kia64_Execution_Log.csv"
-#define KIA64_RISK_FILE "Kia64_Risk_Protection.csv"
-#define KIA64_GRID_FILE "Kia64_Grid_Analysis.csv"
-#define KIA64_TREND_FILE "Kia64_Trend_Signals.csv"
-#define KIA64_STATE_FILE "Kia64_State_Recovery.csv"
-#define KIA64_OUTCOME_FILE "Kia64_Trade_Outcome.csv"
 
 
 void Kia64AppendCsvRow(string file_name, string row_type, string details)
@@ -2352,10 +2370,10 @@ int InvioOrdine(string simbolo,int cmd,double lotti,double prezzo,double stoplos
 
 bool CheckVolumeValue(double &volume)
 {
- double mn=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MIN),mx=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MAX),st=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_STEP);
- if(mn<=0.0||mx<=0.0||st<=0.0||volume<=0.0)return false;double cap=mx;if(MaxLot>0.0)cap=MathMin(cap,MaxLot);if(cap<mn||volume<mn)return false;
- volume=MathMin(volume,cap);volume=MathFloor(volume/st+1e-10)*st;int digits=0;double scaled=st;while(digits<8&&MathAbs(scaled-MathRound(scaled))>1e-8){scaled*=10.0;digits++;}
- volume=NormalizeDouble(volume,digits);if(volume<mn-1e-8||volume>cap+1e-8)return false;return MathAbs(volume/st-MathRound(volume/st))<=1e-7;
+ double mn=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MIN),mx=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MAX),volumeStep=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_STEP);
+ if(mn<=0.0||mx<=0.0||volumeStep<=0.0||volume<=0.0)return false;double cap=mx;if(MaxLot>0.0)cap=MathMin(cap,MaxLot);if(cap<mn||volume<mn)return false;
+ volume=MathMin(volume,cap);volume=MathFloor(volume/volumeStep+1e-10)*volumeStep;int digits=0;double scaled=volumeStep;while(digits<8&&MathAbs(scaled-MathRound(scaled))>1e-8){scaled*=10.0;digits++;}
+ volume=NormalizeDouble(volume,digits);if(volume<mn-1e-8||volume>cap+1e-8)return false;return MathAbs(volume/volumeStep-MathRound(volume/volumeStep))<=1e-7;
 }
 
 
@@ -4230,7 +4248,7 @@ bool RectLabelDelete(const long   chart_ID=0,       // chart's ID
 
 bool IsTesting()
 {
-return MQLInfoInteger(MQL_TESTER);
+return (MQLInfoInteger(MQL_TESTER) != 0);
 }
 
 
@@ -4273,7 +4291,7 @@ return PositionGetInteger(POSITION_MAGIC);
 
 datetime OrderOpenTime()
 {
-return PositionGetInteger(POSITION_TIME);
+return (datetime)PositionGetInteger(POSITION_TIME);
 }
 
 double OrderLots()
@@ -4294,7 +4312,7 @@ return PositionGetDouble(POSITION_PRICE_OPEN);
 
 int OrderType()
 {
-return PositionGetInteger(POSITION_TYPE);
+return (int)PositionGetInteger(POSITION_TYPE);
 }
 
 ulong OrderTicket()
@@ -4309,7 +4327,7 @@ return PositionGetDouble(POSITION_SWAP);
 }
 double OrderCommission()
 {
-return PositionGetDouble(POSITION_COMMISSION); 
+return Kia64V4SelectedPositionCommission();
 }
 
 
@@ -4341,12 +4359,12 @@ return (StrutturaTemporale.day_of_week);
 
 bool IsTradeAllowed()
 {
-return MQLInfoInteger(MQL_TRADE_ALLOWED);
+return (MQLInfoInteger(MQL_TRADE_ALLOWED) != 0);
 }
 
 bool IsVisualMode()
 {
-return MQLInfoInteger(MQL_VISUAL_MODE);
+return (MQLInfoInteger(MQL_VISUAL_MODE) != 0);
 }
 
 
