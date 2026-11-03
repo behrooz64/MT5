@@ -35,6 +35,7 @@ input double Lots = 0.01;//Lots
 input string Kia64V4Settings = "===== KIA64 V4 SETTINGS =====";
 input bool EnableKia64V4EmergencyStop = true;
 input double Kia64V4MaximumLossPercent = 10.0;
+input double Kia64V4MaximumGridDistanceFactor = 12.0; // Cap compounded grid spacing relative to base distance
 input bool ResetKia64V4EmergencyStop = false;
 
 // Trend confirmation defaults. All settings remain editable in EA Inputs.
@@ -513,7 +514,8 @@ TakeTargetSell = TakeTarget;
 
 // Validate cycle inputs before indicator initialization.
 if(Kia64V4InitialLot <= 0.0 || Kia64V4MaximumTrendEntries < 1 ||
-   Kia64V4MaximumTrendLot <= 0.0 || Kia64V4MaximumLossPercent <= 0.0)
+   Kia64V4MaximumTrendLot <= 0.0 || Kia64V4MaximumLossPercent <= 0.0 ||
+   Kia64V4MaximumGridDistanceFactor < 1.0)
 {
    Print("Kia64 v4: invalid trend-cycle input settings.");
    return INIT_PARAMETERS_INCORRECT;
@@ -918,6 +920,25 @@ bool Kia64V4GetLatestSidePosition(int direction,double &openPrice,double &netPro
    return found;
 }
 
+double Kia64V4BoundedGridDistance(double baseDistance,int orderCount)
+{
+   if(baseDistance<=0.0) return 0.0;
+   double multiplier=MinDistanceMultiplier;
+   if(multiplier<=0.0) multiplier=1.0;
+   double maximumFactor=MathMax(1.0,Kia64V4MaximumGridDistanceFactor);
+   double factor=1.0;
+   for(int i=1; i<orderCount; i++)
+   {
+      factor*=multiplier;
+      if(factor>=maximumFactor)
+      {
+         factor=maximumFactor;
+         break;
+      }
+   }
+   return baseDistance*factor;
+}
+
 // Same distance progression and per-bar protection as the original loss grid.
 // Profit-grid anchor is the latest order, which must have positive net P/L.
 bool Kia64V4ProfitGridTriggered(int direction,int sideCount)
@@ -938,7 +959,7 @@ bool Kia64V4ProfitGridTriggered(int direction,int sideCount)
                      ? AtrMultiplier*iatr(_Symbol,DistanceAtrTimeframe,DistanceAtrPeriod,1)
                      : MinDistanzaPiramide*_Point;
    if(distance <= 0.0) return false;
-   for(int i=1; i<sideCount; i++) distance *= MinDistanceMultiplier;
+   distance=Kia64V4BoundedGridDistance(distance,sideCount);
 
    if(direction > 0)
    {
@@ -2905,10 +2926,7 @@ MinimalDistance = AtrMultiplier*iatr(_Symbol,DistanceAtrTimeframe,DistanceAtrPer
 else
 MinimalDistance =  MinDistanzaPiramide*_Point;
 
-   for(int i=1;i<NumOrdini;i++)
-     {
-      MinimalDistance = MinDistanceMultiplier*MinimalDistance;
-     }
+   MinimalDistance=Kia64V4BoundedGridDistance(MinimalDistance,NumOrdini);
 
       if ( cmd == OP_BUY && !ordiniapertichiusisubarragrid(MagicNumber,OP_BUY) && !OrdiniApertiSuBarraGrid(MagicNumber,OP_BUY) &&  ((OneTradeBarGrid)? iOpen(_Symbol,NewOpenPeriod,0) < prezzoapertura -  (MinimalDistance+(Ask_-Bid_))  : prezzoapertura >Ask_ + MinimalDistance)   )
       {
@@ -2928,28 +2946,47 @@ return false;
 
 void OrdinoUn(int cmd)
 {
-double sendlot = 0.01;
-if (MoneyManagement)
-LottoDaTradare = MoneySize();
+   double sendlot=0.01;
+   if(MoneyManagement) LottoDaTradare=MoneySize();
 
-if (cmd == OP_BUY)
-{
-sendlot = GestioneOrdini(LottoDaTradare,OP_BUY);// NormalizeDouble( LottoDaTradare+ (LottoDaTradare *OrdiniAperti(MagicNumber,OP_BUY)*CoefficientePyramide),2);
-//Print(Lots," *",OrdiniAperti(MagicNumber,OP_BUY),"*",CoefficientePyramide);
-if (CheckVolumeValue(sendlot) && EnableGrid && ( !GridOrdersComplyMaxSpreadConditions ||  MaxSpread*_Point >= Ask_-Bid_ ) && ( !GridOrdersComplyIndicatorsConditions || extraindicatorsbuy()) && ( !GridOrdersComplyHoursConditions || Hour_trade_allowed(coefstart,coefstop)) && ( !GridOrdersComplyWeekDaysConditions || DayCheck(DayOfWeek())) )
-{
-Ordine(OP_BUY,sendlot,Ask_,0,0,MagicNumber,0); 
-}
-}
-if (cmd == OP_SELL)
-{
-sendlot = GestioneOrdini(LottoDaTradare,OP_SELL);//NormalizeDouble( LottoDaTradare+ (LottoDaTradare *OrdiniAperti(MagicNumber,OP_SELL)*CoefficientePyramide),2);
-//Print(Lots ,"*",OrdiniAperti(MagicNumber,OP_SELL),"*",CoefficientePyramide);
-if (CheckVolumeValue(sendlot) && EnableGrid && ( !GridOrdersComplyMaxSpreadConditions ||  MaxSpread*_Point >= Ask_-Bid_ ) && ( !GridOrdersComplyIndicatorsConditions || extraindicatorssell()) && ( !GridOrdersComplyHoursConditions || Hour_trade_allowed(coefstart,coefstop)) && ( !GridOrdersComplyWeekDaysConditions || DayCheck(DayOfWeek()))  )
-Ordine(OP_SELL,sendlot,Bid_,0,0,MagicNumber,0); 
-}
-}
+   if(cmd==OP_BUY)
+   {
+      sendlot=GestioneOrdini(LottoDaTradare,OP_BUY);
+      if(CheckVolumeValue(sendlot) && EnableGrid &&
+         (!GridOrdersComplyMaxSpreadConditions || MaxSpread*_Point>=Ask_-Bid_) &&
+         (!GridOrdersComplyIndicatorsConditions || extraindicatorsbuy()) &&
+         (!GridOrdersComplyHoursConditions || Hour_trade_allowed(coefstart,coefstop)) &&
+         (!GridOrdersComplyWeekDaysConditions || DayCheck(DayOfWeek())))
+      {
+         int gridTicket=Ordine(OP_BUY,sendlot,Ask_,0,0,MagicNumber,0);
+         Kia64AppendObserverEvent(KIA64_GRID_FILE,
+                                  gridTicket>0 ? "RECOVERY_GRID_OPENED" : "RECOVERY_GRID_FAILED",
+                                  "side=BUY; lot="+DoubleToString(sendlot,8)+
+                                  "; price="+DoubleToString(Ask_,_Digits)+
+                                  "; ticket="+IntegerToString(gridTicket)+
+                                  "; open_side_count="+IntegerToString((int)OrdiniAperti(MagicNumber,OP_BUY)));
+      }
+   }
 
+   if(cmd==OP_SELL)
+   {
+      sendlot=GestioneOrdini(LottoDaTradare,OP_SELL);
+      if(CheckVolumeValue(sendlot) && EnableGrid &&
+         (!GridOrdersComplyMaxSpreadConditions || MaxSpread*_Point>=Ask_-Bid_) &&
+         (!GridOrdersComplyIndicatorsConditions || extraindicatorssell()) &&
+         (!GridOrdersComplyHoursConditions || Hour_trade_allowed(coefstart,coefstop)) &&
+         (!GridOrdersComplyWeekDaysConditions || DayCheck(DayOfWeek())))
+      {
+         int gridTicket=Ordine(OP_SELL,sendlot,Bid_,0,0,MagicNumber,0);
+         Kia64AppendObserverEvent(KIA64_GRID_FILE,
+                                  gridTicket>0 ? "RECOVERY_GRID_OPENED" : "RECOVERY_GRID_FAILED",
+                                  "side=SELL; lot="+DoubleToString(sendlot,8)+
+                                  "; price="+DoubleToString(Bid_,_Digits)+
+                                  "; ticket="+IntegerToString(gridTicket)+
+                                  "; open_side_count="+IntegerToString((int)OrdiniAperti(MagicNumber,OP_SELL)));
+      }
+   }
+}
 
 double GestioneOrdini(double lottaggio,int cmd)
 {
