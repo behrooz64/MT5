@@ -507,7 +507,7 @@ TakeTargetSell = TakeTarget;
 // Validate cycle inputs before indicator initialization.
 if(Kia64V4InitialLot <= 0.0 || Kia64V4LinearLotIncrement < 0.0 ||
    Kia64V4TrendTakeProfitPoints < 1 || Kia64V4MaximumTrendEntries < 1 ||
-   Kia64V4MaximumTrendLot <= 0.0 || Kia64V4ReversalCloseAtOrAboveMoney < -1000000000.0)
+   Kia64V4MaximumTrendLot <= 0.0)
 {
    Print("Kia64 v4: invalid trend-cycle input settings.");
    return INIT_PARAMETERS_INCORRECT;
@@ -767,7 +767,8 @@ double Kia64V4SideNetProfit(int direction)
          (int)PositionGetInteger(POSITION_MAGIC) == MagicNumber &&
          (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == wanted)
       {
-         result += PositionGetDouble(POSITION_PROFIT) + PositionGetDouble(POSITION_SWAP);
+         result += PositionGetDouble(POSITION_PROFIT) + PositionGetDouble(POSITION_SWAP) +
+                   PositionGetDouble(POSITION_COMMISSION);
       }
    }
    return result;
@@ -902,6 +903,15 @@ void Kia64V4RefreshCycleState()
             Kia64V4SetTPPending(false);
             Kia64TradeDiagnostic("V4 trend reversal: losing position moved to legacy basket-recovery mode.");
          }
+      }
+      else if(Kia64V4SidePositionCount(activeDirection) == 0 && !Kia64V4TPReentryPending)
+      {
+         // Manual/SL closure is not a TP continuation. Reset and wait for a fresh BB signal.
+         Kia64V4SetCycleMode(0);
+         Kia64V4SetEntryCount(0);
+         Kia64V4SetAwaitFreshBollinger(true);
+         Kia64V4BlockEntryThisTick = true;
+         Kia64TradeDiagnostic("V4 trend cycle ended without TP; reset to fresh Bollinger entry.");
       }
    }
    else if(Kia64V4CycleMode == 2 || Kia64V4CycleMode == -2)
