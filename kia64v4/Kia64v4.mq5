@@ -1,10 +1,10 @@
 //+------------------------------------------------------------------+
-//|                                                   Kia64.mq5       |
+//|                                                 Kia64v4.mq5      |
 //|                        Copyright 2024, MetaQuotes Software Corp. |
 //|                                                                  |
 //+------------------------------------------------------------------+
 
-#property description "Owner : Kia64 "
+#property description "Owner : Kia64 v4 "
 #property link        "https://kia64.ir"
 #property description "Kia64 Academy Presentation"
 input string AllowedBroker = "GTCGlobalTrade-Demo"; // Allowed broker server
@@ -2632,8 +2632,7 @@ double Kia64V4NetResultSinceStart()
    {
       ulong ticket=PositionGetTicket(p);
       if(ticket==0 || (int)PositionGetInteger(POSITION_MAGIC)!=MagicNumber) continue;
-      result += PositionGetDouble(POSITION_PROFIT)+PositionGetDouble(POSITION_SWAP)+
-                PositionGetDouble(POSITION_COMMISSION);
+      result += PositionGetDouble(POSITION_PROFIT)+PositionGetDouble(POSITION_SWAP);
    }
    return result;
 }
