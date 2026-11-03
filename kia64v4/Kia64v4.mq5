@@ -567,6 +567,98 @@ ObjectsDeleteAll(0,-1,OBJ_RECTANGLE_LABEL);
 
 
   }
+// KIA64 V4 trend engine.
+// Supertrend is calculated from ATR bands because MT5 has no universal built-in
+// Supertrend handle. Only completed candles (bar 1) are used for confirmation.
+bool Kia64V4CalculateSupertrend(int &direction)
+{
+   direction = 0;
+   if(Kia64V4ATRHandle == INVALID_HANDLE) return false;
+
+   int bars = Kia64V4TrendCalculationBars;
+   MqlRates rates[];
+   double atr[];
+   ArraySetAsSeries(rates,true);
+   ArraySetAsSeries(atr,true);
+
+   int copiedRates = CopyRates(_Symbol,Kia64V4SupertrendTimeframe,0,bars,rates);
+   int copiedATR = CopyBuffer(Kia64V4ATRHandle,0,0,bars,atr);
+   if(copiedRates < bars || copiedATR < bars) return false;
+
+   double finalUpper[], finalLower[];
+   int trend[];
+   ArrayResize(finalUpper,bars);
+   ArrayResize(finalLower,bars);
+   ArrayResize(trend,bars);
+   ArraySetAsSeries(finalUpper,true);
+   ArraySetAsSeries(finalLower,true);
+   ArraySetAsSeries(trend,true);
+
+   for(int i=bars-1; i>=1; i--)
+   {
+      if(atr[i] <= 0.0) return false;
+      double midpoint = (rates[i].high + rates[i].low) * 0.5;
+      double basicUpper = midpoint + Kia64V4SupertrendMultiplier * atr[i];
+      double basicLower = midpoint - Kia64V4SupertrendMultiplier * atr[i];
+
+      if(i == bars-1)
+      {
+         finalUpper[i] = basicUpper;
+         finalLower[i] = basicLower;
+         trend[i] = (rates[i].close >= midpoint) ? 1 : -1;
+         continue;
+      }
+
+      int older = i+1;
+      finalUpper[i] = (basicUpper < finalUpper[older] || rates[older].close > finalUpper[older])
+                      ? basicUpper : finalUpper[older];
+      finalLower[i] = (basicLower > finalLower[older] || rates[older].close < finalLower[older])
+                      ? basicLower : finalLower[older];
+
+      trend[i] = trend[older];
+      if(trend[older] < 0 && rates[i].close > finalUpper[older])
+         trend[i] = 1;
+      else if(trend[older] > 0 && rates[i].close < finalLower[older])
+         trend[i] = -1;
+   }
+
+   direction = trend[1];
+   return (direction == 1 || direction == -1);
+}
+
+bool Kia64V4GetConfirmedTrend(int &direction,double &adxValue)
+{
+   direction = 0;
+   adxValue = 0.0;
+   if(!EnableKia64V4TrendEngine) return true;
+   if(Kia64V4FastEMAHandle == INVALID_HANDLE || Kia64V4SlowEMAHandle == INVALID_HANDLE ||
+      Kia64V4ADXHandle == INVALID_HANDLE) return false;
+
+   int supertrendDirection = 0;
+   if(!Kia64V4CalculateSupertrend(supertrendDirection)) return false;
+
+   double fastEMA[1], slowEMA[1], adx[1];
+   if(CopyBuffer(Kia64V4FastEMAHandle,0,1,1,fastEMA) != 1 ||
+      CopyBuffer(Kia64V4SlowEMAHandle,0,1,1,slowEMA) != 1 ||
+      CopyBuffer(Kia64V4ADXHandle,0,1,1,adx) != 1)
+      return false;
+
+   double emaClose = iClose(_Symbol,Kia64V4EMATimeframe,1);
+   if(emaClose <= 0.0 || fastEMA[0] <= 0.0 || slowEMA[0] <= 0.0 || adx[0] < 0.0)
+      return false;
+
+   adxValue = adx[0];
+   if(adxValue < Kia64V4ADXMinimum) return true;
+
+   bool emaBullish = (fastEMA[0] > slowEMA[0] && emaClose > fastEMA[0]);
+   bool emaBearish = (fastEMA[0] < slowEMA[0] && emaClose < fastEMA[0]);
+
+   if(supertrendDirection > 0 && emaBullish) direction = 1;
+   else if(supertrendDirection < 0 && emaBearish) direction = -1;
+
+   return true;
+}
+
 //+------------------------------------------------------------------+
 //| Expert tick function                                             |
 //+------------------------------------------------------------------+
