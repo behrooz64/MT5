@@ -36,6 +36,25 @@ input string Kia64V4Settings = "===== KIA64 V4 SETTINGS =====";
 input bool EnableKia64V4EmergencyStop = true;
 input double Kia64V4MaximumLossPercent = 10.0;
 input bool ResetKia64V4EmergencyStop = false;
+
+// Trend confirmation defaults. All settings remain editable in EA Inputs.
+input string Kia64V4TrendSettings = "===== TREND CONFIRMATION =====";
+input bool EnableKia64V4TrendEngine = true;
+input ENUM_TIMEFRAMES Kia64V4SupertrendTimeframe = PERIOD_M1;
+input int Kia64V4SupertrendATRPeriod = 7;
+input double Kia64V4SupertrendMultiplier = 2.0;
+input ENUM_TIMEFRAMES Kia64V4EMATimeframe = PERIOD_M5;
+input int Kia64V4FastEMAPeriod = 50;
+input int Kia64V4SlowEMAPeriod = 100;
+input ENUM_TIMEFRAMES Kia64V4ADXTimeframe = PERIOD_M1;
+input int Kia64V4ADXPeriod = 14;
+input double Kia64V4ADXMinimum = 20.0;
+input int Kia64V4TrendCalculationBars = 120;
+
+int Kia64V4ATRHandle = INVALID_HANDLE;
+int Kia64V4FastEMAHandle = INVALID_HANDLE;
+int Kia64V4SlowEMAHandle = INVALID_HANDLE;
+int Kia64V4ADXHandle = INVALID_HANDLE;
 double LottoDaTradare;
 bool MoneyManagement = false;//Money Management  // in
 double RiskPercent = 1;//Risk Percent    //in
@@ -446,7 +465,30 @@ coefstop = Hour_trade_Calculator(TradingStopHour,TradingStopMinute);
 TakeTargetBuy = TakeTarget;
 TakeTargetSell = TakeTarget;
 
+// Initialize indicator handles once and reuse them on ticks.
+if(EnableKia64V4TrendEngine)
+{
+   if(Kia64V4SupertrendATRPeriod < 2 || Kia64V4FastEMAPeriod < 2 ||
+      Kia64V4SlowEMAPeriod <= Kia64V4FastEMAPeriod || Kia64V4ADXPeriod < 2 ||
+      Kia64V4SupertrendMultiplier <= 0.0 || Kia64V4ADXMinimum < 0.0 ||
+      Kia64V4TrendCalculationBars < 30)
+   {
+      Print("Kia64 v4: invalid trend indicator input settings.");
+      return INIT_PARAMETERS_INCORRECT;
+   }
 
+   Kia64V4ATRHandle = iATR(_Symbol,Kia64V4SupertrendTimeframe,Kia64V4SupertrendATRPeriod);
+   Kia64V4FastEMAHandle = iMA(_Symbol,Kia64V4EMATimeframe,Kia64V4FastEMAPeriod,0,MODE_EMA,PRICE_CLOSE);
+   Kia64V4SlowEMAHandle = iMA(_Symbol,Kia64V4EMATimeframe,Kia64V4SlowEMAPeriod,0,MODE_EMA,PRICE_CLOSE);
+   Kia64V4ADXHandle = iADX(_Symbol,Kia64V4ADXTimeframe,Kia64V4ADXPeriod);
+
+   if(Kia64V4ATRHandle == INVALID_HANDLE || Kia64V4FastEMAHandle == INVALID_HANDLE ||
+      Kia64V4SlowEMAHandle == INVALID_HANDLE || Kia64V4ADXHandle == INVALID_HANDLE)
+   {
+      Print("Kia64 v4: failed to create one or more trend indicator handles. Error=",GetLastError());
+      return INIT_FAILED;
+   }
+}
 
 //---
    return(INIT_SUCCEEDED);
@@ -508,6 +550,11 @@ void OnChartEvent(const int id,
 //+------------------------------------------------------------------+
 void OnDeinit(const int reason)
   {
+   if(Kia64V4ATRHandle != INVALID_HANDLE) IndicatorRelease(Kia64V4ATRHandle);
+   if(Kia64V4FastEMAHandle != INVALID_HANDLE) IndicatorRelease(Kia64V4FastEMAHandle);
+   if(Kia64V4SlowEMAHandle != INVALID_HANDLE) IndicatorRelease(Kia64V4SlowEMAHandle);
+   if(Kia64V4ADXHandle != INVALID_HANDLE) IndicatorRelease(Kia64V4ADXHandle);
+
 ObjectsDeleteAll(0,-1,OBJ_BUTTON);
 ObjectsDeleteAll(0,-1,OBJ_LABEL);
 ObjectsDeleteAll(0,-1,OBJ_EDIT);
