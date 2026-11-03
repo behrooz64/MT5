@@ -74,6 +74,8 @@ bool Kia64V4TPReentryPending = false;
 string Kia64V4ModeKey = "";
 string Kia64V4EntryCountKey = "";
 string Kia64V4TPPendingKey = "";
+string Kia64V4WaitBBKey = "";
+bool Kia64V4AwaitFreshBollinger = false;
 int Kia64V4ConfirmedTrend = 0;
 double Kia64V4ADXValue = 0.0;
 bool Kia64V4TrendDataReady = false;
@@ -441,9 +443,12 @@ string cyclePrefix = "K64V4_CYCLE_" + IntegerToString((int)AccountInfoInteger(AC
 Kia64V4ModeKey = cyclePrefix + "_MODE";
 Kia64V4EntryCountKey = cyclePrefix + "_COUNT";
 Kia64V4TPPendingKey = cyclePrefix + "_TP";
+Kia64V4WaitBBKey = cyclePrefix + "_WAITBB";
 if(!GlobalVariableCheck(Kia64V4ModeKey)) GlobalVariableSet(Kia64V4ModeKey,0.0);
 if(!GlobalVariableCheck(Kia64V4EntryCountKey)) GlobalVariableSet(Kia64V4EntryCountKey,0.0);
 if(!GlobalVariableCheck(Kia64V4TPPendingKey)) GlobalVariableSet(Kia64V4TPPendingKey,0.0);
+if(!GlobalVariableCheck(Kia64V4WaitBBKey)) GlobalVariableSet(Kia64V4WaitBBKey,0.0);
+Kia64V4AwaitFreshBollinger = (GlobalVariableGet(Kia64V4WaitBBKey)>0.5);
 Kia64V4CycleMode = (int)GlobalVariableGet(Kia64V4ModeKey);
 Kia64V4TrendEntriesOpened = (int)GlobalVariableGet(Kia64V4EntryCountKey);
 Kia64V4TPReentryPending = (GlobalVariableGet(Kia64V4TPPendingKey)>0.5);
@@ -786,6 +791,12 @@ void Kia64V4SetTPPending(bool pending)
    if(Kia64V4TPPendingKey != "") GlobalVariableSet(Kia64V4TPPendingKey,pending ? 1.0 : 0.0);
 }
 
+void Kia64V4SetAwaitFreshBollinger(bool waitForFreshSignal)
+{
+   Kia64V4AwaitFreshBollinger = waitForFreshSignal;
+   if(Kia64V4WaitBBKey != "") GlobalVariableSet(Kia64V4WaitBBKey,waitForFreshSignal ? 1.0 : 0.0);
+}
+
 void Kia64V4RemoveSideTakeProfits(int direction)
 {
    ENUM_POSITION_TYPE wanted = (direction > 0) ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
@@ -880,6 +891,7 @@ void Kia64V4RefreshCycleState()
             Kia64V4SetCycleMode(0);
             Kia64V4SetEntryCount(0);
             Kia64V4SetTPPending(false);
+            Kia64V4SetAwaitFreshBollinger(true);
             Kia64V4BlockEntryThisTick = true;
             Kia64TradeDiagnostic("V4 trend reversal: non-losing cycle closed; waiting for a fresh Bollinger entry.");
          }
@@ -900,6 +912,7 @@ void Kia64V4RefreshCycleState()
          Kia64V4SetCycleMode(0);
          Kia64V4SetEntryCount(0);
          Kia64V4SetTPPending(false);
+         Kia64V4SetAwaitFreshBollinger(true);
          Kia64V4BlockEntryThisTick = true;
          Kia64TradeDiagnostic("V4 recovery basket completed; cycle reset.");
       }
@@ -1175,6 +1188,14 @@ if (!AtrAbilitato)
 bool ExtraIndicatorsBuy = extraindicatorsbuy();
 bool ExtraIndicatorsSell = extraindicatorssell();
 
+if(EnableKia64V4TrendEngine && Kia64V4CycleMode == 0 && Kia64V4AwaitFreshBollinger)
+{
+   if(!ExtraIndicatorsBuy && !ExtraIndicatorsSell)
+      Kia64V4SetAwaitFreshBollinger(false);
+   else
+      return;
+}
+
 // A trend cycle may re-enter only after its previous position was closed by TP.
 // No new Bollinger signal is required for these sequential continuation entries.
 if(EnableKia64V4TrendEngine && (Kia64V4CycleMode == 1 || Kia64V4CycleMode == -1))
@@ -1194,7 +1215,8 @@ if(EnableKia64V4TrendEngine && (Kia64V4CycleMode == 1 || Kia64V4CycleMode == -1)
          Kia64V4SetCycleMode(0);
          Kia64V4SetEntryCount(0);
          Kia64V4SetTPPending(false);
-         Kia64TradeDiagnostic("V4 maximum trend entries reached; cycle reset.");
+         Kia64V4SetAwaitFreshBollinger(true);
+          Kia64TradeDiagnostic("V4 maximum trend entries reached; cycle reset.");
       }
    }
    return;
