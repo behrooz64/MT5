@@ -653,6 +653,23 @@ void ApplyFibarChartTheme()
    ChartSetInteger(0,CHART_COLOR_FOREGROUND,clrSilver);
 }
 
+// Hide indicator/strategy chart objects without deleting their data.
+// Names, types, coordinates, descriptions and colors remain available to the EA.
+void FibarHideNonPanelObjects()
+{
+   int total=ObjectsTotal(0,-1,-1);
+   for(int i=total-1;i>=0;i--)
+   {
+      string name=ObjectName(0,i,-1,-1);
+      if(name=="" || StringFind(name,FIBAR_PREFIX)==0) continue;
+
+      // OBJ_NO_PERIODS hides drawing on every timeframe; it does not delete the object.
+      ObjectSetInteger(0,name,OBJPROP_TIMEFRAMES,OBJ_NO_PERIODS);
+      ObjectSetInteger(0,name,OBJPROP_HIDDEN,true);
+   }
+   ChartRedraw(0);
+}
+
 void DeleteFibarObjects()
 {
    for(int i=ObjectsTotal(0,-1,-1)-1;i>=0;i--)
@@ -691,6 +708,7 @@ int OnInit()
    Print("FIBAR PRO started on "+symbol+" M1");
    FibarCreatePanel();
    UpdateFibarDashboard();
+   FibarHideNonPanelObjects();
    return(INIT_SUCCEEDED);
 }
 
@@ -704,6 +722,7 @@ void OnDeinit(const int reason)
 void OnTick()
 {
    UpdateFibarDashboard();
+   FibarHideNonPanelObjects();
    if (Symbol() != TradeSymbol || Period() != TF) return;
 
    ObserverTick();
@@ -714,7 +733,7 @@ void OnTick()
 
    CheckArrowAndTrade();
    CheckClosedOrders();
-   ShowFiboLevelsOnChart();
+   // Fibo visualization labels are intentionally omitted in the customer build.
 
 
 }
