@@ -1,4 +1,4 @@
-name: Export Derik observer datasets
+name: Export Derik observer and Gold datasets
 
 on:
   workflow_dispatch:
@@ -22,23 +22,33 @@ jobs:
         run: |
           set -euo pipefail
           git lfs pull
-          count=$(find Derik-Data/M1 Derik-Data/M5 -maxdepth 1 -type f -name '*.csv' | wc -l)
-          echo "CSV files found: $count"
-          test "$count" -eq 22
-          for file in Derik-Data/M1/*.csv Derik-Data/M5/*.csv; do
+
+          m1_count=$(find Derik-Data/M1 -maxdepth 1 -type f -name '*.csv' | wc -l)
+          m5_count=$(find Derik-Data/M5 -maxdepth 1 -type f -name '*.csv' | wc -l)
+          gold_count=$(find Derik-Data/Gold-M1 -maxdepth 1 -type f -name '*.csv' | wc -l)
+
+          echo "M1 CSV files: $m1_count"
+          echo "M5 CSV files: $m5_count"
+          echo "Gold M1 CSV files: $gold_count"
+
+          test "$m1_count" -eq 11
+          test "$m5_count" -eq 11
+          test "$gold_count" -eq 1
+
+          for file in Derik-Data/M1/*.csv Derik-Data/M5/*.csv Derik-Data/Gold-M1/*.csv; do
             if head -n 1 "$file" | grep -q '^version https://git-lfs.github.com/spec/v1$'; then
               echo "LFS pointer remains instead of file content: $file"
               exit 1
             fi
           done
 
-      - name: Package M1 and M5 datasets
-        run: zip -r Derik-Data-M1-M5.zip Derik-Data/M1 Derik-Data/M5
+      - name: Package M1, M5 and Gold M1 datasets
+        run: zip -r Derik-Data-M1-M5-Gold.zip Derik-Data/M1 Derik-Data/M5 Derik-Data/Gold-M1
 
       - name: Upload downloadable archive
         uses: actions/upload-artifact@v4
         with:
-          name: Derik-Data-M1-M5
-          path: Derik-Data-M1-M5.zip
+          name: Derik-Data-M1-M5-Gold
+          path: Derik-Data-M1-M5-Gold.zip
           if-no-files-found: error
           retention-days: 7
