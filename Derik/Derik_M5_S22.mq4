@@ -494,7 +494,7 @@ void CaptureVisibleArrows()
 }
 void QueueRetry(string base)
 {
-   GlobalVariableSet(base+"_N",(double)(TimeCurrent()+MathMax(1,ArrowRetrySeconds)));
+   GlobalVariableSet(base+"_N",(double)(TimeLocal()+MathMax(1,ArrowRetrySeconds)));
 }
 void QueueReject(string base,string reason)
 {
@@ -560,7 +560,7 @@ void ProcessArrowQueue()
       if(GlobalVariableGet(stateKey)!=0)continue;
       string base=StringSubstr(stateKey,0,StringLen(stateKey)-2);
       double nextTry=GlobalVariableCheck(base+"_N")?GlobalVariableGet(base+"_N"):0;
-      if(nextTry>TimeCurrent())continue;
+      if(nextTry>TimeLocal())continue;
       if(!GlobalVariableCheck(base+"_T")||!GlobalVariableCheck(base+"_P")||!GlobalVariableCheck(base+"_D"))
       {GlobalVariableSet(stateKey,2);continue;}
       datetime arrowTime=(datetime)GlobalVariableGet(base+"_T");
