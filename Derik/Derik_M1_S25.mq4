@@ -7,7 +7,7 @@
 // Independent M1 S25 scenario EA
 input string TradeSymbol="XAUUSDb";
 input ENUM_TIMEFRAMES TF=PERIOD_M1;
-input double LotSize=0.01;
+input double RiskPercentPerTrade=1.0;
 input int Slippage=3;
 input int MagicNumber=251301;
 input bool UseFiboSignalFilter=true;
@@ -17,7 +17,7 @@ input int MaxOpenTrades=2;
 input bool PreventDuplicateArrowTrade=true;
 input bool CloseOtherTradesOnSignal=false;
 input bool EnableMaxRiskProtection=true;
-input double MaxRiskPercent=2.0;
+input double MaxAggregateRiskPercent=2.0;
 input bool EnableMaxDailyLoss=false;
 input double MaxDailyLoss=50.0;
 input bool ObserverEnabled=true;
@@ -86,8 +86,8 @@ bool ObserverLevels13(int dir,double entry,double &sl,double &tp)
       ObserverError13("scenario_rejected: invalid SL/TP geometry");return false;}
    return true;
 }
-bool ExecuteScenarioBuy13(){double en=NormalizeDouble(Ask,Digits),sl=0,tp=0;if(!ObserverLevels13(OP_BUY,en,sl,tp))return false;return ExecuteBuy(sl,tp);}
-bool ExecuteScenarioSell13(){double en=NormalizeDouble(Bid,Digits),sl=0,tp=0;if(!ObserverLevels13(OP_SELL,en,sl,tp))return false;return ExecuteSell(sl,tp);}
+bool ExecuteScenarioBuy13(double sl,double tp,double lots){return ExecuteBuy(sl,tp,lots);}
+bool ExecuteScenarioSell13(double sl,double tp,double lots){return ExecuteSell(sl,tp,lots);}
 string ObserverGV13(string k,int t){return "D13_"+k+"_"+IntegerToString(t);}
 void ObserverTradeRow13(string ev,int ticket,int dir,datetime ot,double op,double sl,double tp,double px,string why,
                         double gross,double floating,double maxp,double minp,double mfe,double mae,int seconds)
@@ -328,9 +328,11 @@ int CountOwnOpenTrades()
 }
 double OrderRiskMoney(int type,double entry,double sl,double lots)
 {
-   double ts=MarketInfo(symbol,MODE_TICKSIZE),tv=MarketInfo(symbol,MODE_TICKVALUE);
-   if(ts<=0||tv<=0||sl<=0)return 1.0e100;
-   return MathAbs(entry-sl)/ts*tv*lots;
+   double point=MarketInfo(symbol,MODE_POINT);
+   double tickSizePrice=MarketInfo(symbol,MODE_TICKSIZE)*point;
+   double tickValue=MarketInfo(symbol,MODE_TICKVALUE);
+   if(point<=0||tickSizePrice<=0||tickValue<=0||sl<=0||lots<=0)return 1.0e100;
+   return MathAbs(entry-sl)/tickSizePrice*tickValue*lots;
 }
 double CurrentOpenRiskMoney()
 {
@@ -341,6 +343,41 @@ double CurrentOpenRiskMoney()
          total+=OrderRiskMoney(OrderType(),OrderOpenPrice(),OrderStopLoss(),OrderLots());
    return total;
 }
+bool CalculateRiskLot(double entry,double sl,double &lots)
+{
+   lots=0;
+   double equity=AccountEquity(),point=MarketInfo(symbol,MODE_POINT);
+   double tickSizePrice=MarketInfo(symbol,MODE_TICKSIZE)*point;
+   double tickValue=MarketInfo(symbol,MODE_TICKVALUE);
+   double minLot=MarketInfo(symbol,MODE_MINLOT),maxLot=MarketInfo(symbol,MODE_MAXLOT);
+   double lotStep=MarketInfo(symbol,MODE_LOTSTEP);
+   if(equity<=0||point<=0||tickSizePrice<=0||tickValue<=0||lotStep<=0||
+      minLot<=0||maxLot<minLot||sl<=0||MathAbs(entry-sl)<point*0.5||RiskPercentPerTrade<=0)
+   {Obs2Reject("risk_lot_calculation_invalid_market_or_inputs");return false;}
+   double riskBudget=equity*RiskPercentPerTrade/100.0;
+   double riskPerLot=MathAbs(entry-sl)/tickSizePrice*tickValue;
+   if(riskBudget<=0||riskPerLot<=0)
+   {Obs2Reject("risk_lot_calculation_invalid_risk_value");return false;}
+   double rawLots=riskBudget/riskPerLot;
+   if(rawLots<minLot)
+   {
+      Obs2Reject("minimum_lot_exceeds_risk_budget;equity="+DoubleToString(equity,2)+
+                 ";risk_budget="+DoubleToString(riskBudget,2)+
+                 ";minimum_lot="+DoubleToString(minLot,3)+
+                 ";minimum_lot_risk="+DoubleToString(riskPerLot*minLot,2));
+      return false;
+   }
+   double steppedLots=MathFloor(MathMin(rawLots,maxLot)/lotStep+1.0e-8)*lotStep;
+   int lotDigits=0;
+   while(lotDigits<8&&MathAbs(lotStep-NormalizeDouble(lotStep,lotDigits))>1.0e-8)lotDigits++;
+   lots=NormalizeDouble(steppedLots,lotDigits);
+   if(lots<minLot||lots<=0){lots=0;Obs2Reject("calculated_lot_below_broker_minimum");return false;}
+   double estimatedRisk=OrderRiskMoney(OP_BUY,entry,sl,lots);
+   if(estimatedRisk>riskBudget+0.01)
+   {lots=0;Obs2Reject("calculated_lot_exceeds_per_trade_risk;estimated="+DoubleToString(estimatedRisk,2)+
+                      ";budget="+DoubleToString(riskBudget,2));return false;}
+   return true;
+}
 double TodayClosedGross()
 {
    datetime dayStart=StringToTime(TimeToString(TimeCurrent(),TIME_DATE));double total=0;
@@ -350,7 +387,7 @@ double TodayClosedGross()
          total+=OrderProfit();
    return total;
 }
-bool CanOpenAnotherTrade(double entry,double sl)
+bool CanOpenAnotherTrade(double entry,double sl,double lots)
 {
    int count=(CloseOtherTradesOnSignal?0:CountOwnOpenTrades());
    if(!AllowNewTradeWhilePositionOpen&&!CloseOtherTradesOnSignal&&count>0)
@@ -360,10 +397,10 @@ bool CanOpenAnotherTrade(double entry,double sl)
    {Obs2Reject("max_daily_loss_reached");return false;}
    if(EnableMaxRiskProtection)
    {
-      double proposed=OrderRiskMoney(OP_BUY,entry,sl,LotSize);
+      double proposed=OrderRiskMoney(OP_BUY,entry,sl,lots);
       double current=(CloseOtherTradesOnSignal?0:CurrentOpenRiskMoney());
-      double limit=AccountBalance()*MaxRiskPercent/100.0;
-      if(proposed>=1.0e99||current+proposed>limit)
+      double limit=AccountEquity()*MaxAggregateRiskPercent/100.0;
+      if(proposed>=1.0e99||current+proposed>limit+0.01)
       {Obs2Reject("aggregate_risk_limit;current="+DoubleToString(current,2)+
                   ";proposed="+DoubleToString(proposed,2)+";limit="+DoubleToString(limit,2));return false;}
    }
@@ -400,9 +437,11 @@ void ProcessArrow(string objName,string direction,double level38,bool fiboOk)
    if(!ObserverLevels13(type,NormalizeDouble(entry,Digits),sl,tp))return;
    if((direction=="BUY"&&!(sl<entry&&tp>entry))||(direction=="SELL"&&!(sl>entry&&tp<entry)))
    {Obs2Reject("invalid_SL_TP_geometry");return;}
-   if(!CanOpenAnotherTrade(entry,sl))return;
+   double lots=0;
+   if(!CalculateRiskLot(entry,sl,lots))return;
+   if(!CanOpenAnotherTrade(entry,sl,lots))return;
    CloseOwnTradesOnSignal();
-   bool opened=(direction=="BUY"?ExecuteScenarioBuy13():ExecuteScenarioSell13());
+   bool opened=(direction=="BUY"?ExecuteScenarioBuy13(sl,tp,lots):ExecuteScenarioSell13(sl,tp,lots));
    if(!opened||lastOpenedTicket<0)
    {Obs2Error("entry_failed;direction="+direction+";arrow_time="+TimeToString(arrowTime,TIME_DATE|TIME_SECONDS));return;}
    if(PreventDuplicateArrowTrade)GlobalVariableSet(key,1);
@@ -457,18 +496,18 @@ bool GetFiboLevels(double &level0, double &level38, double &level61)
    return true;
 }
 
-bool ExecuteBuy(double sl,double tp)
+bool ExecuteBuy(double sl,double tp,double lots)
 {
    double price=NormalizeDouble(Ask,Digits);ResetLastError();lastOpenedTicket=-1;
-   int ticket=OrderSend(symbol,OP_BUY,LotSize,price,Slippage,sl,tp,"Derik_M1_S25",MagicNumber,0,clrGreen);
+   int ticket=OrderSend(symbol,OP_BUY,lots,price,Slippage,sl,tp,"Derik_M1_S25",MagicNumber,0,clrGreen);
    if(ticket<0){int err=GetLastError();lastOpenedTicket=-1;ObserverError13("OrderSend BUY failed;error="+IntegerToString(err));
       if(NotifyOrderErrors)SendNotification("Derik_M1_S25 BUY OrderSend error "+IntegerToString(err));return false;}
    lastOpenedTicket=ticket;return true;
 }
-bool ExecuteSell(double sl,double tp)
+bool ExecuteSell(double sl,double tp,double lots)
 {
    double price=NormalizeDouble(Bid,Digits);ResetLastError();lastOpenedTicket=-1;
-   int ticket=OrderSend(symbol,OP_SELL,LotSize,price,Slippage,sl,tp,"Derik_M1_S25",MagicNumber,0,clrRed);
+   int ticket=OrderSend(symbol,OP_SELL,lots,price,Slippage,sl,tp,"Derik_M1_S25",MagicNumber,0,clrRed);
    if(ticket<0){int err=GetLastError();lastOpenedTicket=-1;ObserverError13("OrderSend SELL failed;error="+IntegerToString(err));
       if(NotifyOrderErrors)SendNotification("Derik_M1_S25 SELL OrderSend error "+IntegerToString(err));return false;}
    lastOpenedTicket=ticket;return true;
