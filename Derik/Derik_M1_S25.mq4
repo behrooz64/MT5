@@ -303,7 +303,8 @@ void OnDeinit(const int reason){Print("Derik_M1_S25 stopped. reason="+IntegerToS
 void OnTick()
 {
    if(Symbol()!=TradeSymbol || Period()!=TF) return;
-   if(ObserverEnabled) Obs2Tick();
+   if(ObserverEnabled) Obs2TrackClosedBar();
+   Obs2CheckClosed();
    datetime currentBar=iTime(symbol,TF,0);
    if(currentBar==lastBar) return;
    lastBar=currentBar;
