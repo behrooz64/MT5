@@ -299,6 +299,7 @@ int OnInit()
       Obs2Write(obs2ErrorFile,"server_time;symbol;timeframe;scenario;event;detail","");
    }
    lastBar=iTime(symbol,TF,0);
+   MarkExistingArrowsSeen();
    ChartSetInteger(0,CHART_EVENT_OBJECT_CREATE,true);
    EventSetMillisecondTimer(200);
    Print("Derik_M1_S25 initialized. Magic="+IntegerToString(MagicNumber));
@@ -475,6 +476,22 @@ void QueueArrowFromObject(string objName)
    datetime arrowTime=(datetime)ObjectGet(objName,OBJPROP_TIME1);
    double arrowPrice=ObjectGet(objName,OBJPROP_PRICE1);
    QueueArrowSnapshot(objName=="UpArrow"?"BUY":"SELL",arrowTime,arrowPrice);
+}
+void MarkExistingArrowsSeen()
+{
+   int total=ObjectsTotal(0,0,-1);
+   for(int i=total-1;i>=0;i--)
+   {
+      string name=ObjectName(0,i,0,-1);
+      if(name!="UpArrow"&&name!="DownArrow")continue;
+      if(ObjectType(name)!=OBJ_ARROW)continue;
+      datetime arrowTime=(datetime)ObjectGet(name,OBJPROP_TIME1);
+      double arrowPrice=ObjectGet(name,OBJPROP_PRICE1);
+      if(arrowTime<=0||arrowPrice<=0)continue;
+      string direction=(name=="UpArrow"?"BUY":"SELL");
+      string stateKey=ArrowQueueBase(direction,arrowTime,arrowPrice)+"_S";
+      if(!GlobalVariableCheck(stateKey))GlobalVariableSet(stateKey,2);
+   }
 }
 void CaptureVisibleArrows()
 {
