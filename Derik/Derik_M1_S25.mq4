@@ -93,79 +93,6 @@ bool ObserverLevels13(int dir,double entry,double &sl,double &tp,string base)
 }
 bool ExecuteScenarioBuy13(double sl,double tp,double lots){return ExecuteBuy(sl,tp,lots);}
 bool ExecuteScenarioSell13(double sl,double tp,double lots){return ExecuteSell(sl,tp,lots);}
-string ObserverGV13(string k,int t){return "D13_"+k+"_"+IntegerToString(t);}
-void ObserverTradeRow13(string ev,int ticket,int dir,datetime ot,double op,double sl,double tp,double px,string why,
-                        double gross,double floating,double maxp,double minp,double mfe,double mae,int seconds)
-{
-   string row=TimeToString(TimeCurrent(),TIME_DATE|TIME_SECONDS)+";"+ev+";"+IntegerToString(ticket)+";"+symbol+";"+observerChartTF+";"+
-      (Period()==PERIOD_M1?"25":"22")+";"+(dir==OP_BUY?"BUY":"SELL")+";"+TimeToString(ot,TIME_DATE|TIME_SECONDS)+";"+
-      DoubleToString(op,Digits)+";"+DoubleToString(sl,Digits)+";"+DoubleToString(tp,Digits)+";"+DoubleToString(px,Digits)+";"+
-      why+";"+DoubleToString(gross,2)+";"+DoubleToString(floating,2)+";"+DoubleToString(maxp,2)+";"+DoubleToString(minp,2)+";"+
-      DoubleToString(mfe,1)+";"+DoubleToString(mae,1)+";"+IntegerToString(seconds);
-   ObserverWriteCompact(ObserverTradeLogFile,
-      "server_time;event;ticket;symbol;timeframe;scenario;direction;open_time;open_price;initial_sl;tp2;price;exit_reason;gross_profit;floating_profit_gross;max_floating_profit;max_floating_loss;mfe_points;mae_points;duration_seconds",row);
-}
-void ObserverTrackLive13()
-{
-   double pt=MarketInfo(symbol,MODE_POINT);if(pt<=0)return;
-   for(int i=OrdersTotal()-1;i>=0;i--){if(!OrderSelect(i,SELECT_BY_POS,MODE_TRADES))continue;
-      if(OrderSymbol()!=symbol||OrderType()>OP_SELL)continue;
-      int t=OrderTicket(),dir=OrderType();string seen=ObserverGV13("seen",t),kp=ObserverGV13("maxp",t),kl=ObserverGV13("maxl",t);
-      string kmf=ObserverGV13("mfe",t),kma=ObserverGV13("mae",t),ks=ObserverGV13("sl",t),kt=ObserverGV13("tp",t);
-      bool first=!GlobalVariableCheck(seen);double mark=(dir==OP_BUY?Bid:Ask);
-      double pts=(dir==OP_BUY?mark-OrderOpenPrice():OrderOpenPrice()-mark)/pt;
-      double fl=OrderProfit(); // gross floating P/L, excluding swap and commission
-      double maxp=first?fl:GlobalVariableGet(kp),minp=first?fl:GlobalVariableGet(kl);
-      double mfe=first?MathMax(0,pts):GlobalVariableGet(kmf),mae=first?MathMin(0,pts):GlobalVariableGet(kma);
-      bool changed=first;if(fl>maxp){maxp=fl;changed=true;}if(fl<minp){minp=fl;changed=true;}
-      if(pts>mfe){mfe=pts;changed=true;}if(pts<mae){mae=pts;changed=true;}
-      GlobalVariableSet(seen,1);GlobalVariableSet(kp,maxp);GlobalVariableSet(kl,minp);GlobalVariableSet(kmf,mfe);GlobalVariableSet(kma,mae);
-      if(first){GlobalVariableSet(ks,OrderStopLoss());GlobalVariableSet(kt,OrderTakeProfit());}
-      if(changed)ObserverTradeRow13(first?"TRADE_FIRST_SEEN":"FLOATING_EXTREME",t,dir,OrderOpenTime(),OrderOpenPrice(),
-         GlobalVariableGet(ks),GlobalVariableGet(kt),mark,"OPEN",0,fl,maxp,minp,mfe,mae,(int)(TimeCurrent()-OrderOpenTime()));
-   }
-}
-void ObserverDaily13(datetime ct,double gross)
-{
-   string day=TimeToString(ct,TIME_DATE);StringReplace(day,".","_");StringReplace(day,"-","_");
-   string pre="D13DAY_"+symbol+"_"+observerChartTF+"_"+day;StringReplace(pre,".","_");
-   string kn=pre+"_N",kw=pre+"_W",kl=pre+"_L",ks=pre+"_SUM",kgw=pre+"_GW",kgl=pre+"_GL";
-   double n=GlobalVariableCheck(kn)?GlobalVariableGet(kn):0,w=GlobalVariableCheck(kw)?GlobalVariableGet(kw):0;
-   double l=GlobalVariableCheck(kl)?GlobalVariableGet(kl):0,s=GlobalVariableCheck(ks)?GlobalVariableGet(ks):0;
-   double gw=GlobalVariableCheck(kgw)?GlobalVariableGet(kgw):0,gl=GlobalVariableCheck(kgl)?GlobalVariableGet(kgl):0;
-   n++;s+=gross;if(gross>0){w++;gw+=gross;}else if(gross<0){l++;gl+=gross;}
-   GlobalVariableSet(kn,n);GlobalVariableSet(kw,w);GlobalVariableSet(kl,l);GlobalVariableSet(ks,s);GlobalVariableSet(kgw,gw);GlobalVariableSet(kgl,gl);
-   ObserverWriteCompact(ObserverDailyFile,"server_date;symbol;timeframe;trades;wins;losses;gross_wins;gross_losses;net_gross",
-      day+";"+symbol+";"+observerChartTF+";"+DoubleToString(n,0)+";"+DoubleToString(w,0)+";"+DoubleToString(l,0)+";"+
-      DoubleToString(gw,2)+";"+DoubleToString(gl,2)+";"+DoubleToString(s,2));
-}
-void ObserverClosed13()
-{
-   for(int i=0;i<OrdersHistoryTotal();i++){if(!OrderSelect(i,SELECT_BY_POS,MODE_HISTORY))continue;
-      if(OrderSymbol()!=symbol||OrderType()>OP_SELL||OrderCloseTime()<=0)continue;
-      if(observerStartedAt>0&&OrderCloseTime()<observerStartedAt)continue;
-      int t=OrderTicket();string done=ObserverGV13("closed",t);if(GlobalVariableCheck(done))continue;
-      int dir=OrderType();datetime ot=OrderOpenTime(),ct=OrderCloseTime();
-      double maxp=GlobalVariableCheck(ObserverGV13("maxp",t))?GlobalVariableGet(ObserverGV13("maxp",t)):0;
-      double minp=GlobalVariableCheck(ObserverGV13("maxl",t))?GlobalVariableGet(ObserverGV13("maxl",t)):0;
-      double mfe=GlobalVariableCheck(ObserverGV13("mfe",t))?GlobalVariableGet(ObserverGV13("mfe",t)):0;
-      double mae=GlobalVariableCheck(ObserverGV13("mae",t))?GlobalVariableGet(ObserverGV13("mae",t)):0;
-      double sl=GlobalVariableCheck(ObserverGV13("sl",t))?GlobalVariableGet(ObserverGV13("sl",t)):OrderStopLoss();
-      double tp=GlobalVariableCheck(ObserverGV13("tp",t))?GlobalVariableGet(ObserverGV13("tp",t)):OrderTakeProfit();
-      double gross=OrderProfit(),tol=MarketInfo(symbol,MODE_POINT)*3;string why="OTHER_OR_MANUAL";
-      if(tp>0&&MathAbs(OrderClosePrice()-tp)<=tol)why="TP2";else if(sl>0&&MathAbs(OrderClosePrice()-sl)<=tol)why="STOP_LOSS";
-      ObserverTradeRow13("TRADE_CLOSED",t,dir,ot,OrderOpenPrice(),sl,tp,OrderClosePrice(),why,gross,0,maxp,minp,mfe,mae,(int)(ct-ot));
-      ObserverDaily13(ct,gross);GlobalVariableSet(done,1);
-   }
-}
-void ObserverTick()
-{
-   if(observerStartedAt==0)observerStartedAt=TimeCurrent();
-   ObserverCheckArrows();ObserverTrackLive13();ObserverClosed13();
-}
-
-
-
 // Compact observer: three CSV files only; OHLC path sampling, never tick-by-tick.
 string Obs2GV(string kind,int ticket,int index){return "D2_"+IntegerToString(MagicNumber)+"_"+kind+"_"+IntegerToString(ticket)+"_"+IntegerToString(index);}
 void Obs2Write(string fileName,string header,string row)
@@ -195,10 +122,10 @@ string Obs2NearestFrozenText(int ticket,double price)
       double p=GlobalVariableGet(k);if(p<=0)continue;double d=MathAbs(price-p);if(d<best){best=d;lp=p;ix=i;}}
    return ix<0?"unavailable":DoubleToString(obs2Ratios[ix]*100.0,1)+"% @ "+DoubleToString(lp,Digits);
 }
-void Obs2RegisterTrade(int ticket,int direction,double entry,double sl,double tp,string base)
+void Obs2RegisterTrade(int ticket,int direction,double entry,double sl,double tp,string base="")
 {
    if(!ObserverEnabled||!OrderSelect(ticket,SELECT_BY_TICKET))return;
-   for(int i=0;i<10;i++){GlobalVariableSet(Obs2GV("fib",ticket,i),ArrowFiboSnapshotPrice(base,i));GlobalVariableSet(Obs2GV("hit",ticket,i),0);}
+   for(int i=0;i<10;i++){double fibPrice=(base!=""?ArrowFiboSnapshotPrice(base,i):ObserverFiboPrice(obs2Ratios[i]));GlobalVariableSet(Obs2GV("fib",ticket,i),fibPrice);GlobalVariableSet(Obs2GV("hit",ticket,i),0);}
    GlobalVariableSet(Obs2GV("maxp",ticket,0),OrderProfit());GlobalVariableSet(Obs2GV("minp",ticket,0),OrderProfit());
    GlobalVariableSet(Obs2GV("mfe",ticket,0),0);GlobalVariableSet(Obs2GV("mae",ticket,0),0);GlobalVariableSet(Obs2GV("seen",ticket,0),1);
    string row=TimeToString(TimeCurrent(),TIME_DATE|TIME_SECONDS)+";ENTRY;"+IntegerToString(ticket)+";"+symbol+";M1;25;"+
@@ -456,7 +383,7 @@ string ArrowQueueBase(string direction,datetime arrowTime,double arrowPrice)
 bool FreezeArrowFiboSnapshot(string base)
 {
    string vk=base+"_FV";if(GlobalVariableCheck(vk)&&GlobalVariableGet(vk)>0.5)return true;
-   double p[10];for(int i=0;i<10;i++){p[i]=ObserverFiboPrice(obs2Ratios[i]);if(p[i]<=0)return false;}
+   double p[10];ArrayInitialize(p,0.0);for(int i=0;i<10;i++){p[i]=ObserverFiboPrice(obs2Ratios[i]);if(p[i]<=0)return false;}
    for(int i=0;i<10;i++)GlobalVariableSet(base+"_F"+IntegerToString(i),p[i]);
    GlobalVariableSet(vk,1);return true;
 }
@@ -663,7 +590,7 @@ bool GetFiboLevels(double &level0, double &level38, double &level61)
       return false;
    }
 
-   int fiboColor = ObjectGetInteger(0, objName, OBJPROP_COLOR);
+   int fiboColor = (int)ObjectGetInteger(0, objName, OBJPROP_COLOR);
    bool reverse = (fiboColor == clrRed || fiboColor == clrBlue);
 
 
