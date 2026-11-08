@@ -39,6 +39,8 @@ string symbol;
 datetime lastBar = 0;
 string lastStatus = "";
 int lastOpenedTicket=-1;
+bool lastOrderSendAmbiguous=false;
+datetime lastQueueScan=0,lastQueueCleanup=0;
 datetime obs2StartedAt=0,obs2LastBar=0;
 string obs2Folder="",obs2TradeFile="",obs2PathFile="",obs2ErrorFile="";
 double obs2Ratios[10]={0.0,0.236,0.333,0.382,0.5,0.618,0.667,0.785,0.886,1.0};
@@ -72,21 +74,21 @@ double ObserverTP2_13(int dir,double entry)
       if(d<d1){best2=best1;d2=d1;best1=p;d1=d;}else if(d<d2){best2=p;d2=d;}}
    return best2;
 }
-bool ObserverLevels13(int dir,double entry,double &sl,double &tp)
+bool ObserverLevels13(int dir,double entry,double &sl,double &tp,string base)
 {
    double pt=MarketInfo(symbol,MODE_POINT);if(pt<=0)return false;
-   tp=ObserverTP2_13(dir,entry);
-   if(tp<=0){ObserverError13("scenario_rejected: TP2 unavailable");return false;}
+   tp=ObserverTP2FromSnapshot13(dir,entry,base);
+   if(tp<=0){ObserverError13("scenario_rejected: TP2 unavailable from frozen Fibo snapshot");return false;}
    if(Period()==PERIOD_M1){
       if(iBars(symbol,PERIOD_M1)<11){ObserverError13("scenario_rejected: fewer than 11 M1 bars");return false;}
       int ix=(dir==OP_BUY?iLowest(symbol,PERIOD_M1,MODE_LOW,10,1):iHighest(symbol,PERIOD_M1,MODE_HIGH,10,1));
       if(ix<0){ObserverError13("scenario_rejected: swing lookup failed");return false;}
       sl=(dir==OP_BUY?iLow(symbol,PERIOD_M1,ix):iHigh(symbol,PERIOD_M1,ix));
-   }else if(Period()==PERIOD_M5)sl=entry-(dir==OP_BUY?1.0:-1.0)*30.0*pt;
-   else{ObserverError13("scenario_rejected: only M1/M5 supported");return false;}
+   }else if(Period()==PERIOD_M5){
+      sl=entry-(dir==OP_BUY?1.0:-1.0)*30.0*pt;
+   }else{ObserverError13("scenario_rejected: only M1/M5 supported");return false;}
    sl=NormalizeDouble(sl,Digits);tp=NormalizeDouble(tp,Digits);
-   if((dir==OP_BUY&&!(sl<entry&&tp>entry))||(dir==OP_SELL&&!(sl>entry&&tp<entry))){
-      ObserverError13("scenario_rejected: invalid SL/TP geometry");return false;}
+   if((dir==OP_BUY&&!(sl<entry&&tp>entry))||(dir==OP_SELL&&!(sl>entry&&tp<entry))){ObserverError13("scenario_rejected: invalid SL/TP geometry");return false;}
    return true;
 }
 bool ExecuteScenarioBuy13(double sl,double tp,double lots){return ExecuteBuy(sl,tp,lots);}
@@ -193,10 +195,10 @@ string Obs2NearestFrozenText(int ticket,double price)
       double p=GlobalVariableGet(k);if(p<=0)continue;double d=MathAbs(price-p);if(d<best){best=d;lp=p;ix=i;}}
    return ix<0?"unavailable":DoubleToString(obs2Ratios[ix]*100.0,1)+"% @ "+DoubleToString(lp,Digits);
 }
-void Obs2RegisterTrade(int ticket,int direction,double entry,double sl,double tp)
+void Obs2RegisterTrade(int ticket,int direction,double entry,double sl,double tp,string base)
 {
    if(!ObserverEnabled||!OrderSelect(ticket,SELECT_BY_TICKET))return;
-   for(int i=0;i<10;i++){GlobalVariableSet(Obs2GV("fib",ticket,i),ObserverFiboPrice(obs2Ratios[i]));GlobalVariableSet(Obs2GV("hit",ticket,i),0);}
+   for(int i=0;i<10;i++){GlobalVariableSet(Obs2GV("fib",ticket,i),ArrowFiboSnapshotPrice(base,i));GlobalVariableSet(Obs2GV("hit",ticket,i),0);}
    GlobalVariableSet(Obs2GV("maxp",ticket,0),OrderProfit());GlobalVariableSet(Obs2GV("minp",ticket,0),OrderProfit());
    GlobalVariableSet(Obs2GV("mfe",ticket,0),0);GlobalVariableSet(Obs2GV("mae",ticket,0),0);GlobalVariableSet(Obs2GV("seen",ticket,0),1);
    string row=TimeToString(TimeCurrent(),TIME_DATE|TIME_SECONDS)+";ENTRY;"+IntegerToString(ticket)+";"+symbol+";M1;25;"+
@@ -450,6 +452,58 @@ string ArrowQueueBase(string direction,datetime arrowTime,double arrowPrice)
    return "D13Q_"+IntegerToString(MagicNumber)+"_"+IntegerToString((int)arrowTime)+"_"+
           IntegerToString((int)ticks)+"_"+direction;
 }
+
+bool FreezeArrowFiboSnapshot(string base)
+{
+   string vk=base+"_FV";if(GlobalVariableCheck(vk)&&GlobalVariableGet(vk)>0.5)return true;
+   double p[10];for(int i=0;i<10;i++){p[i]=ObserverFiboPrice(obs2Ratios[i]);if(p[i]<=0)return false;}
+   for(int i=0;i<10;i++)GlobalVariableSet(base+"_F"+IntegerToString(i),p[i]);
+   GlobalVariableSet(vk,1);return true;
+}
+double ArrowFiboSnapshotPrice(string base,int index)
+{
+   string k=base+"_F"+IntegerToString(index);if(index<0||index>=10||!GlobalVariableCheck(k))return 0;
+   return GlobalVariableGet(k);
+}
+double ObserverTP2FromSnapshot13(int dir,double entry,string base)
+{
+   double b1=0,b2=0,d1=1.0e100,d2=1.0e100,tol=MarketInfo(symbol,MODE_POINT)*2.0;
+   for(int i=0;i<10;i++){double p=ArrowFiboSnapshotPrice(base,i);if(p<=0||MathAbs(p-entry)<=tol)continue;
+      if((dir==OP_BUY&&p<=entry)||(dir==OP_SELL&&p>=entry))continue;double d=MathAbs(p-entry);
+      if(d<d1){b2=b1;d2=d1;b1=p;d1=d;}else if(d<d2){b2=p;d2=d;}}
+   return b2;
+}
+int FindRecentMatchingOrder13(string base,string direction)
+{
+   string ak=base+"_AT",ek=base+"_E",lk=base+"_L",sk=base+"_SL",tk=base+"_TP";
+   if(!GlobalVariableCheck(ak)||!GlobalVariableCheck(ek)||!GlobalVariableCheck(lk))return -1;
+   datetime at=(datetime)GlobalVariableGet(ak);double ep=GlobalVariableGet(ek),lots=GlobalVariableGet(lk);
+   double sl=GlobalVariableCheck(sk)?GlobalVariableGet(sk):0,tp=GlobalVariableCheck(tk)?GlobalVariableGet(tk):0;
+   int typ=(direction=="BUY"?OP_BUY:OP_SELL);double pt=MarketInfo(symbol,MODE_POINT);
+   double tol=MathMax(pt*10.0,pt*MathMax(3,Slippage*2));
+   for(int pool=0;pool<2;pool++){int total=(pool==0?OrdersTotal():OrdersHistoryTotal());
+      for(int i=total-1;i>=0;i--){if(!OrderSelect(i,SELECT_BY_POS,(pool==0?MODE_TRADES:MODE_HISTORY)))continue;
+         if(OrderSymbol()!=symbol||OrderMagicNumber()!=MagicNumber||OrderType()!=typ)continue;
+         if(MathAbs(OrderLots()-lots)>0.0000001||OrderOpenTime()<at-5||OrderOpenTime()>at+300)continue;
+         if(MathAbs(OrderOpenPrice()-ep)>tol)continue;
+         if(sl>0&&MathAbs(OrderStopLoss()-sl)>pt*3)continue;if(tp>0&&MathAbs(OrderTakeProfit()-tp)>pt*3)continue;
+         return OrderTicket();}}
+   return -1;
+}
+void CleanupArrowQueue13()
+{
+   string pre="D13Q_"+IntegerToString(MagicNumber)+"_";
+   for(int i=GlobalVariablesTotal()-1;i>=0;i--){string sk=GlobalVariableName(i);
+      if(StringFind(sk,pre)!=0||StringLen(sk)<3||StringSubstr(sk,StringLen(sk)-2)!="_S")continue;
+      if(GlobalVariableGet(sk)==0)continue;string base=StringSubstr(sk,0,StringLen(sk)-2),ck=base+"_C";
+      if(!GlobalVariableCheck(ck)){GlobalVariableSet(ck,(double)TimeLocal());continue;}
+      if(TimeLocal()-(datetime)GlobalVariableGet(ck)<3600)continue;
+      string suf[12]={"_T","_P","_D","_N","_A","_C","_AT","_E","_L","_SL","_TP","_U"};
+      for(int j=0;j<ArraySize(suf);j++)GlobalVariableDel(base+suf[j]);
+      GlobalVariableDel(base+"_FV");for(int k=0;k<10;k++)GlobalVariableDel(base+"_F"+IntegerToString(k));
+      GlobalVariableDel(sk);
+   }
+}
 void QueueArrowSnapshot(string direction,datetime arrowTime,double arrowPrice)
 {
    if(arrowTime<=0||arrowPrice<=0)return;
@@ -510,48 +564,51 @@ void QueueRetry(string base)
 }
 void QueueReject(string base,string reason)
 {
-   GlobalVariableSet(base+"_S",2);
+   GlobalVariableSet(base+"_S",2);GlobalVariableSet(base+"_C",(double)TimeLocal());
    Obs2Reject("arrow_event_rejected;"+reason);
 }
 bool ProcessArrowSnapshot(string base,string direction,datetime arrowTime,double arrowPrice,double level38,bool fiboOk)
 {
-   string stateKey=base+"_S";
-   if(!GlobalVariableCheck(stateKey)||GlobalVariableGet(stateKey)!=0)return true;
+   string stateKey=base+"_S";if(!GlobalVariableCheck(stateKey)||GlobalVariableGet(stateKey)!=0)return true;
    string tradeKey=ArrowTradeKey(direction,arrowTime,arrowPrice);
-   if(PreventDuplicateArrowTrade&&GlobalVariableCheck(tradeKey))
-   {GlobalVariableSet(stateKey,1);return true;}
+   if(PreventDuplicateArrowTrade&&GlobalVariableCheck(tradeKey)){GlobalVariableSet(stateKey,1);GlobalVariableSet(base+"_C",(double)TimeLocal());return true;}
    int shift=iBarShift(symbol,TF,arrowTime,false);
-   if(shift<0||shift>ArrowQueueExpiryBars)
-   {QueueReject(base,"arrow_expired;bar_shift="+IntegerToString(shift));return true;}
-   if(!fiboOk){QueueRetry(base);return false;}
-   if(UseFiboSignalFilter&&((direction=="BUY"&&!(arrowPrice<level38))||
-      (direction=="SELL"&&!(arrowPrice>level38))))
+   if(shift<0||shift>ArrowQueueExpiryBars){QueueReject(base,"arrow_expired;bar_shift="+IntegerToString(shift));return true;}
+   if(!FreezeArrowFiboSnapshot(base)){QueueRetry(base);return false;}
+   double frozen38=ArrowFiboSnapshotPrice(base,3);if(frozen38<=0){QueueRetry(base);return false;}
+   if(UseFiboSignalFilter&&((direction=="BUY"&&!(arrowPrice<frozen38))||(direction=="SELL"&&!(arrowPrice>frozen38))))
    {QueueReject(base,"signal_filter_rejected;direction="+direction);return true;}
-   double entry=(direction=="BUY"?Ask:Bid),sl=0,tp=0;
-   int type=(direction=="BUY"?OP_BUY:OP_SELL);
-   if(!ObserverLevels13(type,NormalizeDouble(entry,Digits),sl,tp))
-   {QueueRetry(base);return false;}
+   RefreshRates();double entry=(direction=="BUY"?Ask:Bid),sl=0,tp=0;int type=(direction=="BUY"?OP_BUY:OP_SELL);
+   if(!ObserverLevels13(type,NormalizeDouble(entry,Digits),sl,tp,base)){QueueRetry(base);return false;}
    if((direction=="BUY"&&!(sl<entry&&tp>entry))||(direction=="SELL"&&!(sl>entry&&tp<entry)))
    {QueueReject(base,"invalid_SL_TP_geometry");return true;}
-   double lots=0;
-   if(!CalculateRiskLot(entry,sl,lots))
-   {QueueReject(base,"risk_lot_calculation_rejected");return true;}
-   if(!CanOpenAnotherTrade(entry,sl,lots))
-   {QueueRetry(base);return false;}
+   double lots=0;if(!CalculateRiskLot(entry,sl,lots)){QueueReject(base,"risk_lot_calculation_rejected");return true;}
+   int found=FindRecentMatchingOrder13(base,direction);
+   if(found>0){
+      lastOpenedTicket=found;if(PreventDuplicateArrowTrade)GlobalVariableSet(tradeKey,1);
+      GlobalVariableSet(stateKey,1);GlobalVariableSet(base+"_C",(double)TimeLocal());
+      if(OrderSelect(found,SELECT_BY_TICKET))Obs2RegisterTrade(found,type,OrderOpenPrice(),OrderStopLoss(),OrderTakeProfit(),base);
+      return true;
+   }
+   if(GlobalVariableCheck(base+"_U")&&GlobalVariableGet(base+"_U")>0.5){
+      GlobalVariableSet(stateKey,3);Obs2Error("order_send_ambiguous_unresolved;automatic_retry_stopped_to_prevent_duplicate;event="+base);return false;
+   }
+   if(!CanOpenAnotherTrade(entry,sl,lots)){QueueRetry(base);return false;}
+   GlobalVariableSet(base+"_AT",(double)TimeCurrent());GlobalVariableSet(base+"_E",entry);
+   GlobalVariableSet(base+"_L",lots);GlobalVariableSet(base+"_SL",sl);GlobalVariableSet(base+"_TP",tp);
+   lastOrderSendAmbiguous=false;
    bool opened=(direction=="BUY"?ExecuteScenarioBuy13(sl,tp,lots):ExecuteScenarioSell13(sl,tp,lots));
-   if(!opened||lastOpenedTicket<0)
-   {
-      int attempts=(int)GlobalVariableGet(base+"_A")+1;
-      GlobalVariableSet(base+"_A",attempts);
+   if(!opened||lastOpenedTicket<0){
+      if(lastOrderSendAmbiguous){GlobalVariableSet(base+"_U",1);GlobalVariableSet(stateKey,3);
+         Obs2Error("order_send_ambiguous;retry_suspended_until_reconciliation;event="+base);return false;}
+      int attempts=(int)GlobalVariableGet(base+"_A")+1;GlobalVariableSet(base+"_A",attempts);
       if(attempts>=MaxOrderSendRetries)QueueReject(base,"order_send_retries_exhausted;attempts="+IntegerToString(attempts));
-      else QueueRetry(base);
-      return false;
+      else QueueRetry(base);return false;
    }
    if(PreventDuplicateArrowTrade)GlobalVariableSet(tradeKey,1);
-   GlobalVariableSet(stateKey,1);
-   if(OrderSelect(lastOpenedTicket,SELECT_BY_TICKET))
-   {
-      Obs2RegisterTrade(lastOpenedTicket,type,OrderOpenPrice(),OrderStopLoss(),OrderTakeProfit());
+   GlobalVariableSet(stateKey,1);GlobalVariableSet(base+"_C",(double)TimeLocal());
+   if(OrderSelect(lastOpenedTicket,SELECT_BY_TICKET)){
+      Obs2RegisterTrade(lastOpenedTicket,type,OrderOpenPrice(),OrderStopLoss(),OrderTakeProfit(),base);
       if(NotifyTradeOpened)SendNotification("Derik_M1_S25 "+direction+" | ticket="+IntegerToString(lastOpenedTicket)+
          " | lot="+DoubleToString(OrderLots(),2)+" | entry="+DoubleToString(OrderOpenPrice(),Digits)+
          " | SL="+DoubleToString(OrderStopLoss(),Digits)+" | TP2="+DoubleToString(OrderTakeProfit(),Digits)+
@@ -561,24 +618,32 @@ bool ProcessArrowSnapshot(string base,string direction,datetime arrowTime,double
 }
 void ProcessArrowQueue()
 {
-   double level0=0,level38=0,level61=0;
-   bool fiboOk=GetFiboLevels(level0,level38,level61);
+   datetime now=TimeLocal();if(lastQueueScan>0&&now-lastQueueScan<1)return;lastQueueScan=now;
+   if(lastQueueCleanup==0||now-lastQueueCleanup>=60){CleanupArrowQueue13();lastQueueCleanup=now;}
    string prefix="D13Q_"+IntegerToString(MagicNumber)+"_";
-   for(int i=GlobalVariablesTotal()-1;i>=0;i--)
-   {
+   for(int i=GlobalVariablesTotal()-1;i>=0;i--){
       string stateKey=GlobalVariableName(i);
-      if(StringFind(stateKey,prefix)!=0||StringLen(stateKey)<3)continue;
-      if(StringSubstr(stateKey,StringLen(stateKey)-2)!="_S")continue;
-      if(GlobalVariableGet(stateKey)!=0)continue;
-      string base=StringSubstr(stateKey,0,StringLen(stateKey)-2);
-      double nextTry=GlobalVariableCheck(base+"_N")?GlobalVariableGet(base+"_N"):0;
-      if(nextTry>TimeLocal())continue;
+      if(StringFind(stateKey,prefix)!=0||StringLen(stateKey)<3||StringSubstr(stateKey,StringLen(stateKey)-2)!="_S")continue;
+      double state=GlobalVariableGet(stateKey);string base=StringSubstr(stateKey,0,StringLen(stateKey)-2);
+      if(state==3){
+         if(!GlobalVariableCheck(base+"_T")||!GlobalVariableCheck(base+"_P")||!GlobalVariableCheck(base+"_D"))continue;
+         datetime at=(datetime)GlobalVariableGet(base+"_T");double ap=GlobalVariableGet(base+"_P");
+         string dir=(GlobalVariableGet(base+"_D")>0.5?"BUY":"SELL");int recovered=FindRecentMatchingOrder13(base,dir);
+         if(recovered>0){
+            lastOpenedTicket=recovered;if(PreventDuplicateArrowTrade)GlobalVariableSet(ArrowTradeKey(dir,at,ap),1);
+            GlobalVariableSet(stateKey,1);GlobalVariableSet(base+"_C",(double)TimeLocal());
+            int typ=(dir=="BUY"?OP_BUY:OP_SELL);
+            if(OrderSelect(recovered,SELECT_BY_TICKET))Obs2RegisterTrade(recovered,typ,OrderOpenPrice(),OrderStopLoss(),OrderTakeProfit(),base);
+         }
+         continue;
+      }
+      if(state!=0)continue;
+      double nextTry=GlobalVariableCheck(base+"_N")?GlobalVariableGet(base+"_N"):0;if(nextTry>TimeLocal())continue;
       if(!GlobalVariableCheck(base+"_T")||!GlobalVariableCheck(base+"_P")||!GlobalVariableCheck(base+"_D"))
-      {GlobalVariableSet(stateKey,2);continue;}
-      datetime arrowTime=(datetime)GlobalVariableGet(base+"_T");
-      double arrowPrice=GlobalVariableGet(base+"_P");
+      {GlobalVariableSet(stateKey,2);GlobalVariableSet(base+"_C",(double)TimeLocal());continue;}
+      datetime arrowTime=(datetime)GlobalVariableGet(base+"_T");double arrowPrice=GlobalVariableGet(base+"_P");
       string direction=(GlobalVariableGet(base+"_D")>0.5?"BUY":"SELL");
-      ProcessArrowSnapshot(base,direction,arrowTime,arrowPrice,level38,fiboOk);
+      ProcessArrowSnapshot(base,direction,arrowTime,arrowPrice,0,false);
    }
 }
 bool GetFiboLevels(double &level0, double &level38, double &level61)
@@ -612,17 +677,17 @@ bool GetFiboLevels(double &level0, double &level38, double &level61)
 
 bool ExecuteBuy(double sl,double tp,double lots)
 {
-   double price=NormalizeDouble(Ask,Digits);ResetLastError();lastOpenedTicket=-1;
+   lastOrderSendAmbiguous=false;RefreshRates();double price=NormalizeDouble(Ask,Digits);ResetLastError();lastOpenedTicket=-1;
    int ticket=OrderSend(symbol,OP_BUY,lots,price,Slippage,sl,tp,"Derik_M1_S25",MagicNumber,0,clrGreen);
-   if(ticket<0){int err=GetLastError();lastOpenedTicket=-1;ObserverError13("OrderSend BUY failed;error="+IntegerToString(err));
+   if(ticket<0){int err=GetLastError();lastOrderSendAmbiguous=(err==1||err==128);lastOpenedTicket=-1;ObserverError13("OrderSend BUY failed;error="+IntegerToString(err));
       if(NotifyOrderErrors)SendNotification("Derik_M1_S25 BUY OrderSend error "+IntegerToString(err));return false;}
    lastOpenedTicket=ticket;return true;
 }
 bool ExecuteSell(double sl,double tp,double lots)
 {
-   double price=NormalizeDouble(Bid,Digits);ResetLastError();lastOpenedTicket=-1;
+   lastOrderSendAmbiguous=false;RefreshRates();double price=NormalizeDouble(Bid,Digits);ResetLastError();lastOpenedTicket=-1;
    int ticket=OrderSend(symbol,OP_SELL,lots,price,Slippage,sl,tp,"Derik_M1_S25",MagicNumber,0,clrRed);
-   if(ticket<0){int err=GetLastError();lastOpenedTicket=-1;ObserverError13("OrderSend SELL failed;error="+IntegerToString(err));
+   if(ticket<0){int err=GetLastError();lastOrderSendAmbiguous=(err==1||err==128);lastOpenedTicket=-1;ObserverError13("OrderSend SELL failed;error="+IntegerToString(err));
       if(NotifyOrderErrors)SendNotification("Derik_M1_S25 SELL OrderSend error "+IntegerToString(err));return false;}
    lastOpenedTicket=ticket;return true;
 }
