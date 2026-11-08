@@ -686,7 +686,7 @@ void ShowFiboLevelsOnChart()
    if (price1 == 0 || price2 == 0)
       return;
 
-   int fiboColor = ObjectGetInteger(0, objName, OBJPROP_COLOR);
+   int fiboColor = (int)ObjectGetInteger(0, objName, OBJPROP_COLOR);
    bool reverseFibo = (fiboColor == clrRed || fiboColor == clrBlue);
 
    double fiboLevels[] = {0.0, 0.236, 0.333, 0.382, 0.5, 0.618, 0.667, 0.785, 0.886, 1.0};
