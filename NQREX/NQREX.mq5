@@ -4359,14 +4359,15 @@ void NQCreatePanel()
    NQCreateLabel("NQ_Subtitle",22,44,"NASDAQ ALGORITHMIC SYSTEM",7,NQ_MUTED,false);
    NQCreateLabel("NQ_Symbol",22,65,_Symbol+"  |  "+EnumToString(_Period),8,NQ_TEXT,true);
 
-   string cardTitles[5]={"BALANCE","EQUITY","TODAY P/L","LIVE SPR.","LOT SIZE"};
+   string cardTitles[5]={"BALANCE","EQUITY","TODAY P/L","LIVE SPREAD","LOT SIZE"};
+   int cardTitleSizes[5]={6,6,6,5,6};
    string cardNames[5]={"NQ_CardBalance","NQ_CardEquity","NQ_CardToday","NQ_CardSpread","NQ_CardLots"};
    string valueNames[5]={"NQ_ValueBalance","NQ_ValueEquity","NQ_ValueToday","NQ_ValueSpread","NQ_ValueLots"};
    int cardX[5]={20,97,174,251,328};
    for(int i=0;i<5;i++)
    {
       NQCreateRect(cardNames[i],cardX[i],87,70,53,NQ_CARD,NQ_BORDER);
-      NQCreateLabel("NQ_Title"+IntegerToString(i),cardX[i]+4,94,cardTitles[i],6,NQ_MUTED,false);
+      NQCreateLabel("NQ_Title"+IntegerToString(i),cardX[i]+3,94,cardTitles[i],cardTitleSizes[i],NQ_MUTED,false);
       NQCreateLabel(valueNames[i],cardX[i]+4,115,"--",8,NQ_TEXT,true);
    }
 
