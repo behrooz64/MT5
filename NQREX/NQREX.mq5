@@ -2832,7 +2832,7 @@ if (cmd == OP_SELL)
 {
 sendlot = GestioneOrdini(LottoDaTradare,OP_SELL);//NormalizeDouble( LottoDaTradare+ (LottoDaTradare *OrdiniAperti(MagicNumber,OP_SELL)*CoefficientePyramide),2);
 //Print(Lots ,"*",OrdiniAperti(MagicNumber,OP_SELL),"*",CoefficientePyramide);
-if (CheckVolumeValue(sendlot) && EnableGrid && ( !GridOrdersComplyMaxSpreadConditions ||  MaxSpread*_Point >= Ask_-Bid_ ) && ( !GridOrdersComplyIndicatorsConditions || extraindicatorssell()) && ( !GridOrdersComplyHoursConditions || Hour_trade_allowed(coefstart,coefstop)) && ( !GridOrdersComplyWeekDaysConditions || DayCheck(DayOfWeek()))  )
+if (CheckVolumeValue(sendlot) && EnableGrid && KiaXAMSpreadAllowed() && ( !GridOrdersComplyMaxSpreadConditions ||  MaxSpread*_Point >= Ask_-Bid_ ) && ( !GridOrdersComplyIndicatorsConditions || extraindicatorssell()) && ( !GridOrdersComplyHoursConditions || Hour_trade_allowed(coefstart,coefstop)) && ( !GridOrdersComplyWeekDaysConditions || DayCheck(DayOfWeek()))  )
 Ordine(OP_SELL,sendlot,Bid_,0,0,MagicNumber,0); 
 }
 }
