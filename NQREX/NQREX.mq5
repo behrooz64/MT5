@@ -4312,6 +4312,13 @@ bool NQCreateLabel(string name,int x,int y,string value,int size,color clr,bool 
    return true;
 }
 
+bool NQCreateRightLabel(string name,int x,int y,string value,int size,color clr,bool bold=false)
+{
+   if(!NQCreateLabel(name,x,y,value,size,clr,bold)) return false;
+   ObjectSetInteger(0,name,OBJPROP_ANCHOR,ANCHOR_RIGHT_UPPER);
+   return true;
+}
+
 bool NQCreateButton(string name,int x,int y,int w,int h,string caption,
                     color textColor,color backColor,color borderColor,int size)
 {
@@ -4347,52 +4354,52 @@ void NQCreatePanel()
 {
    NQCreateRect("NQ_Main",10,10,400,382,NQ_BG,NQ_BORDER);
    NQCreateLabel("NQ_Brand",22,19,"NQ REX",16,NQ_PURPLE,true);
-   NQCreateLabel("NQ_Active",126,25,"● ACTIVE",8,NQ_GREEN,true);
+   NQCreateLabel("NQ_Active",132,25,"● ACTIVE",7,NQ_GREEN,true);
    NQCreateButton("NQ_Toggle",370,18,25,22,"−",NQ_TEXT,NQ_CARD,NQ_BORDER,11);
-   NQCreateLabel("NQ_Subtitle",22,43,"NASDAQ ALGORITHMIC SYSTEM",8,NQ_MUTED,false);
-   NQCreateLabel("NQ_Symbol",22,64,_Symbol+"  |  "+EnumToString(_Period),9,NQ_TEXT,true);
+   NQCreateLabel("NQ_Subtitle",22,44,"NASDAQ ALGORITHMIC SYSTEM",7,NQ_MUTED,false);
+   NQCreateLabel("NQ_Symbol",22,65,_Symbol+"  |  "+EnumToString(_Period),8,NQ_TEXT,true);
 
-   string cardTitles[5]={"BALANCE","EQUITY","TODAY P/L","LIVE SPREAD","LOT SIZE"};
+   string cardTitles[5]={"BALANCE","EQUITY","TODAY P/L","LIVE SPR.","LOT SIZE"};
    string cardNames[5]={"NQ_CardBalance","NQ_CardEquity","NQ_CardToday","NQ_CardSpread","NQ_CardLots"};
    string valueNames[5]={"NQ_ValueBalance","NQ_ValueEquity","NQ_ValueToday","NQ_ValueSpread","NQ_ValueLots"};
    int cardX[5]={20,97,174,251,328};
    for(int i=0;i<5;i++)
    {
-      NQCreateRect(cardNames[i],cardX[i],86,70,54,NQ_CARD,NQ_BORDER);
-      NQCreateLabel("NQ_Title"+IntegerToString(i),cardX[i]+5,94,cardTitles[i],7,NQ_MUTED,false);
-      NQCreateLabel(valueNames[i],cardX[i]+5,115,"--",9,NQ_TEXT,true);
+      NQCreateRect(cardNames[i],cardX[i],87,70,53,NQ_CARD,NQ_BORDER);
+      NQCreateLabel("NQ_Title"+IntegerToString(i),cardX[i]+4,94,cardTitles[i],6,NQ_MUTED,false);
+      NQCreateLabel(valueNames[i],cardX[i]+4,115,"--",8,NQ_TEXT,true);
    }
 
    NQCreateRect("NQ_PerformanceCard",20,151,184,153,NQ_CARD,NQ_BORDER);
    NQCreateRect("NQ_MonitorCard",210,151,184,153,NQ_CARD,NQ_BORDER);
-   NQCreateLabel("NQ_PerformanceTitle",30,162,"PERFORMANCE",9,NQ_PURPLE,true);
-   NQCreateLabel("NQ_MonitorTitle",220,162,"SYSTEM MONITOR",9,NQ_PURPLE,true);
+   NQCreateLabel("NQ_PerformanceTitle",30,162,"PERFORMANCE",8,NQ_PURPLE,true);
+   NQCreateLabel("NQ_MonitorTitle",220,162,"SYSTEM MONITOR",8,NQ_PURPLE,true);
 
-   NQCreateLabel("NQ_PerfLabel1",30,187,"Today's Trades",8,NQ_TEXT,false);
-   NQCreateLabel("NQ_PerfValue1",126,187,"--",8,NQ_TEXT,true);
-   NQCreateLabel("NQ_PerfLabel2",30,211,"Today P/L",8,NQ_TEXT,false);
-   NQCreateLabel("NQ_PerfValue2",126,211,"--",8,NQ_TEXT,true);
-   NQCreateLabel("NQ_PerfLabel3",30,235,"Floating P/L",8,NQ_TEXT,false);
-   NQCreateLabel("NQ_PerfValue3",126,235,"--",8,NQ_TEXT,true);
-   NQCreateLabel("NQ_PerfLabel4",30,259,"Symbol P/L",8,NQ_TEXT,false);
-   NQCreateLabel("NQ_PerfValue4",126,259,"--",8,NQ_TEXT,true);
+   NQCreateLabel("NQ_PerfLabel1",30,187,"Today's Trades",7,NQ_TEXT,false);
+   NQCreateRightLabel("NQ_PerfValue1",194,187,"--",7,NQ_TEXT,true);
+   NQCreateLabel("NQ_PerfLabel2",30,211,"Today P/L",7,NQ_TEXT,false);
+   NQCreateRightLabel("NQ_PerfValue2",194,211,"--",7,NQ_TEXT,true);
+   NQCreateLabel("NQ_PerfLabel3",30,235,"Floating P/L",7,NQ_TEXT,false);
+   NQCreateRightLabel("NQ_PerfValue3",194,235,"--",7,NQ_TEXT,true);
+   NQCreateLabel("NQ_PerfLabel4",30,259,"Symbol P/L",7,NQ_TEXT,false);
+   NQCreateRightLabel("NQ_PerfValue4",194,259,"--",7,NQ_TEXT,true);
 
-   NQCreateLabel("NQ_MonitorLabel1",220,187,"Connection",8,NQ_TEXT,false);
-   NQCreateLabel("NQ_MonitorValue1",300,187,"--",8,NQ_GREEN,true);
-   NQCreateLabel("NQ_MonitorLabel2",220,208,"License",8,NQ_TEXT,false);
-   NQCreateLabel("NQ_MonitorValue2",300,208,"--",8,NQ_GREEN,true);
-   NQCreateLabel("NQ_MonitorLabel3",220,229,"Indicator",8,NQ_TEXT,false);
-   NQCreateLabel("NQ_MonitorValue3",300,229,"--",8,NQ_GREEN,true);
-   NQCreateLabel("NQ_MonitorLabel4",220,250,"Risk Protection",8,NQ_TEXT,false);
-   NQCreateLabel("NQ_MonitorValue4",300,250,"--",8,NQ_ORANGE,true);
-   NQCreateLabel("NQ_RiskGuardLabel",220,271,"RISK GUARD $",7,NQ_MUTED,true);
-   NQCreateLabel("NQ_RiskGuardValue",330,269,"--",8,NQ_TEXT,true);
+   NQCreateLabel("NQ_MonitorLabel1",220,187,"Connection",7,NQ_TEXT,false);
+   NQCreateRightLabel("NQ_MonitorValue1",384,187,"--",7,NQ_GREEN,true);
+   NQCreateLabel("NQ_MonitorLabel2",220,208,"License",7,NQ_TEXT,false);
+   NQCreateRightLabel("NQ_MonitorValue2",384,208,"--",7,NQ_GREEN,true);
+   NQCreateLabel("NQ_MonitorLabel3",220,229,"Indicator",7,NQ_TEXT,false);
+   NQCreateRightLabel("NQ_MonitorValue3",384,229,"--",7,NQ_GREEN,true);
+   NQCreateLabel("NQ_MonitorLabel4",220,250,"Risk Protection",7,NQ_TEXT,false);
+   NQCreateRightLabel("NQ_MonitorValue4",384,250,"--",7,NQ_ORANGE,true);
+   NQCreateLabel("NQ_RiskGuardLabel",220,271,"RISK GUARD $",6,NQ_MUTED,true);
+   NQCreateRightLabel("NQ_RiskGuardValue",384,269,"--",7,NQ_TEXT,true);
    NQCreateRect("NQ_RiskTrack",220,286,164,7,C'36,30,48',C'36,30,48');
    NQCreateRect("NQ_RiskFill",220,286,1,7,NQ_PURPLE,NQ_PURPLE);
 
    NQCreateButton("NQ_CloseAll",145,320,130,28,"CLOSE ALL",C'255,232,236',C'142,47,62',C'142,47,62',9);
-   NQCreateLabel("NQ_FooterCaption",22,357,"All open positions on current chart symbol",7,NQ_MUTED,false);
-   NQCreateLabel("NQ_Version",278,357,"v1.0 · NQ REX SYSTEM",7,C'74,68,88',false);
+   NQCreateLabel("NQ_FooterCaption",22,357,"All open positions on current chart symbol",6,NQ_MUTED,false);
+   NQCreateRightLabel("NQ_Version",388,357,"v1.0 · NQ REX SYSTEM",6,C'74,68,88',false);
 }
 
 void NQUpdatePanel()
