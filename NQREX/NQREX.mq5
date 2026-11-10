@@ -4303,7 +4303,7 @@ bool NQCreateLabel(string name,int x,int y,string value,int size,color clr,bool 
    ObjectSetInteger(0,name,OBJPROP_XDISTANCE,x);
    ObjectSetInteger(0,name,OBJPROP_YDISTANCE,y);
    ObjectSetString(0,name,OBJPROP_TEXT,value);
-   ObjectSetString(0,name,OBJPROP_FONT,"Segoe UI");
+   ObjectSetString(0,name,OBJPROP_FONT,bold?"Segoe UI Semibold":"Segoe UI");
    ObjectSetInteger(0,name,OBJPROP_FONTSIZE,size);
    ObjectSetInteger(0,name,OBJPROP_COLOR,clr);
    ObjectSetInteger(0,name,OBJPROP_SELECTABLE,false);
@@ -4397,6 +4397,10 @@ void NQCreatePanel()
 
 void NQUpdatePanel()
 {
+   static datetime lastPanelRefresh=0;
+   datetime panelNow=TimeCurrent();
+   if(panelNow<=0 || panelNow==lastPanelRefresh) return;
+   lastPanelRefresh=panelNow;
    if(!ShowPanel || SiamoInTestOscuro) return;
    if(NQPanelCollapsed) return;
    if(ObjectFind(0,"NQ_Main")<0) NQCreatePanel();
