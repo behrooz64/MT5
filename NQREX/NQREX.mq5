@@ -234,7 +234,7 @@ string Separo7="----------------------------------------------------------------
 
 
 string TargetSettings = "GAIN/LOSS TARGET SETTINGS";//TARGET SETTINGS   // in
-int TakeTarget = 250;//Take Target     // in
+int TakeTarget = 1000;//Take Target     // in
 int TakeTargetBuy = 0;
 int TakeTargetSell = 0;
 
