@@ -4500,14 +4500,14 @@ void NQCreatePanel()
    NQCreateRect("NQ_MonitorCard",rx,sectionY,colW,monitorH,NQ_CARD,NQ_BORDER);
    NQCreateLabel("NQ_MonitorTitle",rx+NQScaleX(12),sectionY+NQScaleY(10),"SYSTEM MONITOR",NQScaleFont(8),NQ_PURPLE,true);
 
-   NQCreateLabel("NQ_MonitorLabel1",rx+NQScaleX(12),rowStart+0*rowPitch,"Connection",NQScaleFont(7),NQ_TEXT,false);
-   NQCreateRightLabel("NQ_MonitorValue1",rx+colW-NQScaleX(12),rowStart+0*rowPitch,"--",NQScaleFont(7),NQ_GREEN,true);
-   NQCreateLabel("NQ_MonitorLabel2",rx+NQScaleX(12),rowStart+1*rowPitch,"License",NQScaleFont(7),NQ_TEXT,false);
-   NQCreateRightLabel("NQ_MonitorValue2",rx+colW-NQScaleX(12),rowStart+1*rowPitch,"--",NQScaleFont(7),NQ_GREEN,true);
-   NQCreateLabel("NQ_MonitorLabel3",rx+NQScaleX(12),rowStart+2*rowPitch,"Indicator",NQScaleFont(7),NQ_TEXT,false);
-   NQCreateRightLabel("NQ_MonitorValue3",rx+colW-NQScaleX(12),rowStart+2*rowPitch,"--",NQScaleFont(7),NQ_GREEN,true);
-   NQCreateLabel("NQ_MonitorLabel4",rx+NQScaleX(12),rowStart+3*rowPitch,"Risk Protection",NQScaleFont(7),NQ_TEXT,false);
-   NQCreateRightLabel("NQ_MonitorValue4",rx+colW-NQScaleX(12),rowStart+3*rowPitch,"--",NQScaleFont(7),NQ_ORANGE,true);
+   NQCreateLabel("NQ_MonitorLabel1",rx+NQScaleX(12),rowStart+0*rowPitch,"Connection",NQScaleFont(4),NQ_TEXT,false);
+   NQCreateRightLabel("NQ_MonitorValue1",rx+colW-NQScaleX(12),rowStart+0*rowPitch,"--",NQScaleFont(4),NQ_GREEN,true);
+   NQCreateLabel("NQ_MonitorLabel2",rx+NQScaleX(12),rowStart+1*rowPitch,"License",NQScaleFont(4),NQ_TEXT,false);
+   NQCreateRightLabel("NQ_MonitorValue2",rx+colW-NQScaleX(12),rowStart+1*rowPitch,"--",NQScaleFont(4),NQ_GREEN,true);
+   NQCreateLabel("NQ_MonitorLabel3",rx+NQScaleX(12),rowStart+2*rowPitch,"Indicator",NQScaleFont(4),NQ_TEXT,false);
+   NQCreateRightLabel("NQ_MonitorValue3",rx+colW-NQScaleX(12),rowStart+2*rowPitch,"--",NQScaleFont(4),NQ_GREEN,true);
+   NQCreateLabel("NQ_MonitorLabel4",rx+NQScaleX(12),rowStart+3*rowPitch,"Risk Protection",NQScaleFont(4),NQ_TEXT,false);
+   NQCreateRightLabel("NQ_MonitorValue4",rx+colW-NQScaleX(12),rowStart+3*rowPitch,"--",NQScaleFont(4),NQ_ORANGE,true);
 
    // Separate loss limits so the dollar and percentage values never overlap.
    int guardTitleY = sectionY + NQScaleY(119);
