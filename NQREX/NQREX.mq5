@@ -470,7 +470,6 @@ void OnChartEvent(const int id,
    if(sparam == "NQ_CloseAll")
    {
       NQCloseAllSymbolPositions();
-      ObjectSetInteger(0,"NQ_CloseAll",OBJPROP_STATE,false);
       ChartRedraw(0);
       return;
    }
