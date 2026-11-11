@@ -4450,6 +4450,21 @@ void NQGetAccountHistoryStats(int &trades,double &netPL,double &winRate,
    if(!HistorySelect(0,TimeCurrent()))
       return;
 
+   static int cachedHistoryDeals=-1;
+   static int cachedTrades=0, cachedWins=0, cachedLosses=0;
+   static double cachedNetPL=0.0, cachedWinRate=0.0, cachedProfitFactor=0.0;
+   int totalDeals=HistoryDealsTotal();
+   if(totalDeals==cachedHistoryDeals)
+   {
+      trades=cachedTrades;
+      netPL=cachedNetPL;
+      winRate=cachedWinRate;
+      profitFactor=cachedProfitFactor;
+      wins=cachedWins;
+      losses=cachedLosses;
+      return;
+   }
+
    NQAccountPositionStat positions[];
    int positionCount=0;
 
@@ -4540,6 +4555,14 @@ void NQGetAccountHistoryStats(int &trades,double &netPL,double &winRate,
       profitFactor=grossProfit/grossLoss;
    else if(grossProfit>0.0)
       profitFactor=-1.0; // Displayed as infinity when there are no losing trades.
+
+   cachedHistoryDeals=totalDeals;
+   cachedTrades=trades;
+   cachedNetPL=netPL;
+   cachedWinRate=winRate;
+   cachedProfitFactor=profitFactor;
+   cachedWins=wins;
+   cachedLosses=losses;
 }
 
 void NQCreatePanel()
@@ -4651,7 +4674,6 @@ void NQCreatePanel()
    NQCreateLabel("NQ_AccountPerformanceTitle",accountX+NQScaleX(12),accountY+NQScaleY(7),
                  "ACCOUNT PERFORMANCE",NQScaleFont(7),NQ_PURPLE,true);
 
-   int accountColW=NQScaleX(126);
    int accountLabelY1=accountY+NQScaleY(27);
    int accountValueY1=accountY+NQScaleY(39);
    int accountLabelY2=accountY+NQScaleY(59);
