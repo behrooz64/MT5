@@ -350,7 +350,10 @@ ENUM_ORDER_TYPE OP_SELL = ORDER_TYPE_SELL;
 
 int OnInit()
   {
-// Keep the EA chart on M1. A successful period change causes chart reinitialization.
+// Enable mouse movement events for the CLOSE ALL hover effect.
+   ChartSetInteger(0,CHART_EVENT_MOUSE_MOVE,true);
+   
+   // Keep the EA chart on M1. A successful period change causes chart reinitialization.
    if(_Period != PERIOD_M1)
    {
       ResetLastError();
@@ -467,13 +470,41 @@ void OnChartEvent(const int id,
          Print("NQ REX: failed to restore M1 timeframe. Error: ",GetLastError());
       return;
    }
-   if(sparam == "NQ_CloseAll")
+
+   // Hover effect for the full CLOSE ALL button area.
+   if(id == CHARTEVENT_MOUSE_MOVE && ObjectFind(0,"NQ_CloseAll") >= 0)
+   {
+      int mouseX=(int)lparam;
+      int mouseY=(int)dparam;
+      int buttonX=(int)ObjectGetInteger(0,"NQ_CloseAll",OBJPROP_XDISTANCE);
+      int buttonY=(int)ObjectGetInteger(0,"NQ_CloseAll",OBJPROP_YDISTANCE);
+      int buttonW=(int)ObjectGetInteger(0,"NQ_CloseAll",OBJPROP_XSIZE);
+      int buttonH=(int)ObjectGetInteger(0,"NQ_CloseAll",OBJPROP_YSIZE);
+
+      bool isHovered=(mouseX>=buttonX && mouseX<buttonX+buttonW &&
+                      mouseY>=buttonY && mouseY<buttonY+buttonH);
+      static bool wasHovered=false;
+
+      if(isHovered != wasHovered)
+      {
+         color hoverColor=C'180,65,80';
+         color normalColor=C'142,47,62';
+         ObjectSetInteger(0,"NQ_CloseAll",OBJPROP_BGCOLOR,
+                          isHovered ? hoverColor : normalColor);
+         ObjectSetInteger(0,"NQ_CloseAll",OBJPROP_COLOR,
+                          isHovered ? hoverColor : normalColor);
+         ChartRedraw(0);
+         wasHovered=isHovered;
+      }
+      return;
+   }
+
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "NQ_CloseAll")
    {
       NQCloseAllSymbolPositions();
       ChartRedraw(0);
       return;
    }
-
 }
 
 
