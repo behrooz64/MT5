@@ -422,8 +422,8 @@ if(CustomChart)
    ChartSetInteger(0,CHART_SHOW_GRID,0);
 
    // Hollow candles: transparent bodies with colored outlines and wicks.
-   ChartSetInteger(0,CHART_COLOR_CHART_UP,C'187,131,245');
-   ChartSetInteger(0,CHART_COLOR_CHART_DOWN,C'82,118,185');
+   ChartSetInteger(0,CHART_COLOR_CHART_UP,C'82,118,185');
+   ChartSetInteger(0,CHART_COLOR_CHART_DOWN,C'187,131,245');
    ChartSetInteger(0,CHART_COLOR_CANDLE_BULL,clrBlack);
    ChartSetInteger(0,CHART_COLOR_CANDLE_BEAR,clrBlack);
 
