@@ -4495,6 +4495,21 @@ void NQGetAccountHistoryStats(int &trades,double &netPL,double &winRate,
          positions[index].isClosed=true;
    }
 
+   // A partial close is not a completed trade while the position remains open.
+   for(int p=0;p<positionCount;p++)
+   {
+      for(int pos=0;pos<PositionsTotal();pos++)
+      {
+         ulong ticket=PositionGetTicket(pos);
+         if(ticket==0) continue;
+         if((ulong)PositionGetInteger(POSITION_IDENTIFIER)==positions[p].positionId)
+         {
+            positions[p].isClosed=false;
+            break;
+         }
+      }
+   }
+
    double grossProfit=0.0;
    double grossLoss=0.0;
 
