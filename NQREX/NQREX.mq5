@@ -4433,11 +4433,11 @@ void NQCreatePanel()
    int px = 10;
    int py = 10;
    int panelW = 420;
-   int panelH = 610;
+   int panelH = 660;
 
-   // Scale every child element from the original 440x382 layout.
+   // Scale every child element from the 440x412 dashboard layout.
    NQPanelScaleX=(double)panelW/440.0;
-   NQPanelScaleY=(double)panelH/382.0;
+   NQPanelScaleY=(double)panelH/412.0;
 
    NQCreateRect("NQ_Main",px,py,panelW,panelH,NQ_BG,NQ_BORDER);
 
@@ -4480,7 +4480,7 @@ void NQCreatePanel()
    int leftX = px+NQScaleX(20);
    int rx = px+NQScaleX(226);
    int sectionH = NQScaleY(142);
-   int monitorH = NQScaleY(166);
+   int monitorH = NQScaleY(190);
 
    NQCreateRect("NQ_PerformanceCard",leftX,sectionY,colW,sectionH,NQ_CARD,NQ_BORDER);
    NQCreateLabel("NQ_PerformanceTitle",leftX+NQScaleX(12),sectionY+NQScaleY(10),"PERFORMANCE",NQScaleFont(8),NQ_PURPLE,true);
@@ -4509,14 +4509,24 @@ void NQCreatePanel()
    NQCreateLabel("NQ_MonitorLabel4",rx+NQScaleX(12),rowStart+3*rowPitch,"Risk Protection",NQScaleFont(7),NQ_TEXT,false);
    NQCreateRightLabel("NQ_MonitorValue4",rx+colW-NQScaleX(12),rowStart+3*rowPitch,"--",NQScaleFont(7),NQ_ORANGE,true);
 
-   // Both configured protection limits are visible in the dashboard.
-   int guardY = sectionY + NQScaleY(137);
-   NQCreateLabel("NQ_RiskGuardLabel",rx+NQScaleX(12),guardY,"LOSS LIMITS",NQScaleFont(6),NQ_MUTED,true);
-   NQCreateRightLabel("NQ_RiskGuardValue",rx+colW-NQScaleX(12),guardY-NQScaleY(1),"--",NQScaleFont(8),NQ_TEXT,true);
+   // Separate loss limits so the dollar and percentage values never overlap.
+   int guardTitleY = sectionY + NQScaleY(119);
+   int moneyY = sectionY + NQScaleY(137);
+   int percentY = sectionY + NQScaleY(155);
+   NQCreateLabel("NQ_RiskGuardLabel",rx+NQScaleX(12),guardTitleY,"LOSS LIMITS",NQScaleFont(6),NQ_MUTED,true);
+   NQCreateLabel("NQ_RiskMoneyLabel",rx+NQScaleX(12),moneyY,"Money Limit",NQScaleFont(6),NQ_TEXT,false);
+   NQCreateRightLabel("NQ_RiskMoneyValue",rx+colW-NQScaleX(12),moneyY,"--",NQScaleFont(7),NQ_TEXT,true);
+   NQCreateLabel("NQ_RiskPercentLabel",rx+NQScaleX(12),percentY,"Percentage Limit",NQScaleFont(6),NQ_TEXT,false);
+   NQCreateRightLabel("NQ_RiskPercentValue",rx+colW-NQScaleX(12),percentY,"--",NQScaleFont(7),NQ_TEXT,true);
 
-   int barY = sectionY + NQScaleY(153);
-   NQCreateRect("NQ_RiskTrack",rx+NQScaleX(12),barY,colW-NQScaleX(24),MathMax(2,NQScaleY(4)),C'36,30,48',C'36,30,48');
-   NQCreateRect("NQ_RiskFill",rx+NQScaleX(12),barY,1,MathMax(2,NQScaleY(4)),NQ_PURPLE,NQ_PURPLE);
+   int barLabelY = sectionY + NQScaleY(174);
+   NQCreateLabel("NQ_RiskBarLabel",rx+NQScaleX(12),barLabelY,"LOSS USAGE",NQScaleFont(6),NQ_MUTED,true);
+   int barY = sectionY + NQScaleY(188);
+   int barH = MathMax(5,NQScaleY(6));
+   int barX = rx+NQScaleX(12);
+   int barW = colW-NQScaleX(24);
+   NQCreateRect("NQ_RiskTrack",barX,barY,barW,barH,C'72,60,88',C'72,60,88');
+   NQCreateRect("NQ_RiskFill",barX,barY,1,barH,NQ_PURPLE,NQ_PURPLE);
 
    int btnY = sectionY + MathMax(sectionH,monitorH) + NQScaleY(10);
    int btnW = panelW;
@@ -4591,21 +4601,19 @@ void NQUpdatePanel()
    ObjectSetString(0,"NQ_MonitorValue4",OBJPROP_TEXT,protection?"ACTIVE":"OFF");
    ObjectSetInteger(0,"NQ_MonitorValue4",OBJPROP_COLOR,protection?NQ_GREEN:NQ_ORANGE);
 
-   string guardValue="";
-   if(MonetaryStopLoss)
-      guardValue="$"+IntegerToString(MaximumMonetaryLoss);
-   if(CloseInPercentageLoss)
-   {
-      if(guardValue!="") guardValue+=" | ";
-      guardValue+=IntegerToString(LossPercentage)+"%";
-   }
-   if(guardValue=="") guardValue="OFF";
-   ObjectSetString(0,"NQ_RiskGuardValue",OBJPROP_TEXT,guardValue);
+   string moneyLimitText=MonetaryStopLoss?"$"+IntegerToString(MaximumMonetaryLoss):"OFF";
+   string percentLimitText=CloseInPercentageLoss?IntegerToString(LossPercentage)+"%":"OFF";
+   ObjectSetString(0,"NQ_RiskMoneyValue",OBJPROP_TEXT,moneyLimitText);
+   ObjectSetInteger(0,"NQ_RiskMoneyValue",OBJPROP_COLOR,MonetaryStopLoss?NQ_TEXT:NQ_MUTED);
+   ObjectSetString(0,"NQ_RiskPercentValue",OBJPROP_TEXT,percentLimitText);
+   ObjectSetInteger(0,"NQ_RiskPercentValue",OBJPROP_COLOR,CloseInPercentageLoss?NQ_TEXT:NQ_MUTED);
    double riskRatio=0.0;
    if(MonetaryStopLoss && MaximumMonetaryLoss>0 && profitChart<0.0)
       riskRatio=MathMin(1.0,MathAbs(profitChart)/(double)MaximumMonetaryLoss);
    int fillWidth=(int)MathRound(NQScaleX(170)*riskRatio);
    ObjectSetInteger(0,"NQ_RiskFill",OBJPROP_XSIZE,MathMax(1,fillWidth));
+   ObjectSetInteger(0,"NQ_RiskFill",OBJPROP_YSIZE,MathMax(5,NQScaleY(6)));
+   ObjectSetInteger(0,"NQ_RiskTrack",OBJPROP_YSIZE,MathMax(5,NQScaleY(6)));
 
    color todayColor=(todayPL>=0.0)?NQ_GREEN:NQ_RED;
    color floatingColor=(profitChart>=0.0)?NQ_GREEN:NQ_RED;
