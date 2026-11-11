@@ -4428,16 +4428,115 @@ int NQScaleFont(int value)
    return (int)MathMax(6,MathRound((double)value*scale));
 }
 
+// Aggregate all closed account positions from the available MT5 deal history.
+// Partial closes are grouped by DEAL_POSITION_ID and counted as one trade.
+struct NQAccountPositionStat
+{
+   ulong positionId;
+   double netResult;
+   bool isClosed;
+};
+
+void NQGetAccountHistoryStats(int &trades,double &netPL,double &winRate,
+                              double &profitFactor,int &wins,int &losses)
+{
+   trades=0;
+   netPL=0.0;
+   winRate=0.0;
+   profitFactor=0.0;
+   wins=0;
+   losses=0;
+
+   if(!HistorySelect(0,TimeCurrent()))
+      return;
+
+   NQAccountPositionStat positions[];
+   int positionCount=0;
+
+   for(int d=0;d<HistoryDealsTotal();d++)
+   {
+      ulong deal=HistoryDealGetTicket(d);
+      if(deal==0) continue;
+
+      long dealType=HistoryDealGetInteger(deal,DEAL_TYPE);
+      if(dealType!=DEAL_TYPE_BUY && dealType!=DEAL_TYPE_SELL)
+         continue;
+
+      ulong positionId=(ulong)HistoryDealGetInteger(deal,DEAL_POSITION_ID);
+      if(positionId==0) continue;
+
+      int index=-1;
+      for(int p=0;p<positionCount;p++)
+      {
+         if(positions[p].positionId==positionId)
+         {
+            index=p;
+            break;
+         }
+      }
+
+      if(index<0)
+      {
+         index=positionCount;
+         positionCount++;
+         ArrayResize(positions,positionCount);
+         positions[index].positionId=positionId;
+         positions[index].netResult=0.0;
+         positions[index].isClosed=false;
+      }
+
+      positions[index].netResult+=HistoryDealGetDouble(deal,DEAL_PROFIT)
+                                 +HistoryDealGetDouble(deal,DEAL_SWAP)
+                                 +HistoryDealGetDouble(deal,DEAL_COMMISSION)
+                                 +HistoryDealGetDouble(deal,DEAL_FEE);
+
+      long entry=HistoryDealGetInteger(deal,DEAL_ENTRY);
+      if(entry==DEAL_ENTRY_OUT || entry==DEAL_ENTRY_OUT_BY || entry==DEAL_ENTRY_INOUT)
+         positions[index].isClosed=true;
+   }
+
+   double grossProfit=0.0;
+   double grossLoss=0.0;
+
+   for(int p=0;p<positionCount;p++)
+   {
+      if(!positions[p].isClosed) continue;
+
+      double result=positions[p].netResult;
+      trades++;
+      netPL+=result;
+
+      if(result>0.0)
+      {
+         wins++;
+         grossProfit+=result;
+      }
+      else if(result<0.0)
+      {
+         losses++;
+         grossLoss+=MathAbs(result);
+      }
+   }
+
+   if(trades>0)
+      winRate=100.0*(double)wins/(double)trades;
+
+   if(grossLoss>0.0)
+      profitFactor=grossProfit/grossLoss;
+   else if(grossProfit>0.0)
+      profitFactor=-1.0; // Displayed as infinity when there are no losing trades.
+}
+
 void NQCreatePanel()
 {
    int px = 10;
    int py = 10;
    int panelW = 420;
-   int panelH = 660;
+   int panelH = 820;
 
-   // Scale every child element from the 440x412 dashboard layout.
+   // Preserve existing dashboard proportions; reserve extra height for Account Performance.
    NQPanelScaleX=(double)panelW/440.0;
-   NQPanelScaleY=(double)panelH/412.0;
+   NQPanelScaleY=660.0/412.0;
 
    NQCreateRect("NQ_Main",px,py,panelW,panelH,NQ_BG,NQ_BORDER);
 
@@ -4528,9 +4627,41 @@ void NQCreatePanel()
    NQCreateRect("NQ_RiskTrack",barX,barY,barW,barH,C'72,60,88',C'72,60,88');
    NQCreateRect("NQ_RiskFill",barX,barY,1,barH,NQ_PURPLE,NQ_PURPLE);
 
-   int btnY = sectionY + MathMax(sectionH,monitorH) + NQScaleY(10);
+   // Full-width account history section, aligned beneath both upper columns.
+   int accountX=px+NQScaleX(20);
+   int accountY=sectionY+monitorH+NQScaleY(10);
+   int accountW=NQScaleX(400);
+   int accountH=NQScaleY(92);
+   NQCreateRect("NQ_AccountPerformanceCard",accountX,accountY,accountW,accountH,NQ_CARD,NQ_BORDER);
+   NQCreateLabel("NQ_AccountPerformanceTitle",accountX+NQScaleX(12),accountY+NQScaleY(7),
+                 "ACCOUNT PERFORMANCE",NQScaleFont(7),NQ_PURPLE,true);
+
+   int accountColW=NQScaleX(126);
+   int accountLabelY1=accountY+NQScaleY(27);
+   int accountValueY1=accountY+NQScaleY(39);
+   int accountLabelY2=accountY+NQScaleY(59);
+   int accountValueY2=accountY+NQScaleY(71);
+   int accountCol1=accountX+NQScaleX(12);
+   int accountCol2=accountX+NQScaleX(139);
+   int accountCol3=accountX+NQScaleX(266);
+
+   NQCreateLabel("NQ_AccountTradesLabel",accountCol1,accountLabelY1,"Closed Trades",NQScaleFont(5),NQ_MUTED,false);
+   NQCreateLabel("NQ_AccountTradesValue",accountCol1,accountValueY1,"--",NQScaleFont(7),NQ_TEXT,true);
+   NQCreateLabel("NQ_AccountNetLabel",accountCol2,accountLabelY1,"Net P/L",NQScaleFont(5),NQ_MUTED,false);
+   NQCreateLabel("NQ_AccountNetValue",accountCol2,accountValueY1,"--",NQScaleFont(7),NQ_TEXT,true);
+   NQCreateLabel("NQ_AccountWinRateLabel",accountCol3,accountLabelY1,"Win Rate",NQScaleFont(5),NQ_MUTED,false);
+   NQCreateLabel("NQ_AccountWinRateValue",accountCol3,accountValueY1,"--",NQScaleFont(7),NQ_TEXT,true);
+
+   NQCreateLabel("NQ_AccountFactorLabel",accountCol1,accountLabelY2,"Profit Factor",NQScaleFont(5),NQ_MUTED,false);
+   NQCreateLabel("NQ_AccountFactorValue",accountCol1,accountValueY2,"--",NQScaleFont(7),NQ_TEXT,true);
+   NQCreateLabel("NQ_AccountWinsLabel",accountCol2,accountLabelY2,"Wins",NQScaleFont(5),NQ_MUTED,false);
+   NQCreateLabel("NQ_AccountWinsValue",accountCol2,accountValueY2,"--",NQScaleFont(7),NQ_GREEN,true);
+   NQCreateLabel("NQ_AccountLossesLabel",accountCol3,accountLabelY2,"Losses",NQScaleFont(5),NQ_MUTED,false);
+   NQCreateLabel("NQ_AccountLossesValue",accountCol3,accountValueY2,"--",NQScaleFont(7),NQ_RED,true);
+
+   int btnY = accountY + accountH + NQScaleY(10);
    int btnW = panelW;
-    NQCreateButton("NQ_CloseAll",px,btnY,btnW,NQScaleY(28),"CLOSE ALL",C'255,232,236',C'142,47,62',C'142,47,62',NQScaleFont(9));
+   NQCreateButton("NQ_CloseAll",px,btnY,btnW,NQScaleY(28),"CLOSE ALL",C'255,232,236',C'142,47,62',C'142,47,62',NQScaleFont(9));
 
    int captionY = btnY + NQScaleY(34);
    // Close All affects every open position on this chart symbol.
@@ -4573,6 +4704,11 @@ void NQUpdatePanel()
       }
    }
 
+   int accountTrades=0, accountWins=0, accountLosses=0;
+   double accountNetPL=0.0, accountWinRate=0.0, accountProfitFactor=0.0;
+   NQGetAccountHistoryStats(accountTrades,accountNetPL,accountWinRate,
+                            accountProfitFactor,accountWins,accountLosses);
+
    double bid=SymbolInfoDouble(_Symbol,SYMBOL_BID);
    double ask=SymbolInfoDouble(_Symbol,SYMBOL_ASK);
    double spreadPoints=(_Point>0.0)?(ask-bid)/_Point:0.0;
@@ -4588,6 +4724,19 @@ void NQUpdatePanel()
    ObjectSetString(0,"NQ_PerfValue2",OBJPROP_TEXT,DoubleToString(todayPL,2));
    ObjectSetString(0,"NQ_PerfValue3",OBJPROP_TEXT,DoubleToString(profitChart,2));
    ObjectSetString(0,"NQ_PerfValue4",OBJPROP_TEXT,DoubleToString(profitSymbol,2));
+
+   ObjectSetString(0,"NQ_AccountTradesValue",OBJPROP_TEXT,IntegerToString(accountTrades));
+   ObjectSetString(0,"NQ_AccountNetValue",OBJPROP_TEXT,DoubleToString(accountNetPL,2));
+   ObjectSetString(0,"NQ_AccountWinRateValue",OBJPROP_TEXT,DoubleToString(accountWinRate,1)+"%");
+   string accountFactorText="--";
+   if(accountProfitFactor<0.0)
+      accountFactorText="INF";
+   else if(accountTrades>0)
+      accountFactorText=DoubleToString(accountProfitFactor,2);
+   ObjectSetString(0,"NQ_AccountFactorValue",OBJPROP_TEXT,accountFactorText);
+   ObjectSetString(0,"NQ_AccountWinsValue",OBJPROP_TEXT,IntegerToString(accountWins));
+   ObjectSetString(0,"NQ_AccountLossesValue",OBJPROP_TEXT,IntegerToString(accountLosses));
+   ObjectSetInteger(0,"NQ_AccountNetValue",OBJPROP_COLOR,accountNetPL>=0.0?NQ_GREEN:NQ_RED);
 
    bool connected=(bool)TerminalInfoInteger(TERMINAL_CONNECTED);
    bool licenseOk=NQLicenseOK && !CheckExpiration();
