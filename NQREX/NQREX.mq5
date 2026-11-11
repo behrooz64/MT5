@@ -4565,6 +4565,128 @@ void NQGetAccountHistoryStats(int &trades,double &netPL,double &winRate,
    cachedLosses=losses;
 }
 
+void NQGetEAHistoryStats(int &trades,double &winRate,double &profitFactor,
+                           int &wins,int &losses)
+{
+   trades=0;
+   winRate=0.0;
+   profitFactor=0.0;
+   wins=0;
+   losses=0;
+
+   if(!HistorySelect(0,TimeCurrent()))
+      return;
+
+   static int cachedHistoryDeals=-1;
+   static int cachedTrades=0, cachedWins=0, cachedLosses=0;
+   static double cachedWinRate=0.0, cachedProfitFactor=0.0;
+   int totalDeals=HistoryDealsTotal();
+   if(totalDeals==cachedHistoryDeals)
+   {
+      trades=cachedTrades;
+      winRate=cachedWinRate;
+      profitFactor=cachedProfitFactor;
+      wins=cachedWins;
+      losses=cachedLosses;
+      return;
+   }
+
+   NQAccountPositionStat positions[];
+   int positionCount=0;
+
+   for(int d=0;d<totalDeals;d++)
+   {
+      ulong deal=HistoryDealGetTicket(d);
+      if(deal==0) continue;
+      if(HistoryDealGetInteger(deal,DEAL_MAGIC)!=MagicNumber) continue;
+      if(HistoryDealGetString(deal,DEAL_SYMBOL)!=_Symbol) continue;
+
+      long dealType=HistoryDealGetInteger(deal,DEAL_TYPE);
+      if(dealType!=DEAL_TYPE_BUY && dealType!=DEAL_TYPE_SELL)
+         continue;
+
+      ulong positionId=(ulong)HistoryDealGetInteger(deal,DEAL_POSITION_ID);
+      if(positionId==0) continue;
+
+      int index=-1;
+      for(int p=0;p<positionCount;p++)
+      {
+         if(positions[p].positionId==positionId)
+         {
+            index=p;
+            break;
+         }
+      }
+
+      if(index<0)
+      {
+         index=positionCount;
+         positionCount++;
+         ArrayResize(positions,positionCount);
+         positions[index].positionId=positionId;
+         positions[index].netResult=0.0;
+         positions[index].isClosed=false;
+      }
+
+      positions[index].netResult+=HistoryDealGetDouble(deal,DEAL_PROFIT)
+                                 +HistoryDealGetDouble(deal,DEAL_SWAP)
+                                 +HistoryDealGetDouble(deal,DEAL_COMMISSION)
+                                 +HistoryDealGetDouble(deal,DEAL_FEE);
+
+      long entry=HistoryDealGetInteger(deal,DEAL_ENTRY);
+      if(entry==DEAL_ENTRY_OUT || entry==DEAL_ENTRY_OUT_BY || entry==DEAL_ENTRY_INOUT)
+         positions[index].isClosed=true;
+   }
+
+   // Exclude any position that still has an open remainder.
+   for(int p=0;p<positionCount;p++)
+   {
+      for(int pos=0;pos<PositionsTotal();pos++)
+      {
+         ulong ticket=PositionGetTicket(pos);
+         if(ticket==0) continue;
+         if((ulong)PositionGetInteger(POSITION_IDENTIFIER)==positions[p].positionId)
+         {
+            positions[p].isClosed=false;
+            break;
+         }
+      }
+   }
+
+   double grossProfit=0.0;
+   double grossLoss=0.0;
+   for(int p=0;p<positionCount;p++)
+   {
+      if(!positions[p].isClosed) continue;
+      double result=positions[p].netResult;
+      trades++;
+      if(result>0.0)
+      {
+         wins++;
+         grossProfit+=result;
+      }
+      else if(result<0.0)
+      {
+         losses++;
+         grossLoss+=MathAbs(result);
+      }
+   }
+
+   if(trades>0)
+      winRate=100.0*(double)wins/(double)trades;
+   if(grossLoss>0.0)
+      profitFactor=grossProfit/grossLoss;
+   else if(grossProfit>0.0)
+      profitFactor=-1.0;
+
+   cachedHistoryDeals=totalDeals;
+   cachedTrades=trades;
+   cachedWinRate=winRate;
+   cachedProfitFactor=profitFactor;
+   cachedWins=wins;
+   cachedLosses=losses;
+}
+
 void NQCreatePanel()
 {
    int px = 10;
@@ -4616,14 +4738,14 @@ void NQCreatePanel()
    int colW = NQScaleX(194);
    int leftX = px+NQScaleX(20);
    int rx = px+NQScaleX(226);
-   int sectionH = NQScaleY(142);
+   int sectionH = NQScaleY(190);
    int monitorH = NQScaleY(190);
 
    NQCreateRect("NQ_PerformanceCard",leftX,sectionY,colW,sectionH,NQ_CARD,NQ_BORDER);
-   NQCreateLabel("NQ_PerformanceTitle",leftX+NQScaleX(12),sectionY+NQScaleY(10),"PERFORMANCE",NQScaleFont(8),NQ_PURPLE,true);
+   NQCreateLabel("NQ_PerformanceTitle",leftX+NQScaleX(12),sectionY+NQScaleY(10),"EA PERFORMANCE",NQScaleFont(8),NQ_PURPLE,true);
 
    int rowStart = sectionY + NQScaleY(34);
-   int rowPitch = NQScaleY(21);
+   int rowPitch = NQScaleY(18);
 
    NQCreateLabel("NQ_PerfLabel1",leftX+NQScaleX(12),rowStart+0*rowPitch,"Today's Trades",NQScaleFont(7),NQ_TEXT,false);
    NQCreateRightLabel("NQ_PerfValue1",leftX+colW-NQScaleX(12),rowStart+0*rowPitch,"--",NQScaleFont(7),NQ_TEXT,true);
@@ -4633,6 +4755,12 @@ void NQCreatePanel()
    NQCreateRightLabel("NQ_PerfValue3",leftX+colW-NQScaleX(12),rowStart+2*rowPitch,"--",NQScaleFont(7),NQ_TEXT,true);
    NQCreateLabel("NQ_PerfLabel4",leftX+NQScaleX(12),rowStart+3*rowPitch,"Symbol P/L",NQScaleFont(7),NQ_TEXT,false);
    NQCreateRightLabel("NQ_PerfValue4",leftX+colW-NQScaleX(12),rowStart+3*rowPitch,"--",NQScaleFont(7),NQ_TEXT,true);
+   NQCreateLabel("NQ_PerfLabel5",leftX+NQScaleX(12),rowStart+4*rowPitch,"Win Rate",NQScaleFont(7),NQ_TEXT,false);
+   NQCreateRightLabel("NQ_PerfValue5",leftX+colW-NQScaleX(12),rowStart+4*rowPitch,"--",NQScaleFont(7),NQ_TEXT,true);
+   NQCreateLabel("NQ_PerfLabel6",leftX+NQScaleX(12),rowStart+5*rowPitch,"Profit Factor",NQScaleFont(7),NQ_TEXT,false);
+   NQCreateRightLabel("NQ_PerfValue6",leftX+colW-NQScaleX(12),rowStart+5*rowPitch,"--",NQScaleFont(7),NQ_TEXT,true);
+   NQCreateLabel("NQ_PerfLabel7",leftX+NQScaleX(12),rowStart+6*rowPitch,"W / L Trades",NQScaleFont(7),NQ_TEXT,false);
+   NQCreateRightLabel("NQ_PerfValue7",leftX+colW-NQScaleX(12),rowStart+6*rowPitch,"--",NQScaleFont(7),NQ_TEXT,true);
 
    NQCreateRect("NQ_MonitorCard",rx,sectionY,colW,monitorH,NQ_CARD,NQ_BORDER);
    NQCreateLabel("NQ_MonitorTitle",rx+NQScaleX(12),sectionY+NQScaleY(10),"SYSTEM MONITOR",NQScaleFont(8),NQ_PURPLE,true);
@@ -4746,6 +4874,10 @@ void NQUpdatePanel()
    NQGetAccountHistoryStats(accountTrades,accountNetPL,accountWinRate,
                             accountProfitFactor,accountWins,accountLosses);
 
+   int eaClosedTrades=0, eaWins=0, eaLosses=0;
+   double eaWinRate=0.0, eaProfitFactor=0.0;
+   NQGetEAHistoryStats(eaClosedTrades,eaWinRate,eaProfitFactor,eaWins,eaLosses);
+
    double bid=SymbolInfoDouble(_Symbol,SYMBOL_BID);
    double ask=SymbolInfoDouble(_Symbol,SYMBOL_ASK);
    double spreadPoints=(_Point>0.0)?(ask-bid)/_Point:0.0;
@@ -4761,6 +4893,14 @@ void NQUpdatePanel()
    ObjectSetString(0,"NQ_PerfValue2",OBJPROP_TEXT,DoubleToString(todayPL,2));
    ObjectSetString(0,"NQ_PerfValue3",OBJPROP_TEXT,DoubleToString(profitChart,2));
    ObjectSetString(0,"NQ_PerfValue4",OBJPROP_TEXT,DoubleToString(profitSymbol,2));
+   ObjectSetString(0,"NQ_PerfValue5",OBJPROP_TEXT,DoubleToString(eaWinRate,1)+"%");
+   string eaFactorText="--";
+   if(eaProfitFactor<0.0)
+      eaFactorText="INF";
+   else if(eaClosedTrades>0)
+      eaFactorText=DoubleToString(eaProfitFactor,2);
+   ObjectSetString(0,"NQ_PerfValue6",OBJPROP_TEXT,eaFactorText);
+   ObjectSetString(0,"NQ_PerfValue7",OBJPROP_TEXT,IntegerToString(eaWins)+" / "+IntegerToString(eaLosses));
 
    ObjectSetString(0,"NQ_AccountTradesValue",OBJPROP_TEXT,IntegerToString(accountTrades));
    ObjectSetString(0,"NQ_AccountNetValue",OBJPROP_TEXT,DoubleToString(accountNetPL,2));
@@ -4808,6 +4948,9 @@ void NQUpdatePanel()
    ObjectSetInteger(0,"NQ_PerfValue2",OBJPROP_COLOR,todayColor);
    ObjectSetInteger(0,"NQ_PerfValue3",OBJPROP_COLOR,floatingColor);
    ObjectSetInteger(0,"NQ_PerfValue4",OBJPROP_COLOR,symbolColor);
+   ObjectSetInteger(0,"NQ_PerfValue5",OBJPROP_COLOR,eaWinRate>=50.0?NQ_GREEN:NQ_ORANGE);
+   ObjectSetInteger(0,"NQ_PerfValue6",OBJPROP_COLOR,eaProfitFactor>=1.0?NQ_GREEN:NQ_ORANGE);
+   ObjectSetInteger(0,"NQ_PerfValue7",OBJPROP_COLOR,eaWins>=eaLosses?NQ_GREEN:NQ_RED);
 }
 
 
