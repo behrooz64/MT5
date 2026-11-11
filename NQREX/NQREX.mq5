@@ -499,7 +499,8 @@ void OnChartEvent(const int id,
       return;
    }
 
-   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "NQ_CloseAll")
+   if(id == CHARTEVENT_OBJECT_CLICK &&
+       (sparam == "NQ_CloseAll" || sparam == "NQ_CloseAll_Caption"))
    {
       NQCloseAllSymbolPositions();
       ChartRedraw(0);
@@ -4530,8 +4531,8 @@ void NQCreatePanel()
    NQCreateRect("NQ_RiskFill",rx+NQScaleX(12),barY,1,MathMax(2,NQScaleY(4)),NQ_PURPLE,NQ_PURPLE);
 
    int btnY = sectionY + sectionH + NQScaleY(10);
-   int btnW = NQScaleX(140);
-   NQCreateButton("NQ_CloseAll",px+(panelW-btnW)/2,btnY,btnW,NQScaleY(28),"CLOSE ALL",C'255,232,236',C'142,47,62',C'142,47,62',NQScaleFont(9));
+   int btnW = panelW;
+    NQCreateButton("NQ_CloseAll",px,btnY,btnW,NQScaleY(28),"CLOSE ALL",C'255,232,236',C'142,47,62',C'142,47,62',NQScaleFont(9));
 
    int captionY = btnY + NQScaleY(34);
    // Close All affects every open position on this chart symbol.
