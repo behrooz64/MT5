@@ -351,6 +351,18 @@ ENUM_ORDER_TYPE OP_SELL = ORDER_TYPE_SELL;
 
 int OnInit()
   {
+// Keep the EA chart on M1. A successful period change causes chart reinitialization.
+   if(_Period != PERIOD_M1)
+   {
+      ResetLastError();
+      if(ChartSetSymbolPeriod(0,_Symbol,PERIOD_M1))
+      {
+         Print("NQ REX: switching chart to M1.");
+         return(INIT_SUCCEEDED);
+      }
+      Print("NQ REX: failed to switch chart to M1. Error: ",GetLastError());
+      return(INIT_FAILED);
+   }
 //---
 //==================================coder robo ===============================
  string broker_name = AccountInfoString(ACCOUNT_SERVER);
@@ -410,8 +422,8 @@ if(CustomChart)
    // Hollow candles: transparent bodies with colored outlines and wicks.
    ChartSetInteger(0,CHART_COLOR_CHART_UP,C'187,131,245');
    ChartSetInteger(0,CHART_COLOR_CHART_DOWN,C'82,118,185');
-   ChartSetInteger(0,CHART_COLOR_CANDLE_BULL,clrNONE);
-   ChartSetInteger(0,CHART_COLOR_CANDLE_BEAR,clrNONE);
+   ChartSetInteger(0,CHART_COLOR_CANDLE_BULL,clrBlack);
+   ChartSetInteger(0,CHART_COLOR_CANDLE_BEAR,clrBlack);
 
    ChartSetInteger(0,CHART_SHOW_ASK_LINE,1);
    ChartSetInteger(0,CHART_COLOR_BID,C'187,131,245');
@@ -448,6 +460,14 @@ void OnChartEvent(const int id,
                   const double &dparam,
                   const string &sparam)
 {
+   // Restore M1 if the user manually changes the chart timeframe.
+   if(id == CHARTEVENT_CHART_CHANGE && _Period != PERIOD_M1)
+   {
+      ResetLastError();
+      if(!ChartSetSymbolPeriod(0,_Symbol,PERIOD_M1))
+         Print("NQ REX: failed to restore M1 timeframe. Error: ",GetLastError());
+      return;
+   }
    if(sparam == "NQ_CloseAll")
    {
       NQCloseAllSymbolPositions();
