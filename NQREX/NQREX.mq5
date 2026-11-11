@@ -4433,7 +4433,7 @@ void NQCreatePanel()
    int px = 10;
    int py = 10;
    int panelW = 420;
-   int panelH = 550;
+   int panelH = 610;
 
    // Scale every child element from the original 440x382 layout.
    NQPanelScaleX=(double)panelW/440.0;
@@ -4480,6 +4480,7 @@ void NQCreatePanel()
    int leftX = px+NQScaleX(20);
    int rx = px+NQScaleX(226);
    int sectionH = NQScaleY(142);
+   int monitorH = NQScaleY(166);
 
    NQCreateRect("NQ_PerformanceCard",leftX,sectionY,colW,sectionH,NQ_CARD,NQ_BORDER);
    NQCreateLabel("NQ_PerformanceTitle",leftX+NQScaleX(12),sectionY+NQScaleY(10),"PERFORMANCE",NQScaleFont(8),NQ_PURPLE,true);
@@ -4496,7 +4497,7 @@ void NQCreatePanel()
    NQCreateLabel("NQ_PerfLabel4",leftX+NQScaleX(12),rowStart+3*rowPitch,"Symbol P/L",NQScaleFont(7),NQ_TEXT,false);
    NQCreateRightLabel("NQ_PerfValue4",leftX+colW-NQScaleX(12),rowStart+3*rowPitch,"--",NQScaleFont(7),NQ_TEXT,true);
 
-   NQCreateRect("NQ_MonitorCard",rx,sectionY,colW,sectionH,NQ_CARD,NQ_BORDER);
+   NQCreateRect("NQ_MonitorCard",rx,sectionY,colW,monitorH,NQ_CARD,NQ_BORDER);
    NQCreateLabel("NQ_MonitorTitle",rx+NQScaleX(12),sectionY+NQScaleY(10),"SYSTEM MONITOR",NQScaleFont(8),NQ_PURPLE,true);
 
    NQCreateLabel("NQ_MonitorLabel1",rx+NQScaleX(12),rowStart+0*rowPitch,"Connection",NQScaleFont(7),NQ_TEXT,false);
@@ -4509,15 +4510,15 @@ void NQCreatePanel()
    NQCreateRightLabel("NQ_MonitorValue4",rx+colW-NQScaleX(12),rowStart+3*rowPitch,"--",NQScaleFont(7),NQ_ORANGE,true);
 
    // Both configured protection limits are visible in the dashboard.
-   int guardY = sectionY + NQScaleY(119);
+   int guardY = sectionY + NQScaleY(137);
    NQCreateLabel("NQ_RiskGuardLabel",rx+NQScaleX(12),guardY,"LOSS LIMITS",NQScaleFont(6),NQ_MUTED,true);
    NQCreateRightLabel("NQ_RiskGuardValue",rx+colW-NQScaleX(12),guardY-NQScaleY(1),"--",NQScaleFont(8),NQ_TEXT,true);
 
-   int barY = sectionY + NQScaleY(135);
+   int barY = sectionY + NQScaleY(153);
    NQCreateRect("NQ_RiskTrack",rx+NQScaleX(12),barY,colW-NQScaleX(24),MathMax(2,NQScaleY(4)),C'36,30,48',C'36,30,48');
    NQCreateRect("NQ_RiskFill",rx+NQScaleX(12),barY,1,MathMax(2,NQScaleY(4)),NQ_PURPLE,NQ_PURPLE);
 
-   int btnY = sectionY + sectionH + NQScaleY(10);
+   int btnY = sectionY + MathMax(sectionH,monitorH) + NQScaleY(10);
    int btnW = panelW;
     NQCreateButton("NQ_CloseAll",px,btnY,btnW,NQScaleY(28),"CLOSE ALL",C'255,232,236',C'142,47,62',C'142,47,62',NQScaleFont(9));
 
