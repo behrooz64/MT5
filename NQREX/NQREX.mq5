@@ -4702,6 +4702,7 @@ void NQCreatePanel()
 
    // Header
    NQCreateLabel("NQ_Brand",px+NQScaleX(20),py+20,"NQ REX",10,NQ_PURPLE,true);
+    ObjectSetString(0,"NQ_Brand",OBJPROP_FONT,"Montserrat Black");
    NQCreateRightLabel("NQ_Active",px+NQScaleX(420),py+NQScaleY(20),"● ACTIVE",NQScaleFont(8),NQ_GREEN,true);
    NQCreateLabel("NQ_Subtitle",px+NQScaleX(20),py+NQScaleY(43),"NASDAQ ALGORITHMIC SYSTEM",NQScaleFont(7),NQ_MUTED,false);
    NQCreateRect("NQ_Div1",px+NQScaleX(20),py+NQScaleY(58),NQScaleX(400),MathMax(1,NQScaleY(1)),NQ_BORDER,NQ_BORDER);
