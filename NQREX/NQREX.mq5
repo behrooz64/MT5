@@ -13,7 +13,6 @@ input string AllowedBroker = "AMarkets"; // Allowed broker name fragment; suppor
 
 #include <Trade\Trade.mqh>
 CTrade m_trade;
-bool NQPanelCollapsed = false;
 bool NQLicenseOK = false;
 
 
@@ -476,17 +475,6 @@ void OnChartEvent(const int id,
       return;
    }
 
-   if(sparam == "NQ_Toggle")
-   {
-      NQPanelCollapsed = !NQPanelCollapsed;
-      NQDeletePanelObjects();
-      if(NQPanelCollapsed)
-         NQCreateCollapsedPanel();
-      else
-         NQCreatePanel();
-      ChartRedraw(0);
-      return;
-   }
 }
 
 
@@ -3296,7 +3284,6 @@ void CommentoInit()
 
    if(ShowPanel && !SiamoInTestOscuro)
    {
-      NQPanelCollapsed=false;
       NQCreatePanel();
       NQUpdatePanel();
    }
@@ -4382,14 +4369,6 @@ bool NQCreateButton(string name,int x,int y,int w,int h,string caption,
    return true;
 }
 
-void NQCreateCollapsedPanel()
-{
-   NQCreateRect("NQ_Main",10,10,440,52,NQ_BG,NQ_BORDER);
-   NQCreateLabel("NQ_Brand",22,20,"NQ REX",14,NQ_PURPLE,true);
-   NQCreateLabel("NQ_Active",132,22,"● ACTIVE",8,NQ_GREEN,true);
-   NQCreateButton("NQ_Toggle",415,19,25,22,"+",NQ_TEXT,NQ_CARD,NQ_BORDER,11);
-}
-
 void NQCreatePanel()
 {
    int px = 10;
@@ -4401,7 +4380,6 @@ void NQCreatePanel()
    // Header
    NQCreateLabel("NQ_Brand",px+20,py+13,"NQ REX",16,NQ_PURPLE,true);
    NQCreateLabel("NQ_Active",px+125,py+20,"● ACTIVE",8,NQ_GREEN,true);
-   NQCreateButton("NQ_Toggle",px+405,py+15,22,22,"−",NQ_TEXT,NQ_CARD,NQ_BORDER,11);
    NQCreateLabel("NQ_Subtitle",px+20,py+39,"NASDAQ ALGORITHMIC SYSTEM",7,NQ_MUTED,false);
    NQCreateRect("NQ_Div1",px+20,py+58,400,1,NQ_BORDER,NQ_BORDER);
 
@@ -4491,7 +4469,6 @@ void NQUpdatePanel()
    if(panelNow<=0 || panelNow==lastPanelRefresh) return;
    lastPanelRefresh=panelNow;
    if(!ShowPanel || SiamoInTestOscuro) return;
-   if(NQPanelCollapsed) return;
    if(ObjectFind(0,"NQ_Main")<0) NQCreatePanel();
 
    double profitSymbol=0.0, profitMagic=0.0, profitChart=0.0;
