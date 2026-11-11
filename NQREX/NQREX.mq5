@@ -491,7 +491,7 @@ void OnChartEvent(const int id,
          color normalColor=C'142,47,62';
          ObjectSetInteger(0,"NQ_CloseAll",OBJPROP_BGCOLOR,
                           isHovered ? hoverColor : normalColor);
-         ObjectSetInteger(0,"NQ_CloseAll",OBJPROP_COLOR,
+         ObjectSetInteger(0,"NQ_CloseAll",OBJPROP_BORDER_COLOR,
                           isHovered ? hoverColor : normalColor);
          ChartRedraw(0);
          wasHovered=isHovered;
@@ -499,11 +499,11 @@ void OnChartEvent(const int id,
       return;
    }
 
-   if(id == CHARTEVENT_OBJECT_CLICK &&
-       (sparam == "NQ_CloseAll" || sparam == "NQ_CloseAll_Caption"))
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "NQ_CloseAll")
    {
-      NQCloseAllSymbolPositions();
+      ObjectSetInteger(0,"NQ_CloseAll",OBJPROP_STATE,false);
       ChartRedraw(0);
+      NQCloseAllSymbolPositions();
       return;
    }
 }
@@ -4384,8 +4384,8 @@ bool NQCreateButton(string name,int x,int y,int w,int h,string caption,
    if(ObjectFind(0,name+"_Caption")>=0)
       ObjectDelete(0,name+"_Caption");
 
-   // Flat background: full button area
-   if(!ObjectCreate(0,name,OBJ_RECTANGLE_LABEL,0,0,0))
+   // One native button: full-width red surface and reliable click target.
+   if(!ObjectCreate(0,name,OBJ_BUTTON,0,0,0))
       return false;
 
    ObjectSetInteger(0,name,OBJPROP_CORNER,CORNER_LEFT_UPPER);
@@ -4393,30 +4393,17 @@ bool NQCreateButton(string name,int x,int y,int w,int h,string caption,
    ObjectSetInteger(0,name,OBJPROP_YDISTANCE,y);
    ObjectSetInteger(0,name,OBJPROP_XSIZE,w);
    ObjectSetInteger(0,name,OBJPROP_YSIZE,h);
+   ObjectSetString(0,name,OBJPROP_TEXT,caption);
+   ObjectSetString(0,name,OBJPROP_FONT,"Segoe UI Semibold");
+   ObjectSetInteger(0,name,OBJPROP_FONTSIZE,size);
+   ObjectSetInteger(0,name,OBJPROP_COLOR,textColor);
    ObjectSetInteger(0,name,OBJPROP_BGCOLOR,backColor);
-   ObjectSetInteger(0,name,OBJPROP_BORDER_TYPE,BORDER_FLAT);
-   ObjectSetInteger(0,name,OBJPROP_COLOR,borderColor);
-   ObjectSetInteger(0,name,OBJPROP_WIDTH,1);
+   ObjectSetInteger(0,name,OBJPROP_BORDER_COLOR,borderColor);
+   ObjectSetInteger(0,name,OBJPROP_STATE,false);
    ObjectSetInteger(0,name,OBJPROP_BACK,false);
    ObjectSetInteger(0,name,OBJPROP_SELECTABLE,true);
    ObjectSetInteger(0,name,OBJPROP_HIDDEN,true);
-   ObjectSetInteger(0,name,OBJPROP_ZORDER,20);
-
-   // Centered button caption
-   if(!ObjectCreate(0,name+"_Caption",OBJ_LABEL,0,0,0))
-      return false;
-
-   ObjectSetInteger(0,name+"_Caption",OBJPROP_CORNER,CORNER_LEFT_UPPER);
-   ObjectSetInteger(0,name+"_Caption",OBJPROP_ANCHOR,ANCHOR_CENTER);
-   ObjectSetInteger(0,name+"_Caption",OBJPROP_XDISTANCE,x+w/2);
-   ObjectSetInteger(0,name+"_Caption",OBJPROP_YDISTANCE,y+h/2);
-   ObjectSetString(0,name+"_Caption",OBJPROP_TEXT,caption);
-   ObjectSetString(0,name+"_Caption",OBJPROP_FONT,"Segoe UI");
-   ObjectSetInteger(0,name+"_Caption",OBJPROP_FONTSIZE,size);
-   ObjectSetInteger(0,name+"_Caption",OBJPROP_COLOR,textColor);
-   ObjectSetInteger(0,name+"_Caption",OBJPROP_SELECTABLE,false);
-   ObjectSetInteger(0,name+"_Caption",OBJPROP_HIDDEN,true);
-   ObjectSetInteger(0,name+"_Caption",OBJPROP_ZORDER,21);
+   ObjectSetInteger(0,name,OBJPROP_ZORDER,100);
 
    return true;
 }
