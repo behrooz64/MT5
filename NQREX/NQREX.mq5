@@ -4711,18 +4711,18 @@ void NQCreatePanel()
    NQCreateRightLabel("NQ_Symbol",px+NQScaleX(420),py+NQScaleY(68),_Symbol+"  |  "+EnumToString(_Period),NQScaleFont(8),NQ_TEXT,true);
    NQCreateRect("NQ_Div2",px+NQScaleX(20),py+NQScaleY(88),NQScaleX(400),MathMax(1,NQScaleY(1)),NQ_BORDER,NQ_BORDER);
 
-   // Five equal statistic cards
+   // Four equal statistic cards; Today P/L remains in EA Performance below.
    int cardY = py+NQScaleY(98);
-   int cardW = NQScaleX(74);
+   int cardW = NQScaleX(94);
    int cardH = NQScaleY(52);
-   int cardGap = NQScaleX(6);
+   int cardGap = NQScaleX(8);
    int startX = px + NQScaleX(20);
 
-   string cardTitles[5] = {"BALANCE","EQUITY","TODAY P/L","LIVE SPREAD","LOT SIZE"};
-   string cardBase[5]   = {"NQ_CardBalance","NQ_CardEquity","NQ_CardToday","NQ_CardSpread","NQ_CardLots"};
-   string cardValue[5]  = {"NQ_ValueBalance","NQ_ValueEquity","NQ_ValueToday","NQ_ValueSpread","NQ_ValueLots"};
+   string cardTitles[4] = {"BALANCE","EQUITY","LIVE SPREAD","LOT SIZE"};
+   string cardBase[4]   = {"NQ_CardBalance","NQ_CardEquity","NQ_CardSpread","NQ_CardLots"};
+   string cardValue[4]  = {"NQ_ValueBalance","NQ_ValueEquity","NQ_ValueSpread","NQ_ValueLots"};
 
-   for(int i=0;i<5;i++)
+   for(int i=0;i<4;i++)
    {
       int cx = startX + i*(cardW+cardGap);
       NQCreateRect(cardBase[i],cx,cardY,cardW,cardH,NQ_CARD,NQ_BORDER);
@@ -4883,9 +4883,8 @@ void NQUpdatePanel()
    double spreadPoints=(_Point>0.0)?(ask-bid)/_Point:0.0;
 
    ObjectSetString(0,"NQ_Symbol",OBJPROP_TEXT,_Symbol+"  |  "+EnumToString(_Period));
-   ObjectSetString(0,"NQ_ValueBalance",OBJPROP_TEXT,DoubleToString(AccountInfoDouble(ACCOUNT_BALANCE),0));
-   ObjectSetString(0,"NQ_ValueEquity",OBJPROP_TEXT,DoubleToString(AccountInfoDouble(ACCOUNT_EQUITY),0));
-   ObjectSetString(0,"NQ_ValueToday",OBJPROP_TEXT,DoubleToString(todayPL,0));
+   ObjectSetString(0,"NQ_ValueBalance",OBJPROP_TEXT,DoubleToString(AccountInfoDouble(ACCOUNT_BALANCE),2));
+   ObjectSetString(0,"NQ_ValueEquity",OBJPROP_TEXT,DoubleToString(AccountInfoDouble(ACCOUNT_EQUITY),2));
    ObjectSetString(0,"NQ_ValueSpread",OBJPROP_TEXT,DoubleToString(spreadPoints,0));
    ObjectSetString(0,"NQ_ValueLots",OBJPROP_TEXT,DoubleToString(LottoDaTradare,2));
 
