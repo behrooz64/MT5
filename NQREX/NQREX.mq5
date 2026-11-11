@@ -279,15 +279,15 @@ enum ClosureModality
 
 
 string MonetaryLoss = "Monetary Loss Settings";//Monetary Loss  // in
-input bool MonetaryStopLoss = false;//Enable Monetary Stop Loss     
+input bool MonetaryStopLoss = true;//Enable Monetary Stop Loss     
 input bool EveryMicrolot = false;//If true, Multiply Monetary Stop Loss Amount*Start Lot size*100   
 input bool StopTradingWhenHit = false;//Stop EA after Monetary loss              
-input int MaximumMonetaryLoss = 3000;//Monetary Stop Loss Amount (expressed in the account currency)   
+input int MaximumMonetaryLoss = 35;//Monetary Stop Loss Amount (expressed in the account currency)   
 
 string PercentageLoss = "Percentage Loss Settings";//Percentage Loss // in
-input bool CloseInPercentageLoss = false;//Enable Close In Percentage Loss   
+input bool CloseInPercentageLoss = true;//Enable Close In Percentage Loss   
 input bool StopTradingAfterPercentageLoss = false;//Stop EA After Percentage Loss  
-input int LossPercentage = 30;//Loss Amount in Percentage    
+input int LossPercentage = 25;//Loss Amount in Percentage    
 
 
 string Separo8="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -4364,10 +4364,10 @@ bool NQCreateButton(string name,int x,int y,int w,int h,string caption,
 
 void NQCreateCollapsedPanel()
 {
-   NQCreateRect("NQ_Main",10,10,400,52,NQ_BG,NQ_BORDER);
+   NQCreateRect("NQ_Main",10,10,440,52,NQ_BG,NQ_BORDER);
    NQCreateLabel("NQ_Brand",22,20,"NQ REX",14,NQ_PURPLE,true);
-   NQCreateLabel("NQ_Active",115,22,"● ACTIVE",8,NQ_GREEN,true);
-   NQCreateButton("NQ_Toggle",370,19,25,22,"+",NQ_TEXT,NQ_CARD,NQ_BORDER,11);
+   NQCreateLabel("NQ_Active",132,22,"● ACTIVE",8,NQ_GREEN,true);
+   NQCreateButton("NQ_Toggle",415,19,25,22,"+",NQ_TEXT,NQ_CARD,NQ_BORDER,11);
 }
 
 void NQCreatePanel()
@@ -4375,22 +4375,26 @@ void NQCreatePanel()
    int px = 10;
    int py = 10;
 
-   NQCreateRect("NQ_Main",px,py,400,360,NQ_BG,NQ_BORDER);
+   // Wider dashboard with fixed, non-overlapping columns and enough vertical room.
+   NQCreateRect("NQ_Main",px,py,440,382,NQ_BG,NQ_BORDER);
 
-   NQCreateLabel("NQ_Brand",px+20,py+15,"NQ REX",16,NQ_PURPLE,true);
-   NQCreateLabel("NQ_Active",px+120,py+20,"● ACTIVE",8,NQ_GREEN,true);
-   NQCreateButton("NQ_Toggle",px+365,py+15,22,22,"−",NQ_TEXT,NQ_CARD,NQ_BORDER,11);
-   NQCreateLabel("NQ_Subtitle",px+20,py+40,"NASDAQ ALGORITHMIC SYSTEM",7,NQ_MUTED,false);
-   NQCreateRect("NQ_Div1",px+20,py+58,360,1,NQ_BORDER,NQ_BORDER);
+   // Header
+   NQCreateLabel("NQ_Brand",px+20,py+13,"NQ REX",16,NQ_PURPLE,true);
+   NQCreateLabel("NQ_Active",px+125,py+20,"● ACTIVE",8,NQ_GREEN,true);
+   NQCreateButton("NQ_Toggle",px+405,py+15,22,22,"−",NQ_TEXT,NQ_CARD,NQ_BORDER,11);
+   NQCreateLabel("NQ_Subtitle",px+20,py+39,"NASDAQ ALGORITHMIC SYSTEM",7,NQ_MUTED,false);
+   NQCreateRect("NQ_Div1",px+20,py+58,400,1,NQ_BORDER,NQ_BORDER);
 
-   NQCreateLabel("NQ_SymbolLabel",px+20,py+68,"Symbol / TF",7,NQ_MUTED,false);
-   NQCreateRightLabel("NQ_Symbol",px+380,py+68,_Symbol+"  |  "+EnumToString(_Period),8,NQ_TEXT,true);
-   NQCreateRect("NQ_Div2",px+20,py+88,360,1,NQ_BORDER,NQ_BORDER);
+   // Symbol / timeframe row
+   NQCreateLabel("NQ_SymbolLabel",px+20,py+68,"SYMBOL / TF",7,NQ_MUTED,false);
+   NQCreateRightLabel("NQ_Symbol",px+420,py+68,_Symbol+"  |  "+EnumToString(_Period),8,NQ_TEXT,true);
+   NQCreateRect("NQ_Div2",px+20,py+88,400,1,NQ_BORDER,NQ_BORDER);
 
+   // Five equal statistic cards
    int cardY = py+98;
-   int cardW = 66;
-   int cardH = 46;
-   int cardGap = 7;
+   int cardW = 74;
+   int cardH = 52;
+   int cardGap = 6;
    int startX = px + 20;
 
    string cardTitles[5] = {"BALANCE","EQUITY","TODAY P/L","LIVE SPREAD","LOT SIZE"};
@@ -4401,59 +4405,63 @@ void NQCreatePanel()
    {
       int cx = startX + i*(cardW+cardGap);
       NQCreateRect(cardBase[i],cx,cardY,cardW,cardH,NQ_CARD,NQ_BORDER);
-      NQCreateLabel("NQ_Title"+IntegerToString(i),cx+4,cardY+8,cardTitles[i],6,NQ_MUTED,false);
-      NQCreateLabel(cardValue[i],cx+4,cardY+24,"--",9,NQ_TEXT,true);
+      NQCreateLabel("NQ_Title"+IntegerToString(i),cx+5,cardY+9,cardTitles[i],6,NQ_MUTED,false);
+      NQCreateLabel(cardValue[i],cx+5,cardY+27,"--",9,NQ_TEXT,true);
    }
 
    int colY = cardY + cardH + 10;
-   NQCreateRect("NQ_Div3",px+20,colY,360,1,NQ_BORDER,NQ_BORDER);
+   NQCreateRect("NQ_Div3",px+20,colY,400,1,NQ_BORDER,NQ_BORDER);
 
+   // Balanced two-column information area
    int sectionY = colY + 10;
-   int colW = 176;
+   int colW = 194;
+   int leftX = px+20;
+   int rx = px+226;
+   int sectionH = 142;
 
-   NQCreateRect("NQ_PerformanceCard",px+20,sectionY,colW,135,NQ_CARD,NQ_BORDER);
-   NQCreateLabel("NQ_PerformanceTitle",px+30,sectionY+10,"PERFORMANCE",8,NQ_PURPLE,true);
+   NQCreateRect("NQ_PerformanceCard",leftX,sectionY,colW,sectionH,NQ_CARD,NQ_BORDER);
+   NQCreateLabel("NQ_PerformanceTitle",leftX+12,sectionY+10,"PERFORMANCE",8,NQ_PURPLE,true);
 
-   int rowStart = sectionY + 32;
-   int rowPitch = 22;
+   int rowStart = sectionY + 34;
+   int rowPitch = 21;
 
-   NQCreateLabel("NQ_PerfLabel1",px+30,rowStart+0*rowPitch,"Today's Trades",7,NQ_TEXT,false);
-   NQCreateRightLabel("NQ_PerfValue1",px+20+colW-10,rowStart+0*rowPitch,"--",7,NQ_TEXT,true);
-   NQCreateLabel("NQ_PerfLabel2",px+30,rowStart+1*rowPitch,"Today P/L",7,NQ_TEXT,false);
-   NQCreateRightLabel("NQ_PerfValue2",px+20+colW-10,rowStart+1*rowPitch,"--",7,NQ_TEXT,true);
-   NQCreateLabel("NQ_PerfLabel3",px+30,rowStart+2*rowPitch,"Floating P/L",7,NQ_TEXT,false);
-   NQCreateRightLabel("NQ_PerfValue3",px+20+colW-10,rowStart+2*rowPitch,"--",7,NQ_TEXT,true);
-   NQCreateLabel("NQ_PerfLabel4",px+30,rowStart+3*rowPitch,"Symbol P/L",7,NQ_TEXT,false);
-   NQCreateRightLabel("NQ_PerfValue4",px+20+colW-10,rowStart+3*rowPitch,"--",7,NQ_TEXT,true);
+   NQCreateLabel("NQ_PerfLabel1",leftX+12,rowStart+0*rowPitch,"Today's Trades",7,NQ_TEXT,false);
+   NQCreateRightLabel("NQ_PerfValue1",leftX+colW-12,rowStart+0*rowPitch,"--",7,NQ_TEXT,true);
+   NQCreateLabel("NQ_PerfLabel2",leftX+12,rowStart+1*rowPitch,"Today P/L",7,NQ_TEXT,false);
+   NQCreateRightLabel("NQ_PerfValue2",leftX+colW-12,rowStart+1*rowPitch,"--",7,NQ_TEXT,true);
+   NQCreateLabel("NQ_PerfLabel3",leftX+12,rowStart+2*rowPitch,"Floating P/L",7,NQ_TEXT,false);
+   NQCreateRightLabel("NQ_PerfValue3",leftX+colW-12,rowStart+2*rowPitch,"--",7,NQ_TEXT,true);
+   NQCreateLabel("NQ_PerfLabel4",leftX+12,rowStart+3*rowPitch,"Symbol P/L",7,NQ_TEXT,false);
+   NQCreateRightLabel("NQ_PerfValue4",leftX+colW-12,rowStart+3*rowPitch,"--",7,NQ_TEXT,true);
 
-   int rx = px + 20 + colW + 8;
-   NQCreateRect("NQ_MonitorCard",rx,sectionY,colW,135,NQ_CARD,NQ_BORDER);
-   NQCreateLabel("NQ_MonitorTitle",rx+10,sectionY+10,"SYSTEM MONITOR",8,NQ_PURPLE,true);
+   NQCreateRect("NQ_MonitorCard",rx,sectionY,colW,sectionH,NQ_CARD,NQ_BORDER);
+   NQCreateLabel("NQ_MonitorTitle",rx+12,sectionY+10,"SYSTEM MONITOR",8,NQ_PURPLE,true);
 
-   NQCreateLabel("NQ_MonitorLabel1",rx+10,rowStart+0*rowPitch,"Connection",7,NQ_TEXT,false);
-   NQCreateRightLabel("NQ_MonitorValue1",rx+colW-10,rowStart+0*rowPitch,"--",7,NQ_GREEN,true);
-   NQCreateLabel("NQ_MonitorLabel2",rx+10,rowStart+1*rowPitch,"License",7,NQ_TEXT,false);
-   NQCreateRightLabel("NQ_MonitorValue2",rx+colW-10,rowStart+1*rowPitch,"--",7,NQ_GREEN,true);
-   NQCreateLabel("NQ_MonitorLabel3",rx+10,rowStart+2*rowPitch,"Indicator",7,NQ_TEXT,false);
-   NQCreateRightLabel("NQ_MonitorValue3",rx+colW-10,rowStart+2*rowPitch,"--",7,NQ_GREEN,true);
-   NQCreateLabel("NQ_MonitorLabel4",rx+10,rowStart+3*rowPitch,"Risk Protection",7,NQ_TEXT,false);
-   NQCreateRightLabel("NQ_MonitorValue4",rx+colW-10,rowStart+3*rowPitch,"--",7,NQ_ORANGE,true);
+   NQCreateLabel("NQ_MonitorLabel1",rx+12,rowStart+0*rowPitch,"Connection",7,NQ_TEXT,false);
+   NQCreateRightLabel("NQ_MonitorValue1",rx+colW-12,rowStart+0*rowPitch,"--",7,NQ_GREEN,true);
+   NQCreateLabel("NQ_MonitorLabel2",rx+12,rowStart+1*rowPitch,"License",7,NQ_TEXT,false);
+   NQCreateRightLabel("NQ_MonitorValue2",rx+colW-12,rowStart+1*rowPitch,"--",7,NQ_GREEN,true);
+   NQCreateLabel("NQ_MonitorLabel3",rx+12,rowStart+2*rowPitch,"Indicator",7,NQ_TEXT,false);
+   NQCreateRightLabel("NQ_MonitorValue3",rx+colW-12,rowStart+2*rowPitch,"--",7,NQ_GREEN,true);
+   NQCreateLabel("NQ_MonitorLabel4",rx+12,rowStart+3*rowPitch,"Risk Protection",7,NQ_TEXT,false);
+   NQCreateRightLabel("NQ_MonitorValue4",rx+colW-12,rowStart+3*rowPitch,"--",7,NQ_ORANGE,true);
 
-   int guardY = rowStart + 4*rowPitch + 4;
-   NQCreateLabel("NQ_RiskGuardLabel",rx+10,guardY,"RISK GUARD $",6,NQ_MUTED,true);
-   NQCreateRightLabel("NQ_RiskGuardValue",rx+colW-10,guardY-1,"--",8,NQ_TEXT,true);
+   // Both configured protection limits are visible in the dashboard.
+   int guardY = sectionY + 119;
+   NQCreateLabel("NQ_RiskGuardLabel",rx+12,guardY,"LOSS LIMITS",6,NQ_MUTED,true);
+   NQCreateRightLabel("NQ_RiskGuardValue",rx+colW-12,guardY-1,"--",8,NQ_TEXT,true);
 
-   int barY = guardY + 16;
-   NQCreateRect("NQ_RiskTrack",rx+10,barY,colW-20,4,C'36,30,48',C'36,30,48');
-   NQCreateRect("NQ_RiskFill",rx+10,barY,1,4,NQ_PURPLE,NQ_PURPLE);
+   int barY = sectionY + 135;
+   NQCreateRect("NQ_RiskTrack",rx+12,barY,colW-24,4,C'36,30,48',C'36,30,48');
+   NQCreateRect("NQ_RiskFill",rx+12,barY,1,4,NQ_PURPLE,NQ_PURPLE);
 
-   int btnY = sectionY + 135 + 12;
-   NQCreateButton("NQ_CloseAll",px+135,btnY,130,28,"CLOSE ALL",C'255,232,236',C'142,47,62',C'142,47,62',9);
+   int btnY = sectionY + sectionH + 10;
+   NQCreateButton("NQ_CloseAll",px+150,btnY,140,28,"CLOSE ALL",C'255,232,236',C'142,47,62',C'142,47,62',9);
 
-   int captionY = btnY + 36;
-   // Accurate description: Close All affects every open position on this chart symbol.
+   int captionY = btnY + 34;
+   // Close All affects every open position on this chart symbol.
    NQCreateLabel("NQ_FooterCaption",px+20,captionY,"All open positions on current chart symbol",6,NQ_MUTED,false);
-   NQCreateRightLabel("NQ_Version",px+380,captionY,"v1.0 · NQ REX SYSTEM",6,C'74,68,88',false);
+   NQCreateRightLabel("NQ_Version",px+420,captionY,"v1.0 · NQ REX SYSTEM",6,C'74,68,88',false);
 }
 
 void NQUpdatePanel()
@@ -4520,12 +4528,20 @@ void NQUpdatePanel()
    ObjectSetString(0,"NQ_MonitorValue4",OBJPROP_TEXT,protection?"ACTIVE":"OFF");
    ObjectSetInteger(0,"NQ_MonitorValue4",OBJPROP_COLOR,protection?NQ_GREEN:NQ_ORANGE);
 
-   string guardValue=MonetaryStopLoss?("$"+IntegerToString(MaximumMonetaryLoss)):"OFF";
+   string guardValue="";
+   if(MonetaryStopLoss)
+      guardValue="$"+IntegerToString(MaximumMonetaryLoss);
+   if(CloseInPercentageLoss)
+   {
+      if(guardValue!="") guardValue+=" | ";
+      guardValue+=IntegerToString(LossPercentage)+"%";
+   }
+   if(guardValue=="") guardValue="OFF";
    ObjectSetString(0,"NQ_RiskGuardValue",OBJPROP_TEXT,guardValue);
    double riskRatio=0.0;
    if(MonetaryStopLoss && MaximumMonetaryLoss>0 && profitChart<0.0)
       riskRatio=MathMin(1.0,MathAbs(profitChart)/(double)MaximumMonetaryLoss);
-   int fillWidth=(int)MathRound(164.0*riskRatio);
+   int fillWidth=(int)MathRound(170.0*riskRatio);
    ObjectSetInteger(0,"NQ_RiskFill",OBJPROP_XSIZE,MathMax(1,fillWidth));
 
    color todayColor=(todayPL>=0.0)?NQ_GREEN:NQ_RED;
