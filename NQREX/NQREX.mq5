@@ -4378,9 +4378,9 @@ void NQCreatePanel()
    NQCreateRect("NQ_Main",px,py,440,382,NQ_BG,NQ_BORDER);
 
    // Header
-   NQCreateLabel("NQ_Brand",px+20,py+13,"NQ REX",16,NQ_PURPLE,true);
-   NQCreateLabel("NQ_Active",px+125,py+20,"● ACTIVE",8,NQ_GREEN,true);
-   NQCreateLabel("NQ_Subtitle",px+20,py+39,"NASDAQ ALGORITHMIC SYSTEM",7,NQ_MUTED,false);
+   NQCreateLabel("NQ_Brand",px+20,py+13,"NQ REX",14,NQ_PURPLE,true);
+   NQCreateRightLabel("NQ_Active",px+420,py+20,"● ACTIVE",8,NQ_GREEN,true);
+   NQCreateLabel("NQ_Subtitle",px+20,py+43,"NASDAQ ALGORITHMIC SYSTEM",7,NQ_MUTED,false);
    NQCreateRect("NQ_Div1",px+20,py+58,400,1,NQ_BORDER,NQ_BORDER);
 
    // Symbol / timeframe row
