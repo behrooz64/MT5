@@ -4350,22 +4350,43 @@ bool NQCreateButton(string name,int x,int y,int w,int h,string caption,
                     color textColor,color backColor,color borderColor,int size)
 {
    if(ObjectFind(0,name)>=0) ObjectDelete(0,name);
-   if(!ObjectCreate(0,name,OBJ_BUTTON,0,0,0)) return false;
+   if(ObjectFind(0,name+"_Caption")>=0)
+      ObjectDelete(0,name+"_Caption");
+
+   // Flat background: full button area
+   if(!ObjectCreate(0,name,OBJ_RECTANGLE_LABEL,0,0,0))
+      return false;
+
    ObjectSetInteger(0,name,OBJPROP_CORNER,CORNER_LEFT_UPPER);
    ObjectSetInteger(0,name,OBJPROP_XDISTANCE,x);
    ObjectSetInteger(0,name,OBJPROP_YDISTANCE,y);
    ObjectSetInteger(0,name,OBJPROP_XSIZE,w);
    ObjectSetInteger(0,name,OBJPROP_YSIZE,h);
-   ObjectSetString(0,name,OBJPROP_TEXT,caption);
-   ObjectSetString(0,name,OBJPROP_FONT,"Segoe UI");
-   ObjectSetInteger(0,name,OBJPROP_FONTSIZE,size);
-   ObjectSetInteger(0,name,OBJPROP_COLOR,textColor);
    ObjectSetInteger(0,name,OBJPROP_BGCOLOR,backColor);
-   ObjectSetInteger(0,name,OBJPROP_BORDER_COLOR,borderColor);
-   ObjectSetInteger(0,name,OBJPROP_STATE,false);
-   ObjectSetInteger(0,name,OBJPROP_SELECTABLE,false);
+   ObjectSetInteger(0,name,OBJPROP_BORDER_TYPE,BORDER_FLAT);
+   ObjectSetInteger(0,name,OBJPROP_COLOR,borderColor);
+   ObjectSetInteger(0,name,OBJPROP_WIDTH,1);
+   ObjectSetInteger(0,name,OBJPROP_BACK,false);
+   ObjectSetInteger(0,name,OBJPROP_SELECTABLE,true);
    ObjectSetInteger(0,name,OBJPROP_HIDDEN,true);
    ObjectSetInteger(0,name,OBJPROP_ZORDER,20);
+
+   // Centered button caption
+   if(!ObjectCreate(0,name+"_Caption",OBJ_LABEL,0,0,0))
+      return false;
+
+   ObjectSetInteger(0,name+"_Caption",OBJPROP_CORNER,CORNER_LEFT_UPPER);
+   ObjectSetInteger(0,name+"_Caption",OBJPROP_ANCHOR,ANCHOR_CENTER);
+   ObjectSetInteger(0,name+"_Caption",OBJPROP_XDISTANCE,x+w/2);
+   ObjectSetInteger(0,name+"_Caption",OBJPROP_YDISTANCE,y+h/2);
+   ObjectSetString(0,name+"_Caption",OBJPROP_TEXT,caption);
+   ObjectSetString(0,name+"_Caption",OBJPROP_FONT,"Segoe UI");
+   ObjectSetInteger(0,name+"_Caption",OBJPROP_FONTSIZE,size);
+   ObjectSetInteger(0,name+"_Caption",OBJPROP_COLOR,textColor);
+   ObjectSetInteger(0,name+"_Caption",OBJPROP_SELECTABLE,false);
+   ObjectSetInteger(0,name+"_Caption",OBJPROP_HIDDEN,true);
+   ObjectSetInteger(0,name+"_Caption",OBJPROP_ZORDER,21);
+
    return true;
 }
 
@@ -4393,8 +4414,8 @@ void NQCreatePanel()
 {
    int px = 10;
    int py = 10;
-   int panelW = 400;
-   int panelH = 500;
+   int panelW = 420;
+   int panelH = 550;
 
    // Scale every child element from the original 440x382 layout.
    NQPanelScaleX=(double)panelW/440.0;
