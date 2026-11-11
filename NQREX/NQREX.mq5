@@ -407,11 +407,9 @@ if(CustomChart)
    ChartSetInteger(0,CHART_COLOR_FOREGROUND,clrWhiteSmoke);
    ChartSetInteger(0,CHART_SHOW_GRID,0);
 
-   // Bullish and bearish candle colors.
+   // Hollow candles: transparent bodies with colored outlines and wicks.
    ChartSetInteger(0,CHART_COLOR_CHART_UP,C'187,131,245');
    ChartSetInteger(0,CHART_COLOR_CHART_DOWN,C'82,118,185');
-
-   // Hollow candle bodies.
    ChartSetInteger(0,CHART_COLOR_CANDLE_BULL,clrNONE);
    ChartSetInteger(0,CHART_COLOR_CANDLE_BEAR,clrNONE);
 
@@ -419,6 +417,7 @@ if(CustomChart)
    ChartSetInteger(0,CHART_COLOR_BID,C'187,131,245');
    ChartSetInteger(0,CHART_COLOR_ASK,C'82,118,185');
    ChartSetInteger(0,CHART_MODE,CHART_CANDLES);
+   ChartRedraw(0);
 }
 LottoDaTradare = Lots;
 
