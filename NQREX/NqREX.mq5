@@ -4992,7 +4992,7 @@ void NQCreatePanel()
    NQCreateLabel("NQ_RiskPercentLabel",rx+NQScaleX(12),percentY,"Percentage Limit",NQScaleFont(6),NQ_TEXT,false);
    NQCreateRightLabel("NQ_RiskPercentValue",rx+colW-NQScaleX(12),percentY,"--",NQScaleFont(7),NQ_TEXT,true);
 
-   int barLabelY = sectionY + NQScaleY(166);
+   int barLabelY = sectionY + NQScaleY(160);
    NQCreateLabel("NQ_RiskBarLabel",rx+NQScaleX(12),barLabelY,"LOSS USAGE",NQScaleFont(6),NQ_MUTED,true);
    int barY = sectionY + NQScaleY(178);
    int barH = MathMax(5,NQScaleY(6));
