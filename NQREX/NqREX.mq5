@@ -3236,32 +3236,49 @@ if (OrderMagicNumber() == MagicNumber && OrderSymbol() == Symbol())
 
 void PuntiFissiMonetari()
 {
-   double buyPriceVolume=0.0, sellPriceVolume=0.0;
-   double buyLots=0.0, sellLots=0.0;
 
-   for(int i=PositionsTotal()-1;i>=0;i--)
+double ProfittoBuy = 0;
+double ProfittoSell = 0;
+double lottobuy = 100000000000000;
+double lottosell = 100000000000000;
+
+
+   for(int i = PositionsTotal()-1; i >= 0; i--)
    {
-      if(PositionGetTicket(i)==0) continue;
-      if(OrderMagicNumber()!=MagicNumber || OrderSymbol()!=_Symbol) continue;
-
-      if(OrderType()==OP_BUY)
+      if(PositionGetTicket(i)>0)
       {
-         buyPriceVolume+=OrderOpenPrice()*OrderLots();
-         buyLots+=OrderLots();
+if (OrderMagicNumber() == MagicNumber && OrderSymbol() == Symbol())
+   {
+      if(OrderType() == OP_BUY)
+      {
+         ProfittoBuy += OrderSwap()+OrderCommission()+OrderProfit();
+         if ( lottobuy > OrderLots() )
+         lottobuy = OrderLots();
       }
-      else if(OrderType()==OP_SELL)
+      else if(OrderType() == OP_SELL)
       {
-         sellPriceVolume+=OrderOpenPrice()*OrderLots();
-         sellLots+=OrderLots();
+         ProfittoSell += OrderSwap()+OrderCommission()+OrderProfit();
+         if ( lottosell > OrderLots() )
+         lottosell = OrderLots();
       }
    }
+}
+}
 
-   double targetDistance=NQREXSelectedTargetPoints()*_Point;
-   if(buyLots>0.0 && Bid_>=(buyPriceVolume/buyLots)+targetDistance)
+
+   //CHIUSURA ORDINI PIRAMIDALI IN PROFITTO
+
+      if (ProfittoBuy > TakeTargetBuy*(lottobuy)*MonetaAccount() )
+      {
       EliminaOrdiniFifo(MagicNumber,OP_BUY);
+      }
 
-   if(sellLots>0.0 && Ask_<=(sellPriceVolume/sellLots)-targetDistance)
+      if (ProfittoSell > TakeTargetSell*(lottosell)*MonetaAccount() )
+      {
       EliminaOrdiniFifo(MagicNumber,OP_SELL);
+      }
+
+
 }
 
 
