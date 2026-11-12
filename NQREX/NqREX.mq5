@@ -295,6 +295,9 @@ input bool CloseInPercentageLoss = true;//Enable Close In Percentage Loss
 input bool StopTradingAfterPercentageLoss = false;//Stop EA After Percentage Loss  
 input int LossPercentage = 25;//Loss Amount in Percentage    
 
+string DailyProfitSettings = "DAILY PROFIT PROTECTION";
+input bool DailyProfitProtection = true; // Enable Daily Profit Protection
+input double DailyProfitTargetPercent = 1.0; // Daily profit target (% of starting-day equity)
 
 string Separo8="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -348,7 +351,116 @@ bool AllowNetting = false;//Allow Trading on Netting Account  // in
 //ADATTAMENTI MT5
 
 double Bid_ = 0;	
-double Ask_ = 0;	
+double Ask_ = 0;
+
+// Persistent run-state: daily-profit pauses auto-resume next broker day;
+// manual pauses and loss locks remain until PLAY is pressed.
+enum NQREX_RUN_STATE
+{
+   NQREX_ACTIVE = 0,
+   NQREX_MANUAL_PAUSE = 1,
+   NQREX_DAILY_PROFIT_PAUSE = 2,
+   NQREX_MONEY_LOCK = 3,
+   NQREX_PERCENT_LOCK = 4
+};
+string NQREXProtectionPrefix()
+{
+   string symbolKey=_Symbol;
+   StringReplace(symbolKey,".","_");
+   StringReplace(symbolKey,"-","_");
+   StringReplace(symbolKey,"#","_");
+   return "NQX_"+IntegerToString((long)AccountInfoInteger(ACCOUNT_LOGIN))+"_"+
+          IntegerToString(MagicNumber)+"_"+symbolKey;
+}
+int NQREXBrokerDayStamp()
+{
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(),dt);
+   return dt.year*10000+dt.mon*100+dt.day;
+}
+NQREX_RUN_STATE NQREXGetRunState()
+{
+   string key=NQREXProtectionPrefix()+"_STATE";
+   if(!GlobalVariableCheck(key)) return NQREX_ACTIVE;
+   int value=(int)GlobalVariableGet(key);
+   if(value<NQREX_ACTIVE || value>NQREX_PERCENT_LOCK) return NQREX_ACTIVE;
+   return (NQREX_RUN_STATE)value;
+}
+void NQREXSetRunState(NQREX_RUN_STATE state)
+{
+   GlobalVariableSet(NQREXProtectionPrefix()+"_STATE",(double)state);
+   GlobalVariablesFlush();
+}
+double NQREXDailyStartingEquity()
+{
+   string key=NQREXProtectionPrefix()+"_BASE";
+   if(!GlobalVariableCheck(key)) return AccountInfoDouble(ACCOUNT_EQUITY);
+   return GlobalVariableGet(key);
+}
+double NQREXDailyProfitPercent()
+{
+   double base=NQREXDailyStartingEquity();
+   if(base<=0.0) return 0.0;
+   return ((AccountInfoDouble(ACCOUNT_EQUITY)-base)/base)*100.0;
+}
+double NQREXDailyProfitUsagePercent()
+{
+   if(!DailyProfitProtection || DailyProfitTargetPercent<=0.0) return 0.0;
+   return MathMax(0.0,MathMin(100.0,(NQREXDailyProfitPercent()/DailyProfitTargetPercent)*100.0));
+}
+void NQREXInitializeProtection()
+{
+   string prefix=NQREXProtectionPrefix();
+   string stateKey=prefix+"_STATE", dayKey=prefix+"_DAY";
+   string baseKey=prefix+"_BASE", overrideKey=prefix+"_OVERRIDE";
+   int today=NQREXBrokerDayStamp();
+   if(!GlobalVariableCheck(stateKey)) GlobalVariableSet(stateKey,(double)NQREX_ACTIVE);
+   if(!GlobalVariableCheck(dayKey) || (int)GlobalVariableGet(dayKey)!=today)
+   {
+      if(NQREXGetRunState()==NQREX_DAILY_PROFIT_PAUSE) NQREXSetRunState(NQREX_ACTIVE);
+      GlobalVariableSet(dayKey,(double)today);
+      GlobalVariableSet(baseKey,AccountInfoDouble(ACCOUNT_EQUITY));
+      GlobalVariableSet(overrideKey,0.0);
+   }
+   else if(!GlobalVariableCheck(baseKey))
+      GlobalVariableSet(baseKey,AccountInfoDouble(ACCOUNT_EQUITY));
+}
+void NQREXUpdateDailyProtection()
+{
+   string prefix=NQREXProtectionPrefix();
+   string dayKey=prefix+"_DAY", baseKey=prefix+"_BASE", overrideKey=prefix+"_OVERRIDE";
+   int today=NQREXBrokerDayStamp();
+   if(!GlobalVariableCheck(dayKey) || (int)GlobalVariableGet(dayKey)!=today)
+   {
+      if(NQREXGetRunState()==NQREX_DAILY_PROFIT_PAUSE)
+      {
+         NQREXSetRunState(NQREX_ACTIVE);
+         Print("NQ REX: new broker day started; daily-profit pause released automatically.");
+      }
+      GlobalVariableSet(dayKey,(double)today);
+      GlobalVariableSet(baseKey,AccountInfoDouble(ACCOUNT_EQUITY));
+      GlobalVariableSet(overrideKey,0.0);
+   }
+   if(!DailyProfitProtection || DailyProfitTargetPercent<=0.0) return;
+   if(NQREXGetRunState()!=NQREX_ACTIVE) return;
+   if(GlobalVariableCheck(overrideKey) && (int)GlobalVariableGet(overrideKey)==today) return;
+   double dailyProfit=NQREXDailyProfitPercent();
+   if(dailyProfit>=DailyProfitTargetPercent)
+   {
+      NQREXSetRunState(NQREX_DAILY_PROFIT_PAUSE);
+      Print("NQ REX: daily profit target reached (",DoubleToString(dailyProfit,2),
+            "%). New entries paused until next broker day or manual PLAY.");
+   }
+}
+void NQREXManualPlay()
+{
+   NQREXSetRunState(NQREX_ACTIVE);
+   GlobalVariableSet(NQREXProtectionPrefix()+"_OVERRIDE",(double)NQREXBrokerDayStamp());
+   GlobalVariablesFlush();
+}
+void NQREXManualPause(){ NQREXSetRunState(NQREX_MANUAL_PAUSE); }
+bool NQREXCanOpenTrades(){ return NQREXGetRunState()==NQREX_ACTIVE; }
+void NQREXUpdateControlHeader();
 ENUM_ORDER_TYPE OP_BUY = ORDER_TYPE_BUY;	
 ENUM_ORDER_TYPE OP_SELL = ORDER_TYPE_SELL;	
 
@@ -403,6 +515,7 @@ int OnInit()
        }
      Print(" password is corect ");
      NQLicenseOK = true;
+     NQREXInitializeProtection();
 //=================================================================================  
 m_trade.SetExpertMagicNumber(MagicNumber);
 // Use the filling policy reported by the active chart symbol for CTrade operations.
@@ -506,6 +619,22 @@ void OnChartEvent(const int id,
       return;
    }
 
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "NQ_Play")
+   {
+      ObjectSetInteger(0,"NQ_Play",OBJPROP_STATE,false);
+      NQREXManualPlay();
+      NQREXUpdateControlHeader();
+      ChartRedraw(0);
+      return;
+   }
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "NQ_Pause")
+   {
+      ObjectSetInteger(0,"NQ_Pause",OBJPROP_STATE,false);
+      NQREXManualPause();
+      NQREXUpdateControlHeader();
+      ChartRedraw(0);
+      return;
+   }
    if(id == CHARTEVENT_OBJECT_CLICK && sparam == "NQ_CloseAll")
    {
       ObjectSetInteger(0,"NQ_CloseAll",OBJPROP_STATE,false);
@@ -568,7 +697,7 @@ string NQREXSelectedTargetName()
    switch(NQREX_TakeProfitMode)
    {
       case Micro:    return "MICRO";
-      case Standard: return "STANDARD";
+      case Standard: return "STD";
       case Pro:      return "PRO";
    }
    return "PRO";
@@ -589,7 +718,8 @@ return ;
 
 
 Bid_ = Bid();
-Ask_ = Ask();
+Ask_ = Ask_;
+NQREXUpdateDailyProtection();
 
 
 if (MoneyManagement)
@@ -737,8 +867,8 @@ HLineMove(0,"StopLineSell",PrezzoPrimoOrdineSell()+(StopTarget*_Point));
                 EliminaOrdiniFifo(MagicNumber);
                if (StopTradingWhenHit)
                {
-               Comment("Stop Trading When Hit, I removed the Expert, to continue insert it again");
-               ExpertRemove();
+                  NQREXSetRunState(NQREX_MONEY_LOCK);
+                  Print("NQ REX: monetary loss limit reached. EA locked; press PLAY to reactivate.");
                }               
                }
                   
@@ -763,8 +893,8 @@ double profit = CalcolaProfitto(MagicNumber);
        EliminaOrdiniFifo(MagicNumber);
       if ( StopTradingAfterPercentageLoss )
       {
-         Comment("Stop Trading After Percentage Loss, I removed the Expert, to continue insert it again");
-         ExpertRemove();
+         NQREXSetRunState(NQREX_PERCENT_LOCK);
+         Print("NQ REX: percentage loss limit reached. EA locked; press PLAY to reactivate.");
       }
    }
 }
@@ -1597,6 +1727,11 @@ int Ordine(int cmd, double lotti, double prezzo, double stoploss, double takepro
 {
 int ticket=0;
 
+if(!NQREXCanOpenTrades())
+{
+   Kia64TradeDiagnostic("New order blocked: EA is paused or protection-locked.");
+   return -1;
+}
 if (!CheckVolumeValue(lotti))
 return -1;
 
@@ -4699,6 +4834,26 @@ void NQGetEAHistoryStats(int &trades,double &winRate,double &profitFactor,
    cachedLosses=losses;
 }
 
+void NQREXUpdateControlHeader()
+{
+   if(ObjectFind(0,"NQ_Active")<0) return;
+   NQREX_RUN_STATE state=NQREXGetRunState();
+   string status="● ACTIVE";
+   color statusColor=NQ_GREEN;
+   if(state==NQREX_MANUAL_PAUSE || state==NQREX_DAILY_PROFIT_PAUSE)
+   {
+      status="Ⅱ PAUSED";
+      statusColor=NQ_ORANGE;
+   }
+   else if(state==NQREX_MONEY_LOCK || state==NQREX_PERCENT_LOCK)
+   {
+      status="● LOCKED";
+      statusColor=NQ_RED;
+   }
+   ObjectSetString(0,"NQ_Active",OBJPROP_TEXT,status);
+   ObjectSetInteger(0,"NQ_Active",OBJPROP_COLOR,statusColor);
+}
+
 void NQCreatePanel()
 {
    int px = 10;
@@ -4716,6 +4871,7 @@ void NQCreatePanel()
    NQCreateLabel("NQ_Brand",px+NQScaleX(20),py+20,"NQ REX",10,NQ_PURPLE,true);
     ObjectSetString(0,"NQ_Brand",OBJPROP_FONT,"Montserrat Black");
    NQCreateRightLabel("NQ_Active",px+NQScaleX(420),py+NQScaleY(20),"● ACTIVE",NQScaleFont(8),NQ_GREEN,true);
+   NQREXUpdateControlHeader();
    NQCreateLabel("NQ_Subtitle",px+NQScaleX(20),py+NQScaleY(43),"NASDAQ ALGORITHMIC SYSTEM",NQScaleFont(7),NQ_MUTED,false);
    NQCreateRect("NQ_Div1",px+NQScaleX(20),py+NQScaleY(58),NQScaleX(400),MathMax(1,NQScaleY(1)),NQ_BORDER,NQ_BORDER);
 
@@ -4774,6 +4930,17 @@ void NQCreatePanel()
    NQCreateRightLabel("NQ_PerfValue6",leftX+colW-NQScaleX(12),rowStart+5*rowPitch,"--",NQScaleFont(7),NQ_TEXT,true);
    NQCreateLabel("NQ_PerfLabel7",leftX+NQScaleX(12),rowStart+6*rowPitch,"TP MODE",NQScaleFont(7),NQ_TEXT,false);
    NQCreateRightLabel("NQ_PerfValue7",leftX+colW-NQScaleX(12),rowStart+6*rowPitch,"--",NQScaleFont(7),NQ_TEXT,true);
+
+   // Daily profit usage is placed at the bottom of EA PERFORMANCE only.
+   int profitBarLabelY=sectionY+NQScaleY(160);
+   int profitBarY=sectionY+NQScaleY(178);
+   int profitBarH=MathMax(5,NQScaleY(6));
+   int profitBarX=leftX+NQScaleX(12);
+   int profitBarW=colW-NQScaleX(24);
+   NQCreateLabel("NQ_ProfitBarLabel",profitBarX,profitBarLabelY,"PROFIT USAGE",NQScaleFont(6),NQ_MUTED,true);
+   NQCreateRightLabel("NQ_ProfitBarValue",leftX+colW-NQScaleX(12),profitBarLabelY,"--",NQScaleFont(6),NQ_GREEN,true);
+   NQCreateRect("NQ_ProfitTrack",profitBarX,profitBarY,profitBarW,profitBarH,C'72,60,88',C'72,60,88');
+   NQCreateRect("NQ_ProfitFill",profitBarX,profitBarY,1,profitBarH,NQ_GREEN,NQ_GREEN);
 
    NQCreateRect("NQ_MonitorCard",rx,sectionY,colW,monitorH,NQ_CARD,NQ_BORDER);
    NQCreateLabel("NQ_MonitorTitle",rx+NQScaleX(12),sectionY+NQScaleY(10),"SYSTEM MONITOR",NQScaleFont(8),NQ_PURPLE,true);
@@ -4838,8 +5005,11 @@ void NQCreatePanel()
    NQCreateLabel("NQ_AccountLossesValue",accountCol3,accountValueY2,"--",NQScaleFont(7),NQ_RED,true);
 
    int btnY = accountY + accountH + NQScaleY(10);
-   int btnW = panelW;
-   NQCreateButton("NQ_CloseAll",px,btnY,btnW,NQScaleY(28),"CLOSE ALL",C'255,232,236',C'142,47,62',C'142,47,62',NQScaleFont(9));
+   int buttonGap=NQScaleX(6), buttonH=NQScaleY(28);
+   int buttonW=(panelW-2*buttonGap)/3;
+   NQCreateButton("NQ_Play",px,btnY,buttonW,buttonH,"▶ PLAY",C'226,255,239',C'34,112,78',C'34,112,78',NQScaleFont(8));
+   NQCreateButton("NQ_Pause",px+buttonW+buttonGap,btnY,buttonW,buttonH,"Ⅱ PAUSE",C'255,246,224',C'151,105,35',C'151,105,35',NQScaleFont(8));
+   NQCreateButton("NQ_CloseAll",px+2*(buttonW+buttonGap),btnY,panelW-2*(buttonW+buttonGap),buttonH,"CLOSE ALL",C'255,232,236',C'142,47,62',C'142,47,62',NQScaleFont(8));
 
    int captionY = btnY + NQScaleY(34);
    // Close All affects every open position on this chart symbol.
@@ -4855,6 +5025,7 @@ void NQUpdatePanel()
    lastPanelRefresh=panelNow;
    if(!ShowPanel || SiamoInTestOscuro) return;
    if(ObjectFind(0,"NQ_Main")<0) NQCreatePanel();
+   NQREXUpdateControlHeader();
 
    double profitSymbol=0.0, profitMagic=0.0, profitChart=0.0;
    CalcolaDati(profitSymbol,profitMagic,profitChart);
@@ -4952,6 +5123,22 @@ void NQUpdatePanel()
    ObjectSetInteger(0,"NQ_RiskFill",OBJPROP_XSIZE,MathMax(1,fillWidth));
    ObjectSetInteger(0,"NQ_RiskFill",OBJPROP_YSIZE,MathMax(5,NQScaleY(6)));
    ObjectSetInteger(0,"NQ_RiskTrack",OBJPROP_YSIZE,MathMax(5,NQScaleY(6)));
+
+   if(DailyProfitProtection && DailyProfitTargetPercent>0.0)
+   {
+      double profitUsage=NQREXDailyProfitUsagePercent();
+      int profitFillWidth=(int)MathRound(NQScaleX(170)*(profitUsage/100.0));
+      ObjectSetString(0,"NQ_ProfitBarValue",OBJPROP_TEXT,DoubleToString(profitUsage,0)+"%");
+      ObjectSetInteger(0,"NQ_ProfitBarValue",OBJPROP_COLOR,NQREXDailyProfitPercent()>=0.0?NQ_GREEN:NQ_RED);
+      ObjectSetInteger(0,"NQ_ProfitFill",OBJPROP_XSIZE,MathMax(1,profitFillWidth));
+      ObjectSetInteger(0,"NQ_ProfitFill",OBJPROP_YSIZE,MathMax(5,NQScaleY(6)));
+      ObjectSetInteger(0,"NQ_ProfitTrack",OBJPROP_YSIZE,MathMax(5,NQScaleY(6)));
+   }
+   else
+   {
+      ObjectSetString(0,"NQ_ProfitBarValue",OBJPROP_TEXT,"OFF");
+      ObjectSetInteger(0,"NQ_ProfitFill",OBJPROP_XSIZE,1);
+   }
 
    color todayColor=(todayPL>=0.0)?NQ_GREEN:NQ_RED;
    color floatingColor=(profitChart>=0.0)?NQ_GREEN:NQ_RED;
