@@ -552,15 +552,15 @@ ObjectsDeleteAll(0,-1,OBJ_RECTANGLE_LABEL);
 //+------------------------------------------------------------------+
 //| Expert tick function                                             |
 //+------------------------------------------------------------------+
-double NQREXSelectedTargetMoney()
+double NQREXSelectedTargetPoints()
 {
    switch(NQREX_TakeProfitMode)
    {
-      case Micro:    return 0.05;
-      case Standard: return 0.075;
-      case Pro:      return 0.10;
+      case Micro:    return 500.0;
+      case Standard: return 750.0;
+      case Pro:      return 1000.0;
    }
-   return 0.10;
+   return 1000.0;
 }
 
 string NQREXSelectedTargetName()
@@ -572,49 +572,6 @@ string NQREXSelectedTargetName()
       case Pro:      return "PRO";
    }
    return "PRO";
-}
-
-double NQREXSideProfit(int side)
-{
-   double totalProfit=0.0;
-   for(int i=PositionsTotal()-1;i>=0;i--)
-   {
-      if(PositionGetTicket(i)==0) continue;
-      if(OrderMagicNumber()!=MagicNumber || OrderSymbol()!=_Symbol) continue;
-      if(OrderType()!=side) continue;
-      totalProfit+=OrderProfit()+OrderSwap()+OrderCommission();
-   }
-   return totalProfit;
-}
-
-double NQREXSideLots(int side)
-{
-   double totalLots=0.0;
-   for(int i=PositionsTotal()-1;i>=0;i--)
-   {
-      if(PositionGetTicket(i)==0) continue;
-      if(OrderMagicNumber()!=MagicNumber || OrderSymbol()!=_Symbol) continue;
-      if(OrderType()!=side) continue;
-      totalLots+=OrderLots();
-   }
-   return totalLots;
-}
-
-int NQREXMoneyToPoints(double targetMoney,double totalLots)
-{
-   if(targetMoney<=0.0 || totalLots<=0.0 || _Point<=0.0)
-      return 0;
-
-   double tickSize=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE);
-   double tickValue=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE);
-   if(tickSize<=0.0 || tickValue<=0.0)
-      return 0;
-
-   double moneyPerPointPerLot=tickValue*(_Point/tickSize);
-   if(moneyPerPointPerLot<=0.0)
-      return 0;
-
-   return (int)MathMax(1.0,MathCeil(targetMoney/(moneyPerPointPerLot*totalLots)));
 }
 
 void OnTick()
@@ -698,10 +655,10 @@ if (!OnlyEndOfBar || (EndBar < iTime(_Symbol,OrderTimeframe,0)) )
       TakeTargetSell = NormalizeDouble(TakeTargetAtrMultiplier*iatr(_Symbol,TakeTargetAtrTimeframe,TakeTargetAtrPeriod,1),_Digits);
       }
 
-      // Convert the selected cash target to an estimated point distance for the chart target lines.
-      double selectedTargetMoney=NQREXSelectedTargetMoney();
-      TakeTargetBuy=NQREXMoneyToPoints(selectedTargetMoney,NQREXSideLots(OP_BUY));
-      TakeTargetSell=NQREXMoneyToPoints(selectedTargetMoney,NQREXSideLots(OP_SELL));
+      // TP modes define a fixed price distance in platform points.
+      // Cash profit therefore scales naturally with the total volume on each side.
+      TakeTargetBuy=(int)NQREXSelectedTargetPoints();
+      TakeTargetSell=(int)NQREXSelectedTargetPoints();
 
       double prezzomediobuy = 0;
       double prezzomediosell = 0;
@@ -726,9 +683,9 @@ if (!OnlyEndOfBar || (EndBar < iTime(_Symbol,OrderTimeframe,0)) )
       if ( prezzomediobuy > 0)
       {
       
-         if ( NQREXSideProfit(OP_BUY) >= selectedTargetMoney )
+         if ( Bid_ >= prezzomediobuy+(TakeTargetBuy*_Point) )
          {
-          KiaXAMLogCloseDiagnostic("DOLLAR_TAKE_PROFIT","BUY",prezzomediobuy,prezzomediobuy+(TakeTargetBuy*_Point));
+          KiaXAMLogCloseDiagnostic("POINT_TAKE_PROFIT","BUY",prezzomediobuy,prezzomediobuy+(TakeTargetBuy*_Point));
           EliminaOrdiniFifo(MagicNumber,OP_BUY);
           }
       
@@ -749,9 +706,9 @@ HLineMove(0,"StopLineBuy",PrezzoPrimoOrdineBuy()-(StopTarget*_Point));
       if ( prezzomediosell > 0)
       {
       
-         if ( NQREXSideProfit(OP_SELL) >= selectedTargetMoney )
+         if ( Ask_ <= prezzomediosell-(TakeTargetSell*_Point) )
          {
-          KiaXAMLogCloseDiagnostic("DOLLAR_TAKE_PROFIT","SELL",prezzomediosell,prezzomediosell-(TakeTargetSell*_Point));
+          KiaXAMLogCloseDiagnostic("POINT_TAKE_PROFIT","SELL",prezzomediosell,prezzomediosell-(TakeTargetSell*_Point));
           EliminaOrdiniFifo(MagicNumber,OP_SELL);
           }
       
@@ -1461,38 +1418,34 @@ return OrderOpenPrice()+swappoint*_Point;
 
 void breakeven(int ordinibuy, int ordinisell)
 {
+   double buyPriceVolume=0.0, sellPriceVolume=0.0;
+   double buyLots=0.0, sellLots=0.0;
 
-
-double profittobuy = 0;
-double profittosell = 0;
-
-   for(int i = PositionsTotal()-1; i >= 0; i--)
+   for(int i=PositionsTotal()-1;i>=0;i--)
    {
-      if(PositionGetTicket(i)>0)
+      if(PositionGetTicket(i)==0) continue;
+      if(OrderMagicNumber()!=MagicNumber || OrderSymbol()!=_Symbol) continue;
+
+      if(OrderType()==OP_BUY)
       {
-if (OrderMagicNumber() == MagicNumber && OrderSymbol() == _Symbol )
-   {
-   int tipo = OrderType();
-   double orderlots = OrderLots();
-
-            if ( tipo == OP_BUY)
-            {
-            profittobuy += OrderCommission()+OrderSwap()+OrderProfit();
-            }
-            else if ( tipo == OP_SELL)
-            {
-            profittosell += OrderCommission()+OrderSwap()+OrderProfit();
-            }
+         buyPriceVolume+=OrderOpenPrice()*OrderLots();
+         buyLots+=OrderLots();
+      }
+      else if(OrderType()==OP_SELL)
+      {
+         sellPriceVolume+=OrderOpenPrice()*OrderLots();
+         sellLots+=OrderLots();
+      }
    }
-}
-}
 
-if ( ordinibuy > 1 && profittobuy >= NQREXSelectedTargetMoney())
-EliminaOrdiniFifo(MagicNumber,OP_BUY);
-if ( ordinisell > 1 && profittosell >= NQREXSelectedTargetMoney())
-EliminaOrdiniFifo(MagicNumber,OP_SELL);
+   double targetDistance=NQREXSelectedTargetPoints()*_Point;
+   if(ordinibuy>1 && buyLots>0.0 &&
+      Bid_>=((buyPriceVolume/buyLots)+targetDistance))
+      EliminaOrdiniFifo(MagicNumber,OP_BUY);
 
-
+   if(ordinisell>1 && sellLots>0.0 &&
+      Ask_<=((sellPriceVolume/sellLots)-targetDistance))
+      EliminaOrdiniFifo(MagicNumber,OP_SELL);
 }
 
 
@@ -3138,49 +3091,32 @@ if (OrderMagicNumber() == MagicNumber && OrderSymbol() == Symbol())
 
 void PuntiFissiMonetari()
 {
+   double buyPriceVolume=0.0, sellPriceVolume=0.0;
+   double buyLots=0.0, sellLots=0.0;
 
-double ProfittoBuy = 0;
-double ProfittoSell = 0;
-double lottobuy = 100000000000000;
-double lottosell = 100000000000000;
-
-
-   for(int i = PositionsTotal()-1; i >= 0; i--)
+   for(int i=PositionsTotal()-1;i>=0;i--)
    {
-      if(PositionGetTicket(i)>0)
+      if(PositionGetTicket(i)==0) continue;
+      if(OrderMagicNumber()!=MagicNumber || OrderSymbol()!=_Symbol) continue;
+
+      if(OrderType()==OP_BUY)
       {
-if (OrderMagicNumber() == MagicNumber && OrderSymbol() == Symbol())
-   {
-      if(OrderType() == OP_BUY)
-      {
-         ProfittoBuy += OrderSwap()+OrderCommission()+OrderProfit();
-         if ( lottobuy > OrderLots() )
-         lottobuy = OrderLots();
+         buyPriceVolume+=OrderOpenPrice()*OrderLots();
+         buyLots+=OrderLots();
       }
-      else if(OrderType() == OP_SELL)
+      else if(OrderType()==OP_SELL)
       {
-         ProfittoSell += OrderSwap()+OrderCommission()+OrderProfit();
-         if ( lottosell > OrderLots() )
-         lottosell = OrderLots();
+         sellPriceVolume+=OrderOpenPrice()*OrderLots();
+         sellLots+=OrderLots();
       }
    }
-}
-}
 
-
-   //CHIUSURA ORDINI PIRAMIDALI IN PROFITTO
-
-      if (ProfittoBuy >= NQREXSelectedTargetMoney())
-      {
+   double targetDistance=NQREXSelectedTargetPoints()*_Point;
+   if(buyLots>0.0 && Bid_>=(buyPriceVolume/buyLots)+targetDistance)
       EliminaOrdiniFifo(MagicNumber,OP_BUY);
-      }
 
-      if (ProfittoSell >= NQREXSelectedTargetMoney())
-      {
+   if(sellLots>0.0 && Ask_<=(sellPriceVolume/sellLots)-targetDistance)
       EliminaOrdiniFifo(MagicNumber,OP_SELL);
-      }
-
-
 }
 
 
