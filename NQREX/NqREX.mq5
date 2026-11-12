@@ -4865,17 +4865,18 @@ void NQREXUpdateControlHeader()
 {
    if(ObjectFind(0,"NQ_Active")<0) return;
    NQREX_RUN_STATE state=NQREXGetRunState();
+   bool outsideTradingHours=(EnableOrari && !Hour_trade_allowed(coefstart,coefstop));
    string status="● ACTIVE";
    color statusColor=NQ_GREEN;
-   if(state==NQREX_MANUAL_PAUSE || state==NQREX_DAILY_PROFIT_PAUSE)
-   {
-      status="Ⅱ PAUSED";
-      statusColor=NQ_ORANGE;
-   }
-   else if(state==NQREX_MONEY_LOCK || state==NQREX_PERCENT_LOCK)
+   if(state==NQREX_MONEY_LOCK || state==NQREX_PERCENT_LOCK)
    {
       status="● LOCKED";
       statusColor=NQ_RED;
+   }
+   else if(state==NQREX_MANUAL_PAUSE || state==NQREX_DAILY_PROFIT_PAUSE || outsideTradingHours)
+   {
+      status="Ⅱ PAUSED";
+      statusColor=NQ_ORANGE;
    }
    ObjectSetString(0,"NQ_Active",OBJPROP_TEXT,status);
    ObjectSetInteger(0,"NQ_Active",OBJPROP_COLOR,statusColor);
