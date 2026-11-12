@@ -591,31 +591,41 @@ void OnChartEvent(const int id,
       return;
    }
 
-   // Hover effect for the full CLOSE ALL button area.
-   if(id == CHARTEVENT_MOUSE_MOVE && ObjectFind(0,"NQ_CloseAll") >= 0)
+   // Consistent hover feedback for PLAY, PAUSE and CLOSE ALL.
+   if(id == CHARTEVENT_MOUSE_MOVE)
    {
+      string buttonNames[3]={"NQ_Play","NQ_Pause","NQ_CloseAll"};
+      color normalColors[3]={C'34,112,78',C'151,105,35',C'142,47,62'};
+      color hoverColors[3]={C'45,145,100',C'185,130,45',C'180,65,80'};
+      static bool wasHovered[3]={false,false,false};
       int mouseX=(int)lparam;
       int mouseY=(int)dparam;
-      int buttonX=(int)ObjectGetInteger(0,"NQ_CloseAll",OBJPROP_XDISTANCE);
-      int buttonY=(int)ObjectGetInteger(0,"NQ_CloseAll",OBJPROP_YDISTANCE);
-      int buttonW=(int)ObjectGetInteger(0,"NQ_CloseAll",OBJPROP_XSIZE);
-      int buttonH=(int)ObjectGetInteger(0,"NQ_CloseAll",OBJPROP_YSIZE);
+      bool changed=false;
 
-      bool isHovered=(mouseX>=buttonX && mouseX<buttonX+buttonW &&
-                      mouseY>=buttonY && mouseY<buttonY+buttonH);
-      static bool wasHovered=false;
-
-      if(isHovered != wasHovered)
+      for(int i=0;i<3;i++)
       {
-         color hoverColor=C'180,65,80';
-         color normalColor=C'142,47,62';
-         ObjectSetInteger(0,"NQ_CloseAll",OBJPROP_BGCOLOR,
-                          isHovered ? hoverColor : normalColor);
-         ObjectSetInteger(0,"NQ_CloseAll",OBJPROP_BORDER_COLOR,
-                          isHovered ? hoverColor : normalColor);
-         ChartRedraw(0);
-         wasHovered=isHovered;
+         if(ObjectFind(0,buttonNames[i]) < 0)
+            continue;
+
+         int buttonX=(int)ObjectGetInteger(0,buttonNames[i],OBJPROP_XDISTANCE);
+         int buttonY=(int)ObjectGetInteger(0,buttonNames[i],OBJPROP_YDISTANCE);
+         int buttonW=(int)ObjectGetInteger(0,buttonNames[i],OBJPROP_XSIZE);
+         int buttonH=(int)ObjectGetInteger(0,buttonNames[i],OBJPROP_YSIZE);
+         bool isHovered=(mouseX>=buttonX && mouseX<buttonX+buttonW &&
+                         mouseY>=buttonY && mouseY<buttonY+buttonH);
+
+         if(isHovered != wasHovered[i])
+         {
+            color buttonColor=isHovered ? hoverColors[i] : normalColors[i];
+            ObjectSetInteger(0,buttonNames[i],OBJPROP_BGCOLOR,buttonColor);
+            ObjectSetInteger(0,buttonNames[i],OBJPROP_BORDER_COLOR,buttonColor);
+            wasHovered[i]=isHovered;
+            changed=true;
+         }
       }
+
+      if(changed)
+         ChartRedraw(0);
       return;
    }
 
@@ -718,7 +728,7 @@ return ;
 
 
 Bid_ = Bid();
-Ask_ = Ask_;
+Ask_ = Ask();
 NQREXUpdateDailyProtection();
 
 
