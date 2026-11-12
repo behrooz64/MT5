@@ -136,7 +136,7 @@ enum StochasticValue
 string Separo2="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-string orari="TRADING HOUR ON BROKER SERVER TIME";//TRADING HOUR    // in
+string orari="TRADING HOUR ON SYSTEM LOCAL TIME";//TRADING HOUR    // in
 input bool EnableOrari = false;//Enable Time Filter                    
 input int TradingStartHour = 0;//Trading Start Hour                      
 input int TradingStartMinute = 0;//Trading Start Minute                  
@@ -4251,14 +4251,14 @@ return PositionGetDouble(POSITION_COMMISSION);
 int Hour()
 {
 MqlDateTime StrutturaTemporale;
-TimeCurrent(StrutturaTemporale);
+TimeLocal(StrutturaTemporale);
 return (StrutturaTemporale.hour);
 }
 
 int Minute()
 {
 MqlDateTime StrutturaTemporale;
-TimeCurrent(StrutturaTemporale);
+TimeLocal(StrutturaTemporale);
 return (StrutturaTemporale.min);
 }
 
@@ -4266,7 +4266,7 @@ return (StrutturaTemporale.min);
 int DayOfWeek()
 {
 MqlDateTime StrutturaTemporale;
-TimeCurrent(StrutturaTemporale);
+TimeLocal(StrutturaTemporale);
 return (StrutturaTemporale.day_of_week);
 }
 
