@@ -4888,6 +4888,33 @@ void NQGetEAHistoryStats(int &trades,double &winRate,double &profitFactor,
    cachedLosses=losses;
 }
 
+// Keep the zoom controls centered in the live gap between the brand and status labels.
+// The status label width changes for ACTIVE, PAUSED and LOCKED, so recalculate after each update.
+void NQREXPositionHeaderZoomControls()
+{
+   if(ObjectFind(0,"NQ_Brand")<0 || ObjectFind(0,"NQ_Active")<0 ||
+      ObjectFind(0,"NQ_ZoomIn")<0 || ObjectFind(0,"NQ_ZoomOut")<0)
+      return;
+
+   int brandLeft=(int)ObjectGetInteger(0,"NQ_Brand",OBJPROP_XDISTANCE);
+   int brandWidth=(int)ObjectGetInteger(0,"NQ_Brand",OBJPROP_XSIZE);
+   int activeRight=(int)ObjectGetInteger(0,"NQ_Active",OBJPROP_XDISTANCE);
+   int activeWidth=(int)ObjectGetInteger(0,"NQ_Active",OBJPROP_XSIZE);
+
+   int gapLeft=brandLeft+brandWidth;
+   int gapRight=activeRight-activeWidth;
+   int gapWidth=gapRight-gapLeft;
+   int buttonWidth=(int)ObjectGetInteger(0,"NQ_ZoomIn",OBJPROP_XSIZE);
+   int buttonGap=NQScaleX(8);
+   int controlsWidth=(2*buttonWidth)+buttonGap;
+   if(gapWidth<=controlsWidth)
+      return;
+
+   int controlsLeft=gapLeft+(gapWidth-controlsWidth)/2;
+   ObjectSetInteger(0,"NQ_ZoomIn",OBJPROP_XDISTANCE,controlsLeft);
+   ObjectSetInteger(0,"NQ_ZoomOut",OBJPROP_XDISTANCE,controlsLeft+buttonWidth+buttonGap);
+}
+
 void NQREXUpdateControlHeader()
 {
    if(ObjectFind(0,"NQ_Active")<0) return;
@@ -4907,6 +4934,7 @@ void NQREXUpdateControlHeader()
    }
    ObjectSetString(0,"NQ_Active",OBJPROP_TEXT,status);
    ObjectSetInteger(0,"NQ_Active",OBJPROP_COLOR,statusColor);
+   NQREXPositionHeaderZoomControls();
 }
 
 void NQCreatePanel()
@@ -4925,8 +4953,8 @@ void NQCreatePanel()
    // Header
    NQCreateLabel("NQ_Brand",px+NQScaleX(20),py+NQScaleY(20),"NQ REX",NQScaleFont(10),NQ_PURPLE,true);
     ObjectSetString(0,"NQ_Brand",OBJPROP_FONT,"Montserrat Black");
-   NQCreateButton("NQ_ZoomIn",px+NQScaleX(300),py+NQScaleY(13),NQScaleX(24),NQScaleY(20),"🔍+",NQ_TEXT,NQ_CARD,NQ_BORDER,NQScaleFont(8));
-   NQCreateButton("NQ_ZoomOut",px+NQScaleX(330),py+NQScaleY(13),NQScaleX(24),NQScaleY(20),"🔍−",NQ_TEXT,NQ_CARD,NQ_BORDER,NQScaleFont(8));
+   NQCreateButton("NQ_ZoomIn",px+NQScaleX(300),py+NQScaleY(13),NQScaleX(24),NQScaleY(20),"🔍+",NQ_TEXT,NQ_BG,NQ_BG,NQScaleFont(8));
+   NQCreateButton("NQ_ZoomOut",px+NQScaleX(330),py+NQScaleY(13),NQScaleX(24),NQScaleY(20),"🔍−",NQ_TEXT,NQ_BG,NQ_BG,NQScaleFont(8));
    ObjectSetString(0,"NQ_ZoomIn",OBJPROP_FONT,"Segoe UI Emoji");
    ObjectSetString(0,"NQ_ZoomOut",OBJPROP_FONT,"Segoe UI Emoji");
    NQCreateRightLabel("NQ_Active",px+NQScaleX(420),py+NQScaleY(20),"● ACTIVE",NQScaleFont(8),NQ_GREEN,true);
