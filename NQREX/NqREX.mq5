@@ -22,7 +22,7 @@ bool NQPanelForceRefresh = false;
 
 input string st ="==Security==";
 input string user_password = "";
-input string Set = "==========Setting Bot=========";
+string Set = "==========Setting Bot=========";
 string KamalEA = "NQ REX"; // in
 int MagicNumber = 8398;//Magic Number                           // in
 int MaxSpread = 500;//Legacy max spread in points (for open a trade)
@@ -300,8 +300,8 @@ input bool StopTradingAfterPercentageLoss = false;//Stop After Loss
 input int LossPercentage = 25;//Max Loss %
 
 string DailyProfitSettings = "DAILY PROFIT PROTECTION";
-input bool DailyProfitProtection = true; // Enable Daily Profit Protection
-input double DailyProfitTargetPercent = 1.0; // Daily profit target (% of starting-day equity)
+input bool DailyProfitProtection = true; // Daily Profit Guard
+input double DailyProfitTargetPercent = 1.0; // Target %
 
 string Separo8="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
