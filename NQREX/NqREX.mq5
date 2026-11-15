@@ -4613,7 +4613,8 @@ double NQPanelScaleY=1.0;
 
 int NQScaleX(int value)
 {
-   return (int)MathRound((double)value*NQPanelScaleX*NQPanelZoom);
+   // Panel width already includes NQPanelZoom; do not apply zoom twice.
+   return (int)MathRound((double)value*NQPanelScaleX);
 }
 
 int NQScaleY(int value)
@@ -4623,7 +4624,8 @@ int NQScaleY(int value)
 
 int NQScaleFont(int value)
 {
-   double scale=MathMin(NQPanelScaleX,NQPanelScaleY)*NQPanelZoom;
+   // Match the effective horizontal and vertical scales without double-zooming X.
+   double scale=MathMin(NQPanelScaleX,NQPanelScaleY*NQPanelZoom);
    return (int)MathMax(6,MathRound((double)value*scale));
 }
 
