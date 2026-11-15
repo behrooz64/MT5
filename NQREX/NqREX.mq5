@@ -15,6 +15,9 @@ input string AllowedBroker = "AMarkets"; // Allowed broker name fragment; suppor
 CTrade m_trade;
 bool NQLicenseOK = false;
 
+// Dashboard zoom: start slightly enlarged by default.
+double NQPanelZoom = 1.10;
+
 
 input string st ="==Security password=="; // Give Me Code
 input string user_password = "";
@@ -626,6 +629,25 @@ void OnChartEvent(const int id,
 
       if(changed)
          ChartRedraw(0);
+      return;
+   }
+
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "NQ_ZoomIn")
+   {
+      ObjectSetInteger(0,"NQ_ZoomIn",OBJPROP_STATE,false);
+      NQPanelZoom=MathMin(1.50,NQPanelZoom+0.10);
+      NQCreatePanel();
+      NQUpdatePanel();
+      ChartRedraw(0);
+      return;
+   }
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "NQ_ZoomOut")
+   {
+      ObjectSetInteger(0,"NQ_ZoomOut",OBJPROP_STATE,false);
+      NQPanelZoom=MathMax(0.80,NQPanelZoom-0.10);
+      NQCreatePanel();
+      NQUpdatePanel();
+      ChartRedraw(0);
       return;
    }
 
@@ -4588,17 +4610,17 @@ double NQPanelScaleY=1.0;
 
 int NQScaleX(int value)
 {
-   return (int)MathRound((double)value*NQPanelScaleX);
+   return (int)MathRound((double)value*NQPanelScaleX*NQPanelZoom);
 }
 
 int NQScaleY(int value)
 {
-   return (int)MathRound((double)value*NQPanelScaleY);
+   return (int)MathRound((double)value*NQPanelScaleY*NQPanelZoom);
 }
 
 int NQScaleFont(int value)
 {
-   double scale=MathMin(NQPanelScaleX,NQPanelScaleY);
+   double scale=MathMin(NQPanelScaleX,NQPanelScaleY)*NQPanelZoom;
    return (int)MathMax(6,MathRound((double)value*scale));
 }
 
@@ -4886,8 +4908,8 @@ void NQCreatePanel()
 {
    int px = 10;
    int py = 10;
-   int panelW = 420;
-   int panelH = 820;
+   int panelW = (int)MathRound(420.0*NQPanelZoom);
+   int panelH = (int)MathRound(820.0*NQPanelZoom);
 
    // Preserve existing dashboard proportions; reserve extra height for Account Performance.
    NQPanelScaleX=(double)panelW/440.0;
@@ -4896,8 +4918,12 @@ void NQCreatePanel()
    NQCreateRect("NQ_Main",px,py,panelW,panelH,NQ_BG,NQ_BORDER);
 
    // Header
-   NQCreateLabel("NQ_Brand",px+NQScaleX(20),py+20,"NQ REX",10,NQ_PURPLE,true);
+   NQCreateLabel("NQ_Brand",px+NQScaleX(20),py+NQScaleY(20),"NQ REX",NQScaleFont(10),NQ_PURPLE,true);
     ObjectSetString(0,"NQ_Brand",OBJPROP_FONT,"Montserrat Black");
+   NQCreateButton("NQ_ZoomIn",px+NQScaleX(300),py+NQScaleY(13),NQScaleX(24),NQScaleY(20),"🔍+",NQ_TEXT,NQ_CARD,NQ_BORDER,NQScaleFont(8));
+   NQCreateButton("NQ_ZoomOut",px+NQScaleX(330),py+NQScaleY(13),NQScaleX(24),NQScaleY(20),"🔍−",NQ_TEXT,NQ_CARD,NQ_BORDER,NQScaleFont(8));
+   ObjectSetString(0,"NQ_ZoomIn",OBJPROP_FONT,"Segoe UI Emoji");
+   ObjectSetString(0,"NQ_ZoomOut",OBJPROP_FONT,"Segoe UI Emoji");
    NQCreateRightLabel("NQ_Active",px+NQScaleX(420),py+NQScaleY(20),"● ACTIVE",NQScaleFont(8),NQ_GREEN,true);
    NQREXUpdateControlHeader();
    NQCreateLabel("NQ_Subtitle",px+NQScaleX(20),py+NQScaleY(43),"NASDAQ ALGORITHMIC SYSTEM",NQScaleFont(7),NQ_MUTED,false);
