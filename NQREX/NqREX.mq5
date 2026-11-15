@@ -598,15 +598,14 @@ void OnChartEvent(const int id,
    // Consistent hover feedback for PLAY, PAUSE and CLOSE ALL.
    if(id == CHARTEVENT_MOUSE_MOVE)
    {
-      string buttonNames[3]={"NQ_Play","NQ_Pause","NQ_CloseAll"};
-      color normalColors[3]={C'34,112,78',C'151,105,35',C'142,47,62'};
-      color hoverColors[3]={C'45,145,100',C'185,130,45',C'180,65,80'};
-      static bool wasHovered[3]={false,false,false};
+      string buttonNames[5]={"NQ_ZoomIn","NQ_ZoomOut","NQ_Play","NQ_Pause","NQ_CloseAll"};
+      color normalColors[5]={C'48,43,62',C'48,43,62',C'34,112,78',C'151,105,35',C'142,47,62'};
+      color hoverColors[5]={C'91,70,135',C'91,70,135',C'45,145,100',C'185,130,45',C'180,65,80'};
       int mouseX=(int)lparam;
       int mouseY=(int)dparam;
       bool changed=false;
 
-      for(int i=0;i<3;i++)
+      for(int i=0;i<5;i++)
       {
          if(ObjectFind(0,buttonNames[i]) < 0)
             continue;
@@ -618,12 +617,12 @@ void OnChartEvent(const int id,
          bool isHovered=(mouseX>=buttonX && mouseX<buttonX+buttonW &&
                          mouseY>=buttonY && mouseY<buttonY+buttonH);
 
-         if(isHovered != wasHovered[i])
+         color buttonColor=isHovered ? hoverColors[i] : normalColors[i];
+         color currentColor=(color)ObjectGetInteger(0,buttonNames[i],OBJPROP_BGCOLOR);
+         if(currentColor!=buttonColor)
          {
-            color buttonColor=isHovered ? hoverColors[i] : normalColors[i];
             ObjectSetInteger(0,buttonNames[i],OBJPROP_BGCOLOR,buttonColor);
             ObjectSetInteger(0,buttonNames[i],OBJPROP_BORDER_COLOR,buttonColor);
-            wasHovered[i]=isHovered;
             changed=true;
          }
       }
@@ -4953,8 +4952,8 @@ void NQCreatePanel()
    // Header
    NQCreateLabel("NQ_Brand",px+NQScaleX(20),py+NQScaleY(20),"NQ REX",NQScaleFont(10),NQ_PURPLE,true);
     ObjectSetString(0,"NQ_Brand",OBJPROP_FONT,"Montserrat Black");
-   NQCreateButton("NQ_ZoomIn",px+NQScaleX(300),py+NQScaleY(13),NQScaleX(24),NQScaleY(20),"+",NQ_TEXT,NQ_BG,NQ_BG,NQScaleFont(8));
-   NQCreateButton("NQ_ZoomOut",px+NQScaleX(330),py+NQScaleY(13),NQScaleX(24),NQScaleY(20),"-",NQ_TEXT,NQ_BG,NQ_BG,NQScaleFont(8));
+   NQCreateButton("NQ_ZoomIn",px+NQScaleX(300),py+NQScaleY(13),NQScaleX(24),NQScaleY(20),"+",NQ_TEXT,C'48,43,62',C'104,88,133',NQScaleFont(8));
+   NQCreateButton("NQ_ZoomOut",px+NQScaleX(330),py+NQScaleY(13),NQScaleX(24),NQScaleY(20),"-",NQ_TEXT,C'48,43,62',C'104,88,133',NQScaleFont(8));
    NQCreateRightLabel("NQ_Active",px+NQScaleX(420),py+NQScaleY(20),"● ACTIVE",NQScaleFont(8),NQ_GREEN,true);
    NQREXUpdateControlHeader();
    NQCreateLabel("NQ_Subtitle",px+NQScaleX(20),py+NQScaleY(43),"NASDAQ ALGORITHMIC SYSTEM",NQScaleFont(7),NQ_MUTED,false);
