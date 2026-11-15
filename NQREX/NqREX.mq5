@@ -17,6 +17,7 @@ bool NQLicenseOK = false;
 
 // Dashboard zoom: start slightly enlarged by default.
 double NQPanelZoom = 1.10;
+bool NQPanelForceRefresh = false;
 
 
 input string st ="==Security password=="; // Give Me Code
@@ -636,6 +637,7 @@ void OnChartEvent(const int id,
    {
       ObjectSetInteger(0,"NQ_ZoomIn",OBJPROP_STATE,false);
       NQPanelZoom=MathMin(1.50,NQPanelZoom+0.10);
+      NQPanelForceRefresh=true;
       NQCreatePanel();
       NQUpdatePanel();
       ChartRedraw(0);
@@ -645,6 +647,7 @@ void OnChartEvent(const int id,
    {
       ObjectSetInteger(0,"NQ_ZoomOut",OBJPROP_STATE,false);
       NQPanelZoom=MathMax(0.80,NQPanelZoom-0.10);
+      NQPanelForceRefresh=true;
       NQCreatePanel();
       NQUpdatePanel();
       ChartRedraw(0);
@@ -5075,8 +5078,9 @@ void NQUpdatePanel()
 {
    static datetime lastPanelRefresh=0;
    datetime panelNow=TimeCurrent();
-   if(panelNow<=0 || panelNow==lastPanelRefresh) return;
+   if(panelNow<=0 || (panelNow==lastPanelRefresh && !NQPanelForceRefresh)) return;
    lastPanelRefresh=panelNow;
+   NQPanelForceRefresh=false;
    if(!ShowPanel || SiamoInTestOscuro) return;
    if(ObjectFind(0,"NQ_Main")<0) NQCreatePanel();
    NQREXUpdateControlHeader();
