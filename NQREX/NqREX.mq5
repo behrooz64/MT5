@@ -20,14 +20,14 @@ double NQPanelZoom = 1.10;
 bool NQPanelForceRefresh = false;
 
 
-input string st ="==Security password=="; // Give Me Code
+input string st ="==Security==";
 input string user_password = "";
 input string Set = "==========Setting Bot=========";
 string KamalEA = "NQ REX"; // in
 int MagicNumber = 8398;//Magic Number                           // in
 int MaxSpread = 500;//Legacy max spread in points (for open a trade)
-input bool KiaXAM_EnableSpreadFilter = true; // Enable live spread filter for new entries
-input double KiaXAM_MaxSpreadPrice = 2.50; // Maximum Bid/Ask difference in symbol price units
+bool KiaXAM_EnableSpreadFilter = true; // Enable live spread filter for new entries
+double KiaXAM_MaxSpreadPrice = 2.50; // Maximum Bid/Ask difference in symbol price units
 
 string Separo0="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -146,7 +146,7 @@ input int TradingStartHour = 0;//Trading Start Hour
 input int TradingStartMinute = 0;//Trading Start Minute                  
 input int TradingStopHour = 9;//Trading Stop Hour                         
 input int TradingStopMinute = 0;//Trading Stop Minute                     
-input bool CloseOutHour = false;//Close everything Out of hours           
+input bool CloseOutHour = false;//Close After Hours
 int coefstart;
 int coefstop;
 
@@ -164,9 +164,9 @@ bool Sunday = false;                           // in
 string Separo4="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 string Direction="TRADING DIRECTIONS";//TRADING DIRECTIONS  // in
-input bool AllowBuy = true;//Allow Buy                            
-input bool AllowSell = true;//Allow Sell                          
-input bool AllowBuyAndSellAtSameTime = true; //Allow Buy and Sell at the same time    
+bool AllowBuy = true;//Allow Buy                            
+bool AllowSell = true;//Allow Sell                          
+bool AllowBuyAndSellAtSameTime = true; //Allow Buy and Sell at the same time    
 bool AllowOrdersFromOthersPairsAtSameTime = true; //Allow Order From Others Charts, At Same Time    // in
 string ForTheParameterAbove = "(if it is false, will not open orders if there are Open Trades with a Magic numbers between +10 and -10, Compared to the current Magic Number)";//For This Parameter Above    // in 
 string Separo5="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -289,15 +289,15 @@ enum ClosureModality
 
 
 string MonetaryLoss = "Monetary Loss Settings";//Monetary Loss  // in
-input bool MonetaryStopLoss = true;//Enable Monetary Stop Loss     
-input bool EveryMicrolot = false;//If true, Multiply Monetary Stop Loss Amount*Start Lot size*100   
-input bool StopTradingWhenHit = false;//Stop EA after Monetary loss              
-input int MaximumMonetaryLoss = 35;//Monetary Stop Loss Amount (expressed in the account currency)   
+input bool MonetaryStopLoss = true;//Money Loss Protection
+bool EveryMicrolot = false;//If true, Multiply Monetary Stop Loss Amount*Start Lot size*100   
+input bool StopTradingWhenHit = true;//Stop After Loss
+input int MaximumMonetaryLoss = 35;//Max Money Loss
 
 string PercentageLoss = "Percentage Loss Settings";//Percentage Loss // in
-input bool CloseInPercentageLoss = true;//Enable Close In Percentage Loss   
-input bool StopTradingAfterPercentageLoss = false;//Stop EA After Percentage Loss  
-input int LossPercentage = 25;//Loss Amount in Percentage    
+input bool CloseInPercentageLoss = true;//Loss Protection
+input bool StopTradingAfterPercentageLoss = false;//Stop After Loss
+input int LossPercentage = 25;//Max Loss %
 
 string DailyProfitSettings = "DAILY PROFIT PROTECTION";
 input bool DailyProfitProtection = true; // Enable Daily Profit Protection
