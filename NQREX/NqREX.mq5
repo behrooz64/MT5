@@ -4953,10 +4953,8 @@ void NQCreatePanel()
    // Header
    NQCreateLabel("NQ_Brand",px+NQScaleX(20),py+NQScaleY(20),"NQ REX",NQScaleFont(10),NQ_PURPLE,true);
     ObjectSetString(0,"NQ_Brand",OBJPROP_FONT,"Montserrat Black");
-   NQCreateButton("NQ_ZoomIn",px+NQScaleX(300),py+NQScaleY(13),NQScaleX(24),NQScaleY(20),"🔍+",NQ_TEXT,NQ_BG,NQ_BG,NQScaleFont(8));
-   NQCreateButton("NQ_ZoomOut",px+NQScaleX(330),py+NQScaleY(13),NQScaleX(24),NQScaleY(20),"🔍−",NQ_TEXT,NQ_BG,NQ_BG,NQScaleFont(8));
-   ObjectSetString(0,"NQ_ZoomIn",OBJPROP_FONT,"Segoe UI Emoji");
-   ObjectSetString(0,"NQ_ZoomOut",OBJPROP_FONT,"Segoe UI Emoji");
+   NQCreateButton("NQ_ZoomIn",px+NQScaleX(300),py+NQScaleY(13),NQScaleX(24),NQScaleY(20),"+",NQ_TEXT,NQ_BG,NQ_BG,NQScaleFont(8));
+   NQCreateButton("NQ_ZoomOut",px+NQScaleX(330),py+NQScaleY(13),NQScaleX(24),NQScaleY(20),"-",NQ_TEXT,NQ_BG,NQ_BG,NQScaleFont(8));
    NQCreateRightLabel("NQ_Active",px+NQScaleX(420),py+NQScaleY(20),"● ACTIVE",NQScaleFont(8),NQ_GREEN,true);
    NQREXUpdateControlHeader();
    NQCreateLabel("NQ_Subtitle",px+NQScaleX(20),py+NQScaleY(43),"NASDAQ ALGORITHMIC SYSTEM",NQScaleFont(7),NQ_MUTED,false);
