@@ -5204,10 +5204,10 @@ void NQCreatePanel()
 
    NQCreateLabel("NQ_AccountFactorLabel",accountCol1,accountLabelY2,"Profit Factor",NQScaleFont(5),NQ_MUTED,false);
    NQCreateLabel("NQ_AccountFactorValue",accountCol1,accountValueY2,"--",NQScaleFont(7),NQ_TEXT,true);
-   NQCreateLabel("NQ_AccountWinsLabel",accountCol2,accountLabelY2,"Wins",NQScaleFont(5),NQ_MUTED,false);
-   NQCreateLabel("NQ_AccountWinsValue",accountCol2,accountValueY2,"--",NQScaleFont(7),NQ_GREEN,true);
-   NQCreateLabel("NQ_AccountLossesLabel",accountCol3,accountLabelY2,"Losses",NQScaleFont(5),NQ_MUTED,false);
-   NQCreateLabel("NQ_AccountLossesValue",accountCol3,accountValueY2,"--",NQScaleFont(7),NQ_RED,true);
+   NQCreateLabel("NQ_AccountWinsLabel",accountCol2,accountLabelY2,"Profit History",NQScaleFont(5),NQ_MUTED,false);
+   NQCreateLabel("NQ_AccountWinsValue",accountCol2,accountValueY2,"--",NQScaleFont(7),NQ_MUTED,true);
+   NQCreateLabel("NQ_AccountLossesLabel",accountCol3,accountLabelY2,"Trading Commission",NQScaleFont(5),NQ_MUTED,false);
+   NQCreateLabel("NQ_AccountLossesValue",accountCol3,accountValueY2,"--",NQScaleFont(7),NQ_MUTED,true);
 
    int btnY = accountY + accountH + NQScaleY(10);
    int buttonGap=NQScaleX(6), buttonH=NQScaleY(28);
@@ -5268,6 +5268,49 @@ void NQUpdatePanel()
    double eaWinRate=0.0, eaProfitFactor=0.0;
    NQGetEAHistoryStats(eaClosedTrades,eaWinRate,eaProfitFactor,eaWins,eaLosses);
 
+   // Account Performance daily figures: all symbols and all magic numbers.
+   // Include entry and exit deals so entry commissions are counted as well.
+   double dailyAccountProfit=0.0;
+   double dailyAccountCommission=0.0;
+   if(HistorySelect(dayStart,TimeCurrent()))
+   {
+      int dailyDeals=HistoryDealsTotal();
+      for(int d=0;d<dailyDeals;d++)
+      {
+         ulong deal=HistoryDealGetTicket(d);
+         if(deal==0) continue;
+         long dealType=HistoryDealGetInteger(deal,DEAL_TYPE);
+         if(dealType!=DEAL_TYPE_BUY && dealType!=DEAL_TYPE_SELL)
+            continue;
+
+         double dealCommission=HistoryDealGetDouble(deal,DEAL_COMMISSION);
+         dailyAccountProfit+=HistoryDealGetDouble(deal,DEAL_PROFIT)
+                            +HistoryDealGetDouble(deal,DEAL_SWAP)
+                            +dealCommission
+                            +HistoryDealGetDouble(deal,DEAL_FEE);
+         dailyAccountCommission+=dealCommission;
+      }
+   }
+
+   string dailyProfitHistoryText="$0.00";
+   color dailyProfitHistoryColor=NQ_MUTED;
+   if(dailyAccountProfit>0.0)
+   {
+      dailyProfitHistoryText="+$"+DoubleToString(dailyAccountProfit,2);
+      dailyProfitHistoryColor=NQ_GREEN;
+   }
+   else if(dailyAccountProfit<0.0)
+   {
+      dailyProfitHistoryText="-$"+DoubleToString(MathAbs(dailyAccountProfit),2);
+      dailyProfitHistoryColor=NQ_RED;
+   }
+
+   string dailyCommissionText="$0.00";
+   if(dailyAccountCommission>0.0)
+      dailyCommissionText="+$"+DoubleToString(dailyAccountCommission,2);
+   else if(dailyAccountCommission<0.0)
+      dailyCommissionText="-$"+DoubleToString(MathAbs(dailyAccountCommission),2);
+
    double bid=SymbolInfoDouble(_Symbol,SYMBOL_BID);
    double ask=SymbolInfoDouble(_Symbol,SYMBOL_ASK);
    double spreadPoints=(_Point>0.0)?(ask-bid)/_Point:0.0;
@@ -5300,8 +5343,10 @@ void NQUpdatePanel()
    else if(accountTrades>0)
       accountFactorText=DoubleToString(accountProfitFactor,2);
    ObjectSetString(0,"NQ_AccountFactorValue",OBJPROP_TEXT,accountFactorText);
-   ObjectSetString(0,"NQ_AccountWinsValue",OBJPROP_TEXT,IntegerToString(accountWins));
-   ObjectSetString(0,"NQ_AccountLossesValue",OBJPROP_TEXT,IntegerToString(accountLosses));
+   ObjectSetString(0,"NQ_AccountWinsValue",OBJPROP_TEXT,dailyProfitHistoryText);
+   ObjectSetInteger(0,"NQ_AccountWinsValue",OBJPROP_COLOR,dailyProfitHistoryColor);
+   ObjectSetString(0,"NQ_AccountLossesValue",OBJPROP_TEXT,dailyCommissionText);
+   ObjectSetInteger(0,"NQ_AccountLossesValue",OBJPROP_COLOR,NQ_MUTED);
    ObjectSetInteger(0,"NQ_AccountNetValue",OBJPROP_COLOR,accountNetPL>=0.0?NQ_GREEN:NQ_RED);
 
    bool connected=(bool)TerminalInfoInteger(TERMINAL_CONNECTED);
