@@ -2924,15 +2924,26 @@ return ((hour*60)+minute);
 
 bool Hour_trade_allowed(int CoefPartenza, int CoefFine)
 {
+   // Read the terminal host's local clock once so hour/minute cannot straddle a minute change.
+   MqlDateTime localTime;
+   TimeLocal(localTime);
+   int CoefOrario = (localTime.hour * 60) + localTime.min;
 
-int CoefOrario = (Hour()*60)+Minute();
    bool trade = false;
-   if(CoefPartenza > CoefFine){
-     if (CoefOrario >= CoefPartenza || CoefOrario < CoefFine) trade = true;
-   } else
-     if (CoefOrario >= CoefPartenza && CoefOrario < CoefFine) trade = true;
+   if(CoefPartenza > CoefFine)
+   {
+      // Overnight window, e.g. 22:00 to 06:00.
+      if(CoefOrario >= CoefPartenza || CoefOrario < CoefFine)
+         trade = true;
+   }
+   else
+   {
+      // Same-day window. The stop time remains exclusive.
+      if(CoefOrario >= CoefPartenza && CoefOrario < CoefFine)
+         trade = true;
+   }
 
-   return (trade);
+   return trade;
 }
 
 
