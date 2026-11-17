@@ -787,7 +787,7 @@ void OnChartEvent(const int id,
    {
       ObjectSetInteger(0,"NQ_CloseAll",OBJPROP_STATE,false);
       ChartRedraw(0);
-      NQCloseAllSymbolPositions();
+      NQCloseAllAccountBulk();
       return;
    }
 }
@@ -3595,26 +3595,101 @@ bool HLineMove(const long   chart_ID=0,   // chart's ID
 
 
 
-void NQCloseAllSymbolPositions()
+void NQCloseAllAccountBulk()
 {
-   // Close every open position on this chart symbol, regardless of magic number.
-   // Pending orders and positions on other symbols are intentionally untouched.
-   for(int i=PositionsTotal()-1; i>=0; i--)
+   // Account-wide bulk operation: dispatch all close/delete requests asynchronously.
+   // This uses its own CTrade instance and does not use the EA trading object's settings.
+   ulong positionTickets[];
+   string positionSymbols[];
+   ulong pendingOrderTickets[];
+   string pendingOrderSymbols[];
+
+   int positionCount=PositionsTotal();
+   ArrayResize(positionTickets,positionCount);
+   ArrayResize(positionSymbols,positionCount);
+   int positionsCaptured=0;
+
+   for(int i=0;i<positionCount;i++)
    {
-      ulong ticket = PositionGetTicket(i);
-      if(ticket == 0) continue;
+      ulong ticket=PositionGetTicket(i);
+      if(ticket==0) continue;
 
-      string positionSymbol = PositionGetString(POSITION_SYMBOL);
-      if(positionSymbol != _Symbol) continue;
+      positionTickets[positionsCaptured]=ticket;
+      positionSymbols[positionsCaptured]=PositionGetString(POSITION_SYMBOL);
+      positionsCaptured++;
+   }
+   ArrayResize(positionTickets,positionsCaptured);
+   ArrayResize(positionSymbols,positionsCaptured);
 
-      if(!m_trade.PositionClose(ticket))
+   int orderCount=OrdersTotal();
+   ArrayResize(pendingOrderTickets,orderCount);
+   ArrayResize(pendingOrderSymbols,orderCount);
+   int ordersCaptured=0;
+
+   for(int i=0;i<orderCount;i++)
+   {
+      ulong ticket=OrderGetTicket(i);
+      if(ticket==0) continue;
+
+      pendingOrderTickets[ordersCaptured]=ticket;
+      pendingOrderSymbols[ordersCaptured]=OrderGetString(ORDER_SYMBOL);
+      ordersCaptured++;
+   }
+   ArrayResize(pendingOrderTickets,ordersCaptured);
+   ArrayResize(pendingOrderSymbols,ordersCaptured);
+
+   CTrade closeAllTrade;
+   closeAllTrade.SetAsyncMode(true);
+
+   int closeRequestsSent=0;
+   int deleteRequestsSent=0;
+   int requestFailures=0;
+
+   // Dispatch position-close requests without waiting for each server response.
+   for(int i=0;i<positionsCaptured;i++)
+   {
+      closeAllTrade.SetTypeFillingBySymbol(positionSymbols[i]);
+      ResetLastError();
+      bool sent=closeAllTrade.PositionClose(positionTickets[i]);
+      uint retcode=closeAllTrade.ResultRetcode();
+
+      if(sent && retcode==TRADE_RETCODE_PLACED)
+         closeRequestsSent++;
+      else
       {
-         Print("NQ REX CLOSE ALL failed. Ticket=",ticket,
-               " Symbol=",positionSymbol,
-               " Retcode=",m_trade.ResultRetcode(),
-               " ",m_trade.ResultRetcodeDescription());
+         requestFailures++;
+         Print("NQ REX BULK CLOSE: position request failed. Ticket=",
+               positionTickets[i]," Symbol=",positionSymbols[i],
+               " Retcode=",retcode," ",
+               closeAllTrade.ResultRetcodeDescription(),
+               " LastError=",GetLastError());
       }
    }
+
+   // Dispatch deletion requests for every pending order on the account.
+   for(int i=0;i<ordersCaptured;i++)
+   {
+      ResetLastError();
+      bool sent=closeAllTrade.OrderDelete(pendingOrderTickets[i]);
+      uint retcode=closeAllTrade.ResultRetcode();
+
+      if(sent && retcode==TRADE_RETCODE_PLACED)
+         deleteRequestsSent++;
+      else
+      {
+         requestFailures++;
+         Print("NQ REX BULK CLOSE: pending-order delete request failed. Ticket=",
+               pendingOrderTickets[i]," Symbol=",pendingOrderSymbols[i],
+               " Retcode=",retcode," ",
+               closeAllTrade.ResultRetcodeDescription(),
+               " LastError=",GetLastError());
+      }
+   }
+
+   Print("NQ REX BULK CLOSE: requests dispatched. Positions=",
+         closeRequestsSent," PendingOrders=",deleteRequestsSent,
+         " DispatchFailures=",requestFailures,
+         ". Final execution is subject to broker-server confirmation.");
 }
 
 void CommentoInit()
@@ -5217,8 +5292,8 @@ void NQCreatePanel()
    NQCreateButton("NQ_CloseAll",px+2*(buttonW+buttonGap),btnY,panelW-2*(buttonW+buttonGap),buttonH,"CLOSE ALL",C'255,232,236',C'142,47,62',C'142,47,62',NQScaleFont(8));
 
    int captionY = btnY + NQScaleY(34);
-   // Close All affects every open position on this chart symbol.
-   NQCreateLabel("NQ_FooterCaption",px+NQScaleX(20),captionY,"All open positions on current chart symbol",NQScaleFont(6),NQ_MUTED,false);
+   // Close All affects every open position and pending order on the account.
+   NQCreateLabel("NQ_FooterCaption",px+NQScaleX(20),captionY,"All account positions + pending orders",NQScaleFont(6),NQ_MUTED,false);
    NQCreateRightLabel("NQ_Version",px+panelW-NQScaleX(20),captionY,"v1.0 · NQ REX SYSTEM",NQScaleFont(6),C'74,68,88',false);
 }
 
