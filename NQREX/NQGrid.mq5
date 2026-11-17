@@ -382,6 +382,20 @@ int NQREXBrokerDayStamp()
    TimeToStruct(TimeCurrent(),dt);
    return dt.year*10000+dt.mon*100+dt.day;
 }
+double NQREXCurrentEAFloatingProfit()
+{
+   double floatingProfit=0.0;
+   for(int i=PositionsTotal()-1;i>=0;i--)
+   {
+      ulong ticket=PositionGetTicket(i);
+      if(ticket==0) continue;
+      if(PositionGetString(POSITION_SYMBOL)!=_Symbol) continue;
+      if((long)PositionGetInteger(POSITION_MAGIC)!=MagicNumber) continue;
+      floatingProfit+=PositionGetDouble(POSITION_PROFIT)
+                     +PositionGetDouble(POSITION_SWAP);
+   }
+   return floatingProfit;
+}
 NQREX_RUN_STATE NQREXGetRunState()
 {
    string key=NQREXProtectionPrefix()+"_STATE";
@@ -401,11 +415,39 @@ double NQREXDailyStartingEquity()
    if(!GlobalVariableCheck(key)) return AccountInfoDouble(ACCOUNT_EQUITY);
    return GlobalVariableGet(key);
 }
+double NQREXDailyProfitMoney()
+{
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(),dt);
+   dt.hour=0; dt.min=0; dt.sec=0;
+   datetime dayStart=StructToTime(dt);
+
+   double realizedProfit=0.0;
+   if(HistorySelect(dayStart,TimeCurrent()))
+   {
+      for(int i=0;i<HistoryDealsTotal();i++)
+      {
+         ulong deal=HistoryDealGetTicket(i);
+         if(deal==0) continue;
+         if((long)HistoryDealGetInteger(deal,DEAL_MAGIC)!=MagicNumber) continue;
+         if(HistoryDealGetString(deal,DEAL_SYMBOL)!=_Symbol) continue;
+         realizedProfit+=HistoryDealGetDouble(deal,DEAL_PROFIT)
+                        +HistoryDealGetDouble(deal,DEAL_SWAP)
+                        +HistoryDealGetDouble(deal,DEAL_COMMISSION);
+      }
+   }
+
+   string floatingBaseKey=NQREXProtectionPrefix()+"_FLOAT_BASE";
+   double floatingBase=GlobalVariableCheck(floatingBaseKey)
+                       ?GlobalVariableGet(floatingBaseKey)
+                       :NQREXCurrentEAFloatingProfit();
+   return realizedProfit+NQREXCurrentEAFloatingProfit()-floatingBase;
+}
 double NQREXDailyProfitPercent()
 {
    double base=NQREXDailyStartingEquity();
    if(base<=0.0) return 0.0;
-   return ((AccountInfoDouble(ACCOUNT_EQUITY)-base)/base)*100.0;
+   return (NQREXDailyProfitMoney()/base)*100.0;
 }
 double NQREXDailyProfitUsagePercent()
 {
@@ -417,6 +459,7 @@ void NQREXInitializeProtection()
    string prefix=NQREXProtectionPrefix();
    string stateKey=prefix+"_STATE", dayKey=prefix+"_DAY";
    string baseKey=prefix+"_BASE", overrideKey=prefix+"_OVERRIDE";
+   string floatingBaseKey=prefix+"_FLOAT_BASE";
    int today=NQREXBrokerDayStamp();
    if(!GlobalVariableCheck(stateKey)) GlobalVariableSet(stateKey,(double)NQREX_ACTIVE);
    if(!GlobalVariableCheck(dayKey) || (int)GlobalVariableGet(dayKey)!=today)
@@ -424,15 +467,19 @@ void NQREXInitializeProtection()
       if(NQREXGetRunState()==NQREX_DAILY_PROFIT_PAUSE) NQREXSetRunState(NQREX_ACTIVE);
       GlobalVariableSet(dayKey,(double)today);
       GlobalVariableSet(baseKey,AccountInfoDouble(ACCOUNT_EQUITY));
+      GlobalVariableSet(floatingBaseKey,NQREXCurrentEAFloatingProfit());
       GlobalVariableSet(overrideKey,0.0);
    }
    else if(!GlobalVariableCheck(baseKey))
       GlobalVariableSet(baseKey,AccountInfoDouble(ACCOUNT_EQUITY));
+   if(!GlobalVariableCheck(floatingBaseKey))
+      GlobalVariableSet(floatingBaseKey,NQREXCurrentEAFloatingProfit());
 }
 void NQREXUpdateDailyProtection()
 {
    string prefix=NQREXProtectionPrefix();
    string dayKey=prefix+"_DAY", baseKey=prefix+"_BASE", overrideKey=prefix+"_OVERRIDE";
+   string floatingBaseKey=prefix+"_FLOAT_BASE";
    int today=NQREXBrokerDayStamp();
    if(!GlobalVariableCheck(dayKey) || (int)GlobalVariableGet(dayKey)!=today)
    {
@@ -443,8 +490,11 @@ void NQREXUpdateDailyProtection()
       }
       GlobalVariableSet(dayKey,(double)today);
       GlobalVariableSet(baseKey,AccountInfoDouble(ACCOUNT_EQUITY));
+      GlobalVariableSet(floatingBaseKey,NQREXCurrentEAFloatingProfit());
       GlobalVariableSet(overrideKey,0.0);
    }
+   if(!GlobalVariableCheck(floatingBaseKey))
+      GlobalVariableSet(floatingBaseKey,NQREXCurrentEAFloatingProfit());
    if(!DailyProfitProtection || DailyProfitTargetPercent<=0.0) return;
    if(NQREXGetRunState()!=NQREX_ACTIVE) return;
    if(GlobalVariableCheck(overrideKey) && (int)GlobalVariableGet(overrideKey)==today) return;
