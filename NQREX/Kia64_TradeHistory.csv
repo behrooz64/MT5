@@ -1,0 +1,1144 @@
+timestamp;event_type;symbol;timeframe;magic;details
+2026.11.13 17:45:29;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 17:47:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 17:50:29;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 17:52:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 17:52:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=590.0; maximum_points=500.0
+2026.11.13 17:55:29;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 17:57:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 18:00:29;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 18:02:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 18:05:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.13 18:05:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230249706; deal=222336316
+2026.11.13 18:05:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.13 18:05:29;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 18:06:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.02; filling_flags=1; execution=2
+2026.11.13 18:06:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230249970; deal=222336571
+2026.11.13 18:06:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.13 18:07:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 18:08:33;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=590.0; maximum_points=500.0
+2026.11.13 18:10:29;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 18:12:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 18:15:29;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 18:16:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.41; max_spread_price=2.50; spread_points=341.0
+2026.11.13 18:17:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 18:20:29;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 18:22:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 18:25:29;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 18:27:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 18:30:29;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 18:32:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 18:35:29;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 18:36:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.40; max_spread_price=2.50; spread_points=340.0
+2026.11.13 18:37:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 18:53:48;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 18:53:48;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 18:57:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;New order blocked: EA is paused or protection-locked.
+2026.11.13 18:58:48;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 18:58:48;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 19:07:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 19:07:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 19:08:15;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.70; max_spread_price=2.50; spread_points=370.0
+2026.11.13 19:12:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 19:12:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 19:17:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 19:17:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 19:22:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 19:22:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 19:27:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 19:27:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 19:32:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 19:32:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 19:37:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 19:37:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 19:42:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 19:42:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 19:44:07;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=520.0; maximum_points=500.0
+2026.11.13 19:47:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 19:47:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 19:52:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 19:52:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 19:57:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 19:57:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 20:02:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 20:02:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 20:03:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;New order blocked: EA is paused or protection-locked.
+2026.11.13 20:07:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 20:07:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 20:12:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 20:12:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 20:17:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 20:17:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 20:21:19;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=4.42; max_spread_price=2.50; spread_points=442.0
+2026.11.13 20:22:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 20:22:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 20:26:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;New order blocked: EA is paused or protection-locked.
+2026.11.13 20:27:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.13 20:27:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.13 20:30:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 20:35:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 20:40:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 20:45:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 20:50:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 20:55:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 21:00:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 21:05:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 21:10:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 21:15:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 21:20:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 21:25:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 21:26:29;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.21; max_spread_price=2.50; spread_points=321.0
+2026.11.13 21:30:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 21:35:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 21:40:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 21:45:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 21:50:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 21:55:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 22:00:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 22:05:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 22:10:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 22:15:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 22:20:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 22:25:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 22:30:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 22:30:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.67; max_spread_price=2.50; spread_points=367.0
+2026.11.13 22:35:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 22:40:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 22:45:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 22:50:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 22:53:09;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=4.44; max_spread_price=2.50; spread_points=444.0
+2026.11.13 22:55:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 23:00:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 23:03:30;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.13 23:04:45;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=514.0; maximum_points=500.0
+2026.11.13 23:05:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 23:07:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=590.0; maximum_points=500.0
+2026.11.13 23:08:32;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.15; max_spread_price=2.50; spread_points=315.0
+2026.11.13 23:10:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 23:15:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 23:15:39;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.13 23:20:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 23:20:59;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.72; max_spread_price=2.50; spread_points=372.0
+2026.11.13 23:25:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 23:25:59;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.21; max_spread_price=2.50; spread_points=321.0
+2026.11.13 23:30:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 23:33:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.16; max_spread_price=2.50; spread_points=316.0
+2026.11.13 23:35:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 23:38:30;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.43; max_spread_price=2.50; spread_points=343.0
+2026.11.13 23:40:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 23:44:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.93; max_spread_price=2.50; spread_points=393.0
+2026.11.13 23:45:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 23:45:19;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=517.0; maximum_points=500.0
+2026.11.13 23:46:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=518.0; maximum_points=500.0
+2026.11.13 23:48:11;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=545.0; maximum_points=500.0
+2026.11.13 23:49:09;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=516.0; maximum_points=500.0
+2026.11.13 23:49:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.67; max_spread_price=2.50; spread_points=367.0
+2026.11.13 23:49:47;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=539.0; maximum_points=500.0
+2026.11.13 23:49:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=567.0; maximum_points=500.0
+2026.11.13 23:49:54;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=544.0; maximum_points=500.0
+2026.11.13 23:50:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.13 23:52:58;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=590.0; maximum_points=500.0
+2026.11.13 23:54:35;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.43; max_spread_price=2.50; spread_points=343.0
+2026.11.16 01:01:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=590.0; maximum_points=500.0
+2026.11.16 01:01:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 01:01:05;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=544.0; maximum_points=500.0
+2026.11.16 01:01:07;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.95; max_spread_price=2.50; spread_points=395.0
+2026.11.16 01:01:08;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=518.0; maximum_points=500.0
+2026.11.16 01:01:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=516.0; maximum_points=500.0
+2026.11.16 01:01:38;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=570.0; maximum_points=500.0
+2026.11.16 01:01:41;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=541.0; maximum_points=500.0
+2026.11.16 01:01:49;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=520.0; maximum_points=500.0
+2026.11.16 01:01:49;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=517.0; maximum_points=500.0
+2026.11.16 01:01:50;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=542.0; maximum_points=500.0
+2026.11.16 01:01:50;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=543.0; maximum_points=500.0
+2026.11.16 01:01:53;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=519.0; maximum_points=500.0
+2026.11.16 01:02:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=571.0; maximum_points=500.0
+2026.11.16 01:02:11;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=547.0; maximum_points=500.0
+2026.11.16 01:02:16;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=521.0; maximum_points=500.0
+2026.11.16 01:02:20;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=545.0; maximum_points=500.0
+2026.11.16 01:03:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=523.0; maximum_points=500.0
+2026.11.16 01:03:32;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=568.0; maximum_points=500.0
+2026.11.16 01:03:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=572.0; maximum_points=500.0
+2026.11.16 01:05:38;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=522.0; maximum_points=500.0
+2026.11.16 01:05:39;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=546.0; maximum_points=500.0
+2026.11.16 01:05:40;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=569.0; maximum_points=500.0
+2026.11.16 01:06:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 01:06:07;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=4.96; max_spread_price=2.50; spread_points=496.0
+2026.11.16 01:06:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=590.0; maximum_points=500.0
+2026.11.16 01:07:18;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=544.0; maximum_points=500.0
+2026.11.16 01:07:45;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=520.0; maximum_points=500.0
+2026.11.16 01:07:51;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=516.0; maximum_points=500.0
+2026.11.16 01:07:53;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=519.0; maximum_points=500.0
+2026.11.16 01:08:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=543.0; maximum_points=500.0
+2026.11.16 01:08:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=521.0; maximum_points=500.0
+2026.11.16 01:09:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=515.0; maximum_points=500.0
+2026.11.16 01:11:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 01:11:07;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.20; max_spread_price=2.50; spread_points=320.0
+2026.11.16 01:12:59;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=516.0; maximum_points=500.0
+2026.11.16 01:13:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=517.0; maximum_points=500.0
+2026.11.16 01:13:03;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=544.0; maximum_points=500.0
+2026.11.16 01:16:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 01:16:16;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.22; max_spread_price=2.50; spread_points=322.0
+2026.11.16 01:18:40;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=572.0; maximum_points=500.0
+2026.11.16 01:21:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 01:21:19;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.16 01:26:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 01:26:49;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.20; max_spread_price=2.50; spread_points=320.0
+2026.11.16 01:31:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 01:32:38;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.46; max_spread_price=2.50; spread_points=346.0
+2026.11.16 01:36:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 01:37:44;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.20; max_spread_price=2.50; spread_points=320.0
+2026.11.16 01:41:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 01:42:49;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.16 01:43:21;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=590.0; maximum_points=500.0
+2026.11.16 01:46:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 01:47:56;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.45; max_spread_price=2.50; spread_points=345.0
+2026.11.16 01:51:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 01:53:06;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.16 01:56:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 01:58:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.16; max_spread_price=2.50; spread_points=316.0
+2026.11.16 02:01:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 02:03:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.16; max_spread_price=2.50; spread_points=316.0
+2026.11.16 02:06:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 02:08:16;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.21; max_spread_price=2.50; spread_points=321.0
+2026.11.16 02:11:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 02:13:56;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.44; max_spread_price=2.50; spread_points=344.0
+2026.11.16 02:16:19;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 02:19:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.44; max_spread_price=2.50; spread_points=344.0
+2026.11.16 02:21:19;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 02:25:16;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.20; max_spread_price=2.50; spread_points=320.0
+2026.11.16 02:26:19;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 02:31:19;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 02:32:21;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.68; max_spread_price=2.50; spread_points=368.0
+2026.11.16 02:36:19;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 02:37:21;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.16 02:41:19;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 02:43:56;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=590.0; maximum_points=500.0
+2026.11.16 02:46:19;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 02:51:19;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 02:51:47;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.45; max_spread_price=2.50; spread_points=345.0
+2026.11.16 02:56:19;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 02:56:49;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.40; max_spread_price=2.50; spread_points=340.0
+2026.11.16 03:01:19;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 03:02:34;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.16; max_spread_price=2.50; spread_points=316.0
+2026.11.16 03:06:19;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 03:11:33;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 03:15:09;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.16 03:16:33;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 03:20:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.41; max_spread_price=2.50; spread_points=341.0
+2026.11.16 03:21:33;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 03:25:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.72; max_spread_price=2.50; spread_points=372.0
+2026.11.16 03:26:33;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 03:30:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 03:30:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 03:30:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.68; max_spread_price=2.50; spread_points=368.0
+2026.11.16 03:33:53;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=521.0; maximum_points=500.0
+2026.11.16 03:35:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 03:35:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 03:35:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.46; max_spread_price=2.50; spread_points=346.0
+2026.11.16 03:40:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 03:40:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 03:40:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.45; max_spread_price=2.50; spread_points=345.0
+2026.11.16 03:45:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 03:45:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 03:45:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.22; max_spread_price=2.50; spread_points=322.0
+2026.11.16 03:50:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 03:50:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 03:50:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.21; max_spread_price=2.50; spread_points=321.0
+2026.11.16 03:55:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 03:55:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 03:55:18;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.72; max_spread_price=2.50; spread_points=372.0
+2026.11.16 04:00:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 04:00:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 04:00:18;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.17; max_spread_price=2.50; spread_points=317.0
+2026.11.16 04:04:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.01; filling_flags=1; execution=2
+2026.11.16 04:04:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230410489; deal=222495907
+2026.11.16 04:04:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 04:04:16;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=590.0; maximum_points=500.0
+2026.11.16 04:05:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 04:05:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 04:05:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 04:05:18;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.95; max_spread_price=2.50; spread_points=395.0
+2026.11.16 04:10:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 04:10:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 04:10:20;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.17; max_spread_price=2.50; spread_points=317.0
+2026.11.16 04:15:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 04:15:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 04:15:20;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.16 04:20:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 04:20:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 04:20:20;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.16 04:23:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.01; filling_flags=1; execution=2
+2026.11.16 04:23:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230414244; deal=222499592
+2026.11.16 04:23:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 04:24:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.02; filling_flags=1; execution=2
+2026.11.16 04:24:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230414356; deal=222499702
+2026.11.16 04:24:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 04:25:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 04:25:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.03; filling_flags=1; execution=2
+2026.11.16 04:25:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230414482; deal=222499830
+2026.11.16 04:25:20;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.22; max_spread_price=2.50; spread_points=322.0
+2026.11.16 04:27:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 04:30:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 04:30:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.16 04:32:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 04:35:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 04:35:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.72; max_spread_price=2.50; spread_points=372.0
+2026.11.16 04:36:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=519.0; maximum_points=500.0
+2026.11.16 04:37:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 04:37:11;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=543.0; maximum_points=500.0
+2026.11.16 04:40:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 04:40:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.17; max_spread_price=2.50; spread_points=317.0
+2026.11.16 04:42:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 04:45:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 04:45:30;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.40; max_spread_price=2.50; spread_points=340.0
+2026.11.16 04:47:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 04:50:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 04:50:42;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.15; max_spread_price=2.50; spread_points=315.0
+2026.11.16 04:52:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 04:55:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 04:55:53;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.16; max_spread_price=2.50; spread_points=316.0
+2026.11.16 04:57:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 05:00:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 05:00:56;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.20; max_spread_price=2.50; spread_points=320.0
+2026.11.16 05:02:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 05:05:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 05:05:56;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.21; max_spread_price=2.50; spread_points=321.0
+2026.11.16 05:07:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 05:10:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 05:12:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 05:15:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 05:15:06;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.17; max_spread_price=2.50; spread_points=317.0
+2026.11.16 05:17:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 05:17:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230423804; deal=222508454
+2026.11.16 05:17:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 05:17:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 05:18:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 05:20:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 05:20:11;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.16 05:22:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 05:25:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 05:25:24;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.21; max_spread_price=2.50; spread_points=321.0
+2026.11.16 05:27:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 05:30:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 05:30:37;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.16 05:32:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 05:34:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 05:34:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230426566; deal=222511172
+2026.11.16 05:34:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 05:34:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=true; allowed=true
+2026.11.16 05:35:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 05:36:04;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.21; max_spread_price=2.50; spread_points=321.0
+2026.11.16 05:37:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 05:40:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 05:42:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 05:42:18;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.22; max_spread_price=2.50; spread_points=322.0
+2026.11.16 05:45:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 05:47:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 05:47:18;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.23; max_spread_price=2.50; spread_points=323.0
+2026.11.16 05:49:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 05:49:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230429611; deal=222513973
+2026.11.16 05:49:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 05:50:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 05:50:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 05:52:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 05:53:04;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.16; max_spread_price=2.50; spread_points=316.0
+2026.11.16 05:55:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 05:57:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 05:58:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.43; max_spread_price=2.50; spread_points=343.0
+2026.11.16 06:00:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 06:02:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 06:03:42;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.16 06:05:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 06:07:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 06:09:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.20; max_spread_price=2.50; spread_points=320.0
+2026.11.16 06:10:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 06:12:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 06:14:03;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.17; max_spread_price=2.50; spread_points=317.0
+2026.11.16 06:15:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 06:17:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 06:19:31;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.46; max_spread_price=2.50; spread_points=346.0
+2026.11.16 06:20:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 06:22:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 06:24:49;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.22; max_spread_price=2.50; spread_points=322.0
+2026.11.16 06:25:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=true; allowed=true
+2026.11.16 06:25:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.01; filling_flags=1; execution=2
+2026.11.16 06:25:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230435184; deal=222519447
+2026.11.16 06:25:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 06:25:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 06:26:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 06:28:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 06:30:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.15; max_spread_price=2.50; spread_points=315.0
+2026.11.16 06:30:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 06:33:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 06:35:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 06:35:40;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.22; max_spread_price=2.50; spread_points=322.0
+2026.11.16 06:38:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 06:40:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 06:40:40;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.47; max_spread_price=2.50; spread_points=347.0
+2026.11.16 06:43:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 06:43:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230437817; deal=222522017
+2026.11.16 06:43:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 06:43:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=true; allowed=true
+2026.11.16 06:43:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 06:45:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 06:45:55;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.16 06:48:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 06:50:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 06:51:08;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.15; max_spread_price=2.50; spread_points=315.0
+2026.11.16 06:53:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 06:55:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 06:58:07;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.16 06:58:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 07:00:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 07:01:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 07:01:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230442062; deal=222526287
+2026.11.16 07:01:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 07:02:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 07:03:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.17; max_spread_price=2.50; spread_points=317.0
+2026.11.16 07:03:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 07:05:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 07:08:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.16 07:08:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 07:10:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 07:13:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 07:15:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 07:15:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230445173; deal=222529341
+2026.11.16 07:15:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 07:15:09;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=true; allowed=true
+2026.11.16 07:15:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.17; max_spread_price=2.50; spread_points=317.0
+2026.11.16 07:16:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 07:18:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 07:19:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.01; filling_flags=1; execution=2
+2026.11.16 07:19:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230446405; deal=222530568
+2026.11.16 07:19:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 07:20:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 07:20:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.21; max_spread_price=2.50; spread_points=321.0
+2026.11.16 07:21:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 07:23:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230448314; deal=222532492
+2026.11.16 07:23:51;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=true; allowed=true
+2026.11.16 07:24:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 07:25:29;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.16 07:26:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 07:29:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 07:30:31;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.16; max_spread_price=2.50; spread_points=316.0
+2026.11.16 07:31:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 07:34:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 07:36:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 07:36:51;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.73; max_spread_price=2.50; spread_points=373.0
+2026.11.16 07:39:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 07:41:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 07:44:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 07:46:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 07:46:54;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.23; max_spread_price=2.50; spread_points=323.0
+2026.11.16 07:49:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 07:51:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 07:53:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.16 07:54:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 07:56:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 07:57:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 07:57:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230464539; deal=222549007
+2026.11.16 07:57:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 07:58:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 07:59:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 07:59:15;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.93; max_spread_price=2.50; spread_points=393.0
+2026.11.16 08:01:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 08:04:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 08:06:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 08:09:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 08:11:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 08:11:20;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.48; max_spread_price=2.50; spread_points=348.0
+2026.11.16 08:14:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 08:16:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 08:19:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 08:21:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 08:24:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 08:26:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 08:29:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 08:31:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 08:31:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.01; filling_flags=1; execution=2
+2026.11.16 08:31:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230479301; deal=222563709
+2026.11.16 08:31:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 08:32:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.02; filling_flags=1; execution=2
+2026.11.16 08:32:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230479773; deal=222564177
+2026.11.16 08:32:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 08:36:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 08:37:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.03; filling_flags=1; execution=2
+2026.11.16 08:37:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230481370; deal=222565582
+2026.11.16 08:37:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 08:41:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 08:42:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 08:43:58;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=4.44; max_spread_price=2.50; spread_points=444.0
+2026.11.16 08:46:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 08:47:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 08:49:29;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.65; max_spread_price=2.50; spread_points=365.0
+2026.11.16 08:51:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.04; filling_flags=1; execution=2
+2026.11.16 08:51:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230486205; deal=222570109
+2026.11.16 08:51:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 08:52:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 08:56:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 08:56:35;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.16 08:57:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 08:57:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.05; filling_flags=1; execution=2
+2026.11.16 08:57:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230488486; deal=222572319
+2026.11.16 08:58:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 09:01:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 09:01:35;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.16 09:03:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.06; filling_flags=1; execution=2
+2026.11.16 09:03:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230491034; deal=222574684
+2026.11.16 09:03:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 09:04:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 09:06:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 09:09:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 09:10:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 09:11:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 09:12:59;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.16; max_spread_price=2.50; spread_points=316.0
+2026.11.16 09:15:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 09:16:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 09:18:06;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.17; max_spread_price=2.50; spread_points=317.0
+2026.11.16 09:20:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 09:21:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 09:23:31;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.16 09:25:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 09:26:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 09:29:08;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=4.47; max_spread_price=2.50; spread_points=447.0
+2026.11.16 09:30:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 09:31:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 09:34:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.01; filling_flags=1; execution=2
+2026.11.16 09:34:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230500734; deal=222584077
+2026.11.16 09:34:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 09:34:16;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=true; allowed=true
+2026.11.16 09:34:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.21; max_spread_price=2.50; spread_points=321.0
+2026.11.16 09:35:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 09:36:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 09:39:38;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.17; max_spread_price=2.50; spread_points=317.0
+2026.11.16 09:40:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 09:41:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 09:45:08;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.16 09:45:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 09:46:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 09:50:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 09:51:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 09:55:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 09:56:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.01; filling_flags=1; execution=2
+2026.11.16 09:56:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230507089; deal=222590048
+2026.11.16 09:56:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 09:56:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 09:57:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 09:58:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.02; filling_flags=1; execution=2
+2026.11.16 09:58:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230507478; deal=222590417
+2026.11.16 10:00:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 10:00:59;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=4.18; max_spread_price=2.50; spread_points=418.0
+2026.11.16 10:01:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 10:05:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 10:06:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 10:06:39;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=4.20; max_spread_price=2.50; spread_points=420.0
+2026.11.16 10:10:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 10:11:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 10:15:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 10:16:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 10:16:39;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.16 10:20:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 10:21:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 10:25:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 10:26:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 10:30:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 10:31:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 10:31:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230517647; deal=222600246
+2026.11.16 10:31:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 10:31:11;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.69; max_spread_price=2.50; spread_points=369.0
+2026.11.16 10:32:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 10:32:44;ORDER_REJECTED;Nasdaq100;PERIOD_M1;8398;symbol=Nasdaq100; type=1; volume=0.01; retcode=10039; comment=; order=0; deal=0
+2026.11.16 10:32:44;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 10:35:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 10:37:44;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 10:39:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.01; filling_flags=1; execution=2
+2026.11.16 10:39:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230519931; deal=222602523
+2026.11.16 10:39:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 10:40:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 10:42:44;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 10:45:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 10:47:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.02; filling_flags=1; execution=2
+2026.11.16 10:47:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230522738; deal=222605378
+2026.11.16 10:47:44;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 10:47:46;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.16 10:48:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 10:52:44;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 10:53:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 10:57:44;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 10:58:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 11:01:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 11:01:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230526819; deal=222609372
+2026.11.16 11:01:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 11:02:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.02; filling_flags=1; execution=2
+2026.11.16 11:02:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230527565; deal=222610135
+2026.11.16 11:02:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 11:02:58;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.22; max_spread_price=2.50; spread_points=322.0
+2026.11.16 11:03:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 11:07:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 11:08:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.03; filling_flags=1; execution=2
+2026.11.16 11:08:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230529919; deal=222612492
+2026.11.16 11:08:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 11:12:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 11:12:07;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 11:13:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 11:17:07;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 11:18:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 11:20:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 11:20:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230532862; deal=222615276
+2026.11.16 11:20:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 11:21:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 11:22:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.02; filling_flags=1; execution=2
+2026.11.16 11:22:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230533134; deal=222615521
+2026.11.16 11:23:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 11:23:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 11:28:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 11:28:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 11:33:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 11:33:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 11:35:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.23; max_spread_price=2.50; spread_points=323.0
+2026.11.16 11:38:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 11:38:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 11:43:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 11:43:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 11:46:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 11:46:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230541329; deal=222623634
+2026.11.16 11:46:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 11:46:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=true; allowed=true
+2026.11.16 11:48:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 11:48:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 11:53:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 11:53:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 11:58:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 11:58:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 12:01:43;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.93; max_spread_price=2.50; spread_points=393.0
+2026.11.16 12:03:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 12:03:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 12:08:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 12:08:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 12:09:21;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.15; max_spread_price=2.50; spread_points=315.0
+2026.11.16 12:13:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 12:13:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 12:18:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 12:18:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.45; max_spread_price=2.50; spread_points=345.0
+2026.11.16 12:18:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 12:23:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 12:23:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 12:28:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 12:28:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 12:31:38;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=4.46; max_spread_price=2.50; spread_points=446.0
+2026.11.16 12:33:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 12:33:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 12:38:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 12:38:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 12:39:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 12:39:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230564410; deal=222646494
+2026.11.16 12:39:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 12:40:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 12:43:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 12:45:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 12:48:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 12:50:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 12:53:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 12:55:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 12:55:39;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 12:58:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.01; filling_flags=1; execution=2
+2026.11.16 12:58:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230572954; deal=222655016
+2026.11.16 12:58:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 12:59:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 13:00:39;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 13:01:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.02; filling_flags=1; execution=2
+2026.11.16 13:01:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230574098; deal=222656106
+2026.11.16 13:02:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.03; filling_flags=1; execution=2
+2026.11.16 13:02:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230574525; deal=222656529
+2026.11.16 13:04:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 13:05:39;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 13:09:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 13:10:39;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 13:11:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 13:11:41;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.16 13:15:39;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 13:16:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 13:20:39;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 13:21:08;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.23; max_spread_price=2.50; spread_points=323.0
+2026.11.16 13:21:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 13:25:39;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 13:26:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 13:30:39;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 13:30:49;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.16; max_spread_price=2.50; spread_points=316.0
+2026.11.16 13:31:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 13:35:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 13:35:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230583792; deal=222665454
+2026.11.16 13:35:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 13:36:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 13:36:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.16; max_spread_price=2.50; spread_points=316.0
+2026.11.16 13:36:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 13:36:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 13:38:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230584391; deal=222666030
+2026.11.16 13:41:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 13:41:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 13:41:55;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.45; max_spread_price=2.50; spread_points=345.0
+2026.11.16 13:42:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 13:42:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.02; filling_flags=1; execution=2
+2026.11.16 13:42:24;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230585062; deal=222666659
+2026.11.16 13:46:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 13:47:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.03; filling_flags=1; execution=2
+2026.11.16 13:47:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230586172; deal=222667750
+2026.11.16 13:47:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 13:51:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 13:51:05;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.93; max_spread_price=2.50; spread_points=393.0
+2026.11.16 13:51:08;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=544.0; maximum_points=500.0
+2026.11.16 13:51:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 13:56:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 13:56:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 13:57:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 13:57:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230589059; deal=222670612
+2026.11.16 13:57:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 13:58:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.02; filling_flags=1; execution=2
+2026.11.16 13:58:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230589361; deal=222670905
+2026.11.16 13:58:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 13:58:59;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.20; max_spread_price=2.50; spread_points=320.0
+2026.11.16 13:59:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.03; filling_flags=1; execution=2
+2026.11.16 13:59:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230589529; deal=222671065
+2026.11.16 14:01:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.04; filling_flags=1; execution=2
+2026.11.16 14:01:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230590167; deal=222671684
+2026.11.16 14:01:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 14:02:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.05; filling_flags=1; execution=2
+2026.11.16 14:02:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230590545; deal=222672079
+2026.11.16 14:03:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 14:04:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.06; filling_flags=1; execution=2
+2026.11.16 14:04:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230591311; deal=222672849
+2026.11.16 14:05:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.07; filling_flags=1; execution=2
+2026.11.16 14:05:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230591726; deal=222673253
+2026.11.16 14:06:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 14:06:32;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.21; max_spread_price=2.50; spread_points=321.0
+2026.11.16 14:08:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 14:09:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.08; filling_flags=1; execution=2
+2026.11.16 14:09:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230593608; deal=222675040
+2026.11.16 14:11:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 14:11:51;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 14:12:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=4.46; max_spread_price=2.50; spread_points=446.0
+2026.11.16 14:16:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 14:16:51;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 14:17:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.16 14:21:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 14:21:51;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 14:22:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 14:22:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230598590; deal=222679495
+2026.11.16 14:22:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 14:22:08;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.47; max_spread_price=2.50; spread_points=347.0
+2026.11.16 14:23:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 14:23:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.02; filling_flags=1; execution=2
+2026.11.16 14:23:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230598949; deal=222679761
+2026.11.16 14:26:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 14:26:51;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 14:27:11;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.16 14:28:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 14:28:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230601044; deal=222681837
+2026.11.16 14:28:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 14:29:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.02; filling_flags=1; execution=2
+2026.11.16 14:29:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230601478; deal=222682274
+2026.11.16 14:29:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 14:30:03;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.03; filling_flags=1; execution=2
+2026.11.16 14:30:03;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230601910; deal=222682667
+2026.11.16 14:31:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 14:32:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.43; max_spread_price=2.50; spread_points=343.0
+2026.11.16 14:32:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 14:36:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 14:37:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 14:38:42;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.20; max_spread_price=2.50; spread_points=320.0
+2026.11.16 14:41:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 14:42:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 14:43:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.01; filling_flags=1; execution=2
+2026.11.16 14:43:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230607698; deal=222688319
+2026.11.16 14:43:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 14:43:33;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=true; allowed=true
+2026.11.16 14:46:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 14:46:40;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.68; max_spread_price=2.50; spread_points=368.0
+2026.11.16 14:47:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 14:51:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 14:52:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.16 14:52:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 14:56:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 14:57:06;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.21; max_spread_price=2.50; spread_points=321.0
+2026.11.16 14:57:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 15:01:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 15:02:07;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.43; max_spread_price=2.50; spread_points=343.0
+2026.11.16 15:02:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 15:04:07;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=545.0; maximum_points=500.0
+2026.11.16 15:06:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 15:07:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 15:09:35;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.67; max_spread_price=2.50; spread_points=367.0
+2026.11.16 15:11:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 15:12:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 15:15:08;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.16 15:16:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 15:17:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 15:20:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.16 15:21:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 15:22:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 15:23:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 15:23:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230624099; deal=222704410
+2026.11.16 15:23:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 15:24:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.02; filling_flags=1; execution=2
+2026.11.16 15:24:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230625218; deal=222705540
+2026.11.16 15:24:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 15:26:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.03; filling_flags=1; execution=2
+2026.11.16 15:26:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230626680; deal=222707014
+2026.11.16 15:26:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 15:27:38;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.16; max_spread_price=2.50; spread_points=316.0
+2026.11.16 15:29:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 15:30:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 15:31:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 15:34:45;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.16; max_spread_price=2.50; spread_points=316.0
+2026.11.16 15:35:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 15:36:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 15:40:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 15:41:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 15:45:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 15:46:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 15:50:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 15:51:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 15:55:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 15:56:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 16:00:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 16:01:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 16:05:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 16:06:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 16:07:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.01; filling_flags=1; execution=2
+2026.11.16 16:07:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230643732; deal=222723696
+2026.11.16 16:07:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 16:07:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=true; allowed=true
+2026.11.16 16:10:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 16:11:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 16:15:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 16:16:27;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 16:19:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.01; filling_flags=1; execution=2
+2026.11.16 16:19:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230648256; deal=222728123
+2026.11.16 16:19:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 16:20:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 16:20:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 16:22:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 16:25:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 16:27:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 16:30:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.44; max_spread_price=2.50; spread_points=344.0
+2026.11.16 16:30:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 16:31:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 16:31:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230655154; deal=222735029
+2026.11.16 16:31:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 16:32:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.02; filling_flags=1; execution=2
+2026.11.16 16:32:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230656280; deal=222736168
+2026.11.16 16:32:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 16:32:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 16:35:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 16:37:09;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.15; max_spread_price=2.50; spread_points=315.0
+2026.11.16 16:37:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=522.0; maximum_points=500.0
+2026.11.16 16:37:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 16:40:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 16:42:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 16:44:29;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.44; max_spread_price=2.50; spread_points=344.0
+2026.11.16 16:45:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 16:47:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 16:50:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 16:51:46;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.16 16:52:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 16:55:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 16:57:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 17:00:07;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.73; max_spread_price=2.50; spread_points=373.0
+2026.11.16 17:00:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 17:01:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 17:01:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230677958; deal=222757882
+2026.11.16 17:01:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 17:01:05;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=true; allowed=true
+2026.11.16 17:02:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 17:05:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 17:07:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 17:08:55;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=4.71; max_spread_price=2.50; spread_points=471.0
+2026.11.16 17:10:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 17:12:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 17:15:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 17:17:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 17:20:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 17:22:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 17:25:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 17:25:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230690908; deal=222770742
+2026.11.16 17:25:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 17:26:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.02; filling_flags=1; execution=2
+2026.11.16 17:26:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230691387; deal=222771207
+2026.11.16 17:26:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 17:27:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 17:27:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 17:32:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 17:32:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 17:37:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 17:37:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 17:41:38;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.16 17:42:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 17:42:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 17:46:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.01; filling_flags=1; execution=2
+2026.11.16 17:46:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230700284; deal=222779919
+2026.11.16 17:46:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 17:46:06;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=true; allowed=true
+2026.11.16 17:47:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 17:47:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 17:51:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.01; filling_flags=1; execution=2
+2026.11.16 17:51:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230702254; deal=222781889
+2026.11.16 17:51:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 17:51:07;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=true; allowed=true
+2026.11.16 17:51:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.20; max_spread_price=2.50; spread_points=320.0
+2026.11.16 17:52:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 17:52:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 17:57:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 17:57:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 18:02:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 18:02:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 18:07:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 18:07:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 18:11:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 18:11:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230710945; deal=222790674
+2026.11.16 18:11:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 18:11:32;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=true; allowed=true
+2026.11.16 18:12:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 18:12:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 18:15:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230712037; deal=222791696
+2026.11.16 18:17:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 18:17:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 18:22:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 18:22:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 18:24:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.01; filling_flags=1; execution=2
+2026.11.16 18:24:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230714121; deal=222793684
+2026.11.16 18:24:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 18:24:04;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=true; allowed=true
+2026.11.16 18:27:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 18:27:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 18:32:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 18:32:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 18:37:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 18:37:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 18:42:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 18:42:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 18:47:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 18:47:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 18:52:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 18:52:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 18:57:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 18:57:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 18:59:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.66; max_spread_price=2.50; spread_points=366.0
+2026.11.16 19:02:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 19:02:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 19:07:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 19:07:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 19:12:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 19:12:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 19:17:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 19:17:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 19:18:17;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.16 19:20:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 19:20:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230734080; deal=222813331
+2026.11.16 19:20:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 19:21:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.02; filling_flags=1; execution=2
+2026.11.16 19:21:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230734507; deal=222813752
+2026.11.16 19:21:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 19:22:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 19:22:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 19:26:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.46; max_spread_price=2.50; spread_points=346.0
+2026.11.16 19:27:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 19:27:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 19:32:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 19:32:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 19:37:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 19:37:26;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 19:37:45;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.16 19:42:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=SELL; volume=0.01; filling_flags=1; execution=2
+2026.11.16 19:42:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230739736; deal=222818892
+2026.11.16 19:42:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=true; allowed=true
+2026.11.16 19:42:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 19:43:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=false; indicators=false; allowed=true
+2026.11.16 19:43:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 19:47:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 19:48:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 19:52:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 19:53:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 19:57:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 19:58:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 19:59:33;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=4.92; max_spread_price=2.50; spread_points=492.0
+2026.11.16 20:01:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 20:01:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230747556; deal=222826707
+2026.11.16 20:01:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 20:02:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 20:03:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 20:06:46;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 20:08:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 20:11:46;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 20:13:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 20:16:46;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 20:18:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 20:18:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230758696; deal=222837684
+2026.11.16 20:18:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 20:18:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 20:19:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 20:21:46;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 20:23:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 20:26:46;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=true; indicators=false; allowed=true
+2026.11.16 20:27:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.01; filling_flags=1; execution=2
+2026.11.16 20:27:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230762390; deal=222840502
+2026.11.16 20:27:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=true; allowed=true
+2026.11.16 20:28:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Request: symbol=Nasdaq100; side=BUY; volume=0.02; filling_flags=1; execution=2
+2026.11.16 20:28:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Attempt 1; filling=0; OrderSend=true; retcode=10009; comment=Request executed; last_error=0; order=230763294; deal=222841298
+2026.11.16 20:28:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;BUY not sent: one or more original entry conditions are false; open_buy=false; indicators=false; allowed=true
+2026.11.16 20:28:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;SELL not sent: one or more original entry conditions are false; open_sell=true; indicators=false; allowed=true
+2026.11.16 20:30:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 20:31:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.44; max_spread_price=2.50; spread_points=344.0
+2026.11.16 20:35:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 20:40:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 20:45:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 20:50:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 20:54:45;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.21; max_spread_price=2.50; spread_points=321.0
+2026.11.16 20:55:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 21:00:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 21:05:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 21:10:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 21:14:30;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=4.66; max_spread_price=2.50; spread_points=466.0
+2026.11.16 21:15:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 21:20:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 21:25:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 21:30:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 21:35:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 21:40:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 21:42:46;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.15; max_spread_price=2.50; spread_points=315.0
+2026.11.16 21:45:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 21:50:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 21:55:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 22:00:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 22:05:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 22:10:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 22:15:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 22:20:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 22:25:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 22:30:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 22:35:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 22:40:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 22:45:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 22:50:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 22:55:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 23:00:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 23:05:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 23:10:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 23:15:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 23:20:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 23:25:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 23:30:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 23:35:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 23:38:05;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=4.17; max_spread_price=2.50; spread_points=417.0
+2026.11.16 23:40:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 23:44:31;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.66; max_spread_price=2.50; spread_points=366.0
+2026.11.16 23:45:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 23:50:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.16 23:55:03;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.69; max_spread_price=2.50; spread_points=369.0
+2026.11.16 23:55:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 01:01:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=565.0; maximum_points=500.0
+2026.11.17 01:01:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 01:01:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.90; max_spread_price=2.50; spread_points=390.0
+2026.11.17 01:01:04;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=568.0; maximum_points=500.0
+2026.11.17 01:01:06;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=545.0; maximum_points=500.0
+2026.11.17 01:01:10;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=544.0; maximum_points=500.0
+2026.11.17 01:01:11;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=517.0; maximum_points=500.0
+2026.11.17 01:01:15;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=521.0; maximum_points=500.0
+2026.11.17 01:01:15;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=519.0; maximum_points=500.0
+2026.11.17 01:02:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=590.0; maximum_points=500.0
+2026.11.17 01:02:24;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=515.0; maximum_points=500.0
+2026.11.17 01:02:24;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=522.0; maximum_points=500.0
+2026.11.17 01:02:37;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=547.0; maximum_points=500.0
+2026.11.17 01:02:44;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=543.0; maximum_points=500.0
+2026.11.17 01:02:52;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=572.0; maximum_points=500.0
+2026.11.17 01:03:24;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=569.0; maximum_points=500.0
+2026.11.17 01:03:33;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=518.0; maximum_points=500.0
+2026.11.17 01:03:57;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=567.0; maximum_points=500.0
+2026.11.17 01:04:09;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=520.0; maximum_points=500.0
+2026.11.17 01:04:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=571.0; maximum_points=500.0
+2026.11.17 01:04:20;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=540.0; maximum_points=500.0
+2026.11.17 01:04:21;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=516.0; maximum_points=500.0
+2026.11.17 01:04:35;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=570.0; maximum_points=500.0
+2026.11.17 01:04:49;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=541.0; maximum_points=500.0
+2026.11.17 01:05:56;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=542.0; maximum_points=500.0
+2026.11.17 01:05:58;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=566.0; maximum_points=500.0
+2026.11.17 01:06:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 01:06:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=4.19; max_spread_price=2.50; spread_points=419.0
+2026.11.17 01:06:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=523.0; maximum_points=500.0
+2026.11.17 01:06:25;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=519.0; maximum_points=500.0
+2026.11.17 01:06:44;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=545.0; maximum_points=500.0
+2026.11.17 01:06:58;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=544.0; maximum_points=500.0
+2026.11.17 01:06:58;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=546.0; maximum_points=500.0
+2026.11.17 01:07:09;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=590.0; maximum_points=500.0
+2026.11.17 01:07:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=521.0; maximum_points=500.0
+2026.11.17 01:07:16;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=517.0; maximum_points=500.0
+2026.11.17 01:07:28;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=565.0; maximum_points=500.0
+2026.11.17 01:07:38;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=547.0; maximum_points=500.0
+2026.11.17 01:08:23;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=568.0; maximum_points=500.0
+2026.11.17 01:09:19;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=520.0; maximum_points=500.0
+2026.11.17 01:09:31;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=543.0; maximum_points=500.0
+2026.11.17 01:09:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=516.0; maximum_points=500.0
+2026.11.17 01:09:48;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=540.0; maximum_points=500.0
+2026.11.17 01:10:03;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=518.0; maximum_points=500.0
+2026.11.17 01:10:30;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=515.0; maximum_points=500.0
+2026.11.17 01:11:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 01:11:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.95; max_spread_price=2.50; spread_points=395.0
+2026.11.17 01:13:56;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=545.0; maximum_points=500.0
+2026.11.17 01:14:12;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=523.0; maximum_points=500.0
+2026.11.17 01:15:51;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=522.0; maximum_points=500.0
+2026.11.17 01:16:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 01:16:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=4.21; max_spread_price=2.50; spread_points=421.0
+2026.11.17 01:16:06;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=517.0; maximum_points=500.0
+2026.11.17 01:16:07;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=569.0; maximum_points=500.0
+2026.11.17 01:17:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=567.0; maximum_points=500.0
+2026.11.17 01:17:15;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=520.0; maximum_points=500.0
+2026.11.17 01:17:18;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=516.0; maximum_points=500.0
+2026.11.17 01:21:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 01:21:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=4.16; max_spread_price=2.50; spread_points=416.0
+2026.11.17 01:21:30;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=519.0; maximum_points=500.0
+2026.11.17 01:24:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=544.0; maximum_points=500.0
+2026.11.17 01:26:00;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 01:26:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.69; max_spread_price=2.50; spread_points=369.0
+2026.11.17 01:30:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=519.0; maximum_points=500.0
+2026.11.17 01:30:31;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=522.0; maximum_points=500.0
+2026.11.17 01:31:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 01:31:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.96; max_spread_price=2.50; spread_points=396.0
+2026.11.17 01:35:09;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=518.0; maximum_points=500.0
+2026.11.17 01:35:24;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=590.0; maximum_points=500.0
+2026.11.17 01:36:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 01:36:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.18; max_spread_price=2.50; spread_points=318.0
+2026.11.17 01:37:14;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=545.0; maximum_points=500.0
+2026.11.17 01:38:29;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=520.0; maximum_points=500.0
+2026.11.17 01:38:59;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=521.0; maximum_points=500.0
+2026.11.17 01:40:54;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=542.0; maximum_points=500.0
+2026.11.17 01:40:59;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=518.0; maximum_points=500.0
+2026.11.17 01:41:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 01:41:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.90; max_spread_price=2.50; spread_points=390.0
+2026.11.17 01:44:50;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=566.0; maximum_points=500.0
+2026.11.17 01:46:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 01:46:02;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.20; max_spread_price=2.50; spread_points=320.0
+2026.11.17 01:51:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 01:51:05;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.43; max_spread_price=2.50; spread_points=343.0
+2026.11.17 01:56:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 01:56:05;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.16; max_spread_price=2.50; spread_points=316.0
+2026.11.17 02:01:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 02:01:05;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.23; max_spread_price=2.50; spread_points=323.0
+2026.11.17 02:02:20;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=590.0; maximum_points=500.0
+2026.11.17 02:06:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 02:06:05;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.17 02:10:36;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked by legacy points spread limit; current_points=590.0; maximum_points=500.0
+2026.11.17 02:11:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 02:11:08;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.17; max_spread_price=2.50; spread_points=317.0
+2026.11.17 02:16:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 02:16:09;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.15; max_spread_price=2.50; spread_points=315.0
+2026.11.17 02:21:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 02:24:13;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.21; max_spread_price=2.50; spread_points=321.0
+2026.11.17 02:26:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 02:30:18;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.19; max_spread_price=2.50; spread_points=319.0
+2026.11.17 02:31:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 02:35:30;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.22; max_spread_price=2.50; spread_points=322.0
+2026.11.17 02:36:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 02:40:48;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.20; max_spread_price=2.50; spread_points=320.0
+2026.11.17 02:41:01;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;Entry blocked: trading-hours filter.
+2026.11.17 02:45:40;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM close diagnostic file open failed; error=5004
+2026.11.17 02:45:48;DIAGNOSTIC;Nasdaq100;PERIOD_M1;8398;KiaXAM entry blocked by live spread filter; symbol=Nasdaq100; spread_price=3.22; max_spread_price=2.50; spread_points=322.0
