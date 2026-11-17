@@ -14,6 +14,8 @@ input string AllowedBroker = "AMarkets"; // Allowed broker name fragment; suppor
 #include <Trade\Trade.mqh>
 CTrade m_trade;
 bool NQLicenseOK = false;
+// Daily-profit guard fails closed when its account history cannot be verified.
+bool NQREXDailyProfitDataValid = false;
 
 // Dashboard zoom: start slightly enlarged by default.
 double NQPanelZoom = 1.10;
@@ -415,44 +417,69 @@ double NQREXDailyStartingEquity()
    if(!GlobalVariableCheck(key)) return AccountInfoDouble(ACCOUNT_EQUITY);
    return GlobalVariableGet(key);
 }
-double NQREXDailyProfitMoney()
+bool NQREXDailyProfitMoney(double &dailyProfit)
 {
+   dailyProfit=0.0;
    MqlDateTime dt;
    TimeToStruct(TimeCurrent(),dt);
    dt.hour=0; dt.min=0; dt.sec=0;
    datetime dayStart=StructToTime(dt);
 
+   ResetLastError();
+   if(!HistorySelect(dayStart,TimeCurrent()))
+      return false;
+
    double realizedProfit=0.0;
-   if(HistorySelect(dayStart,TimeCurrent()))
+   int dealsTotal=HistoryDealsTotal();
+   for(int i=0;i<dealsTotal;i++)
    {
-      for(int i=0;i<HistoryDealsTotal();i++)
-      {
-         ulong deal=HistoryDealGetTicket(i);
-         if(deal==0) continue;
-         if((long)HistoryDealGetInteger(deal,DEAL_MAGIC)!=MagicNumber) continue;
-         if(HistoryDealGetString(deal,DEAL_SYMBOL)!=_Symbol) continue;
-         realizedProfit+=HistoryDealGetDouble(deal,DEAL_PROFIT)
-                        +HistoryDealGetDouble(deal,DEAL_SWAP)
-                        +HistoryDealGetDouble(deal,DEAL_COMMISSION);
-      }
+      ulong deal=HistoryDealGetTicket(i);
+      if(deal==0) return false;
+
+      long dealMagic=0;
+      string dealSymbol="";
+      if(!HistoryDealGetInteger(deal,DEAL_MAGIC,dealMagic)) return false;
+      if(!HistoryDealGetString(deal,DEAL_SYMBOL,dealSymbol)) return false;
+      if(dealMagic!=MagicNumber || dealSymbol!=_Symbol) continue;
+
+      double dealProfit=0.0, dealSwap=0.0, dealCommission=0.0, dealFee=0.0;
+      if(!HistoryDealGetDouble(deal,DEAL_PROFIT,dealProfit)) return false;
+      if(!HistoryDealGetDouble(deal,DEAL_SWAP,dealSwap)) return false;
+      if(!HistoryDealGetDouble(deal,DEAL_COMMISSION,dealCommission)) return false;
+      if(!HistoryDealGetDouble(deal,DEAL_FEE,dealFee)) return false;
+
+      realizedProfit+=dealProfit+dealSwap+dealCommission+dealFee;
    }
 
    string floatingBaseKey=NQREXProtectionPrefix()+"_FLOAT_BASE";
-   double floatingBase=GlobalVariableCheck(floatingBaseKey)
-                       ?GlobalVariableGet(floatingBaseKey)
-                       :NQREXCurrentEAFloatingProfit();
-   return realizedProfit+NQREXCurrentEAFloatingProfit()-floatingBase;
+   if(!GlobalVariableCheck(floatingBaseKey)) return false;
+   double floatingBase=GlobalVariableGet(floatingBaseKey);
+   double currentFloating=NQREXCurrentEAFloatingProfit();
+   dailyProfit=realizedProfit+currentFloating-floatingBase;
+   return true;
 }
-double NQREXDailyProfitPercent()
+bool NQREXDailyProfitPercent(double &dailyPercent)
 {
+   dailyPercent=0.0;
    double base=NQREXDailyStartingEquity();
-   if(base<=0.0) return 0.0;
-   return (NQREXDailyProfitMoney()/base)*100.0;
+   if(base<=0.0) return false;
+
+   double dailyProfit=0.0;
+   if(!NQREXDailyProfitMoney(dailyProfit)) return false;
+
+   dailyPercent=(dailyProfit/base)*100.0;
+   return true;
 }
-double NQREXDailyProfitUsagePercent()
+bool NQREXDailyProfitUsagePercent(double &usagePercent,double &dailyPercent)
 {
-   if(!DailyProfitProtection || DailyProfitTargetPercent<=0.0) return 0.0;
-   return MathMax(0.0,MathMin(100.0,(NQREXDailyProfitPercent()/DailyProfitTargetPercent)*100.0));
+   usagePercent=0.0;
+   dailyPercent=0.0;
+   if(!DailyProfitProtection || DailyProfitTargetPercent<=0.0) return true;
+   if(!NQREXDailyProfitPercent(dailyPercent)) return false;
+
+   usagePercent=MathMax(0.0,MathMin(100.0,
+                    (dailyPercent/DailyProfitTargetPercent)*100.0));
+   return true;
 }
 void NQREXInitializeProtection()
 {
@@ -495,10 +522,28 @@ void NQREXUpdateDailyProtection()
    }
    if(!GlobalVariableCheck(floatingBaseKey))
       GlobalVariableSet(floatingBaseKey,NQREXCurrentEAFloatingProfit());
-   if(!DailyProfitProtection || DailyProfitTargetPercent<=0.0) return;
+
+   if(!DailyProfitProtection || DailyProfitTargetPercent<=0.0)
+   {
+      NQREXDailyProfitDataValid=true;
+      return;
+   }
+
+   double dailyProfitMoney=0.0;
+   double startingEquity=NQREXDailyStartingEquity();
+   if(startingEquity<=0.0 || !NQREXDailyProfitMoney(dailyProfitMoney))
+   {
+      if(NQREXDailyProfitDataValid)
+         Print("NQ REX: daily-profit history unavailable or incomplete. New entries are blocked until data is valid. Error: ",GetLastError());
+      NQREXDailyProfitDataValid=false;
+      return;
+   }
+
+   NQREXDailyProfitDataValid=true;
    if(NQREXGetRunState()!=NQREX_ACTIVE) return;
    if(GlobalVariableCheck(overrideKey) && (int)GlobalVariableGet(overrideKey)==today) return;
-   double dailyProfit=NQREXDailyProfitPercent();
+
+   double dailyProfit=(dailyProfitMoney/startingEquity)*100.0;
    if(dailyProfit>=DailyProfitTargetPercent)
    {
       NQREXSetRunState(NQREX_DAILY_PROFIT_PAUSE);
@@ -513,7 +558,12 @@ void NQREXManualPlay()
    GlobalVariablesFlush();
 }
 void NQREXManualPause(){ NQREXSetRunState(NQREX_MANUAL_PAUSE); }
-bool NQREXCanOpenTrades(){ return NQREXGetRunState()==NQREX_ACTIVE; }
+bool NQREXCanOpenTrades()
+{
+   if(DailyProfitProtection && DailyProfitTargetPercent>0.0 && !NQREXDailyProfitDataValid)
+      return false;
+   return NQREXGetRunState()==NQREX_ACTIVE;
+}
 void NQREXUpdateControlHeader();
 ENUM_ORDER_TYPE OP_BUY = ORDER_TYPE_BUY;	
 ENUM_ORDER_TYPE OP_SELL = ORDER_TYPE_SELL;	
@@ -5268,11 +5318,20 @@ void NQUpdatePanel()
 
    if(DailyProfitProtection && DailyProfitTargetPercent>0.0)
    {
-      double profitUsage=NQREXDailyProfitUsagePercent();
-      int profitFillWidth=(int)MathRound(NQScaleX(170)*(profitUsage/100.0));
-      ObjectSetString(0,"NQ_ProfitBarValue",OBJPROP_TEXT,DoubleToString(profitUsage,0)+"%");
-      ObjectSetInteger(0,"NQ_ProfitBarValue",OBJPROP_COLOR,NQREXDailyProfitPercent()>=0.0?NQ_GREEN:NQ_RED);
-      ObjectSetInteger(0,"NQ_ProfitFill",OBJPROP_XSIZE,MathMax(1,profitFillWidth));
+      double profitUsage=0.0, dailyProfitPercent=0.0;
+      if(NQREXDailyProfitUsagePercent(profitUsage,dailyProfitPercent))
+      {
+         int profitFillWidth=(int)MathRound(NQScaleX(170)*(profitUsage/100.0));
+         ObjectSetString(0,"NQ_ProfitBarValue",OBJPROP_TEXT,DoubleToString(profitUsage,0)+"%");
+         ObjectSetInteger(0,"NQ_ProfitBarValue",OBJPROP_COLOR,dailyProfitPercent>=0.0?NQ_GREEN:NQ_RED);
+         ObjectSetInteger(0,"NQ_ProfitFill",OBJPROP_XSIZE,MathMax(1,profitFillWidth));
+      }
+      else
+      {
+         ObjectSetString(0,"NQ_ProfitBarValue",OBJPROP_TEXT,"DATA ERROR");
+         ObjectSetInteger(0,"NQ_ProfitBarValue",OBJPROP_COLOR,NQ_RED);
+         ObjectSetInteger(0,"NQ_ProfitFill",OBJPROP_XSIZE,1);
+      }
       ObjectSetInteger(0,"NQ_ProfitFill",OBJPROP_YSIZE,MathMax(5,NQScaleY(6)));
       ObjectSetInteger(0,"NQ_ProfitTrack",OBJPROP_YSIZE,MathMax(5,NQScaleY(6)));
    }
