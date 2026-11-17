@@ -203,7 +203,7 @@ tipigestione GridManagement = LotsSum;//Grid Management  // in
 
 double CoefficientGridManagement = 1;//Coefficient Grid Management  // in
 
-int MinDistanzaPiramide = 50;//Min Distance (for the grid orders)    // in
+int MinDistanzaPiramide = 750;//Min Distance (for the grid orders)    // in
 double MinDistanceMultiplier = 1;   //Min Distance Multiplier (multiply Min Distance for each order) // in
 bool OneTradeBarGrid = true;//One Trade Bar Grid (if true, open max one trade for bar)   // in
 
@@ -3040,7 +3040,7 @@ double MinimalDistance = 0;
 if ( MinDistanceOnAtr )
 MinimalDistance = AtrMultiplier*iatr(_Symbol,DistanceAtrTimeframe,DistanceAtrPeriod,1);
 else
-MinimalDistance = NQREXSelectedTargetPoints()*_Point;
+MinimalDistance = MinDistanzaPiramide * _Point;
 
    for(int i=1;i<NumOrdini;i++)
      {
