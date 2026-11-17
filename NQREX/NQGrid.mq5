@@ -16,6 +16,7 @@ CTrade m_trade;
 bool NQLicenseOK = false;
 // Daily-profit guard fails closed when its account history cannot be verified.
 bool NQREXDailyProfitDataValid = false;
+bool NQREXDailyProfitErrorLogged = false;
 
 // Dashboard zoom: start slightly enlarged by default.
 double NQPanelZoom = 1.10;
@@ -531,15 +532,28 @@ void NQREXUpdateDailyProtection()
 
    double dailyProfitMoney=0.0;
    double startingEquity=NQREXDailyStartingEquity();
-   if(startingEquity<=0.0 || !NQREXDailyProfitMoney(dailyProfitMoney))
+   string dataErrorReason="";
+   int dataErrorCode=0;
+   if(startingEquity<=0.0)
+      dataErrorReason="invalid daily starting equity";
+   else if(!NQREXDailyProfitMoney(dailyProfitMoney))
    {
-      if(NQREXDailyProfitDataValid)
-         Print("NQ REX: daily-profit history unavailable or incomplete. New entries are blocked until data is valid. Error: ",GetLastError());
+      dataErrorReason="history read failed or returned incomplete data";
+      dataErrorCode=GetLastError();
+   }
+
+   if(dataErrorReason!="")
+   {
+      if(!NQREXDailyProfitErrorLogged)
+         Print("NQ REX: ",dataErrorReason,
+               ". New entries are blocked until data is valid. Error: ",dataErrorCode);
       NQREXDailyProfitDataValid=false;
+      NQREXDailyProfitErrorLogged=true;
       return;
    }
 
    NQREXDailyProfitDataValid=true;
+   NQREXDailyProfitErrorLogged=false;
    if(NQREXGetRunState()!=NQREX_ACTIVE) return;
    if(GlobalVariableCheck(overrideKey) && (int)GlobalVariableGet(overrideKey)==today) return;
 
