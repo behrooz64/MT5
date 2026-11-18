@@ -276,7 +276,7 @@ enum ClosureModality
 
 string MonetaryLoss = "Monetary Loss Settings";//Monetary Loss  // in
 input bool MonetaryStopLoss = true;//Money Loss Protection
-input bool EveryMicrolot = false;//If true, Multiply Monetary Stop Loss Amount*Start Lot size*100   
+bool EveryMicrolot = false; // Fixed OFF; hidden from Inputs.
 input bool StopTradingWhenHit = true;//Stop After Loss
 input int MaximumMonetaryLoss = 35;//Max Money Loss
 
