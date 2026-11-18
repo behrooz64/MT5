@@ -713,8 +713,8 @@ void OnChartEvent(const int id,
    {
       string buttonNames[5]={"K64_ZoomIn","K64_ZoomOut","K64_Play","K64_Pause","K64_CloseAll"};
       color normalColors[5]={C'48,43,62',C'48,43,62',C'34,112,78',C'151,105,35',C'142,47,62'};
-      color hoverColors[5]={K64_PANEL_GREEN,K64_PANEL_GREEN,C'45,145,100',C'185,130,45',C'180,65,80'};
-      color zoomAccent=K64_PANEL_GREEN;
+      color hoverColors[5]={C'66,201,138',C'66,201,138',C'45,145,100',C'185,130,45',C'180,65,80'};
+      color zoomAccent=C'66,201,138';
       if(ObjectFind(0,"K64_Status")>=0)
          zoomAccent=(color)ObjectGetInteger(0,"K64_Status",OBJPROP_COLOR);
       hoverColors[0]=zoomAccent;
