@@ -283,7 +283,13 @@ input int MaximumMonetaryLoss = 3000;//Monetary Stop Loss Amount (expressed in t
 string PercentageLoss = "Percentage Loss Settings";//Percentage Loss // in
 input bool CloseInPercentageLoss = false;//Enable Close In Percentage Loss   
 input bool StopTradingAfterPercentageLoss = false;//Stop EA After Percentage Loss  
-input int LossPercentage = 30;//Loss Amount in Percentage    
+input int LossPercentage = 30;//Loss Amount in Percentage
+
+string DailyProfitProtectionSettings = "DAILY PROFIT PROTECTION";
+input bool DailyProfitProtection = true; // Enable daily profit protection
+input double DailyProfitTargetPercent = 1.0; // Daily target percentage (0 = disabled)
+input double DailyProfitTargetMoney = 0.0; // Daily target in account currency (0 = disabled)
+ 
 
 
 string Separo8="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -342,6 +348,267 @@ double Ask_ = 0;
 ENUM_ORDER_TYPE OP_BUY = ORDER_TYPE_BUY;	
 ENUM_ORDER_TYPE OP_SELL = ORDER_TYPE_SELL;	
 
+//==================================================================
+// KIA64V4: DAILY PROFIT PROTECTION AND RUN CONTROL
+// These controls gate NEW entries only. Existing position management,
+// trailing logic and close logic continue to run while paused.
+//==================================================================
+enum KIA64_RUN_STATE
+{
+   KIA64_ACTIVE = 0,
+   KIA64_MANUAL_PAUSE = 1,
+   KIA64_DAILY_PROFIT_PAUSE = 2
+};
+
+bool Kia64DailyProfitDataValid = true;
+bool Kia64DailyProfitErrorLogged = false;
+
+string Kia64ProtectionPrefix()
+{
+   string symbolKey = _Symbol;
+   StringReplace(symbolKey,".","_");
+   StringReplace(symbolKey,"-","_");
+   StringReplace(symbolKey,"#","_");
+   symbolKey = StringSubstr(symbolKey,0,18);
+   return "K64V4_" + IntegerToString((long)AccountInfoInteger(ACCOUNT_LOGIN)) + "_" +
+          IntegerToString(MagicNumber) + "_" + symbolKey;
+}
+
+int Kia64BrokerDayStamp()
+{
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(),dt);
+   return dt.year*10000 + dt.mon*100 + dt.day;
+}
+
+KIA64_RUN_STATE Kia64GetRunState()
+{
+   string key = Kia64ProtectionPrefix()+"_STATE";
+   if(!GlobalVariableCheck(key))
+      return KIA64_ACTIVE;
+
+   int value = (int)GlobalVariableGet(key);
+   if(value < KIA64_ACTIVE || value > KIA64_DAILY_PROFIT_PAUSE)
+      return KIA64_ACTIVE;
+   return (KIA64_RUN_STATE)value;
+}
+
+void Kia64SetRunState(KIA64_RUN_STATE state)
+{
+   GlobalVariableSet(Kia64ProtectionPrefix()+"_STATE",(double)state);
+   GlobalVariablesFlush();
+}
+
+double Kia64DailyStartingEquity()
+{
+   string key = Kia64ProtectionPrefix()+"_BASE";
+   if(!GlobalVariableCheck(key))
+      return AccountInfoDouble(ACCOUNT_EQUITY);
+   return GlobalVariableGet(key);
+}
+
+double Kia64CurrentEAFloatingProfit()
+{
+   double floatingProfit = 0.0;
+   for(int i=PositionsTotal()-1; i>=0; --i)
+   {
+      ulong ticket = PositionGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((long)PositionGetInteger(POSITION_MAGIC) != MagicNumber)
+         continue;
+
+      floatingProfit += PositionGetDouble(POSITION_PROFIT)
+                      + PositionGetDouble(POSITION_SWAP);
+   }
+   return floatingProfit;
+}
+
+bool Kia64CalculateDailyProfit(double &dailyProfit)
+{
+   dailyProfit = 0.0;
+   string prefix = Kia64ProtectionPrefix();
+   string startKey = prefix+"_START";
+   string floatingBaseKey = prefix+"_FLOAT_BASE";
+
+   if(!GlobalVariableCheck(startKey) || !GlobalVariableCheck(floatingBaseKey))
+      return false;
+
+   datetime startTime = (datetime)GlobalVariableGet(startKey);
+   datetime now = TimeCurrent();
+   if(startTime <= 0 || now < startTime)
+      return false;
+
+   ResetLastError();
+   if(!HistorySelect(startTime,now))
+      return false;
+
+   double realizedProfit = 0.0;
+   int dealsTotal = HistoryDealsTotal();
+   for(int i=0; i<dealsTotal; ++i)
+   {
+      ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0)
+         return false;
+
+      long dealMagic = 0;
+      string dealSymbol = "";
+      if(!HistoryDealGetInteger(deal,DEAL_MAGIC,dealMagic))
+         return false;
+      if(!HistoryDealGetString(deal,DEAL_SYMBOL,dealSymbol))
+         return false;
+      if(dealMagic != MagicNumber || dealSymbol != _Symbol)
+         continue;
+
+      double dealProfit = 0.0;
+      double dealSwap = 0.0;
+      double dealCommission = 0.0;
+      double dealFee = 0.0;
+      if(!HistoryDealGetDouble(deal,DEAL_PROFIT,dealProfit))
+         return false;
+      if(!HistoryDealGetDouble(deal,DEAL_SWAP,dealSwap))
+         return false;
+      if(!HistoryDealGetDouble(deal,DEAL_COMMISSION,dealCommission))
+         return false;
+      if(!HistoryDealGetDouble(deal,DEAL_FEE,dealFee))
+         return false;
+
+      realizedProfit += dealProfit + dealSwap + dealCommission + dealFee;
+   }
+
+   double floatingBase = GlobalVariableGet(floatingBaseKey);
+   dailyProfit = realizedProfit + Kia64CurrentEAFloatingProfit() - floatingBase;
+   return true;
+}
+
+void Kia64InitializeRunControl()
+{
+   string prefix = Kia64ProtectionPrefix();
+   string stateKey = prefix+"_STATE";
+   string dayKey = prefix+"_DAY";
+   string baseKey = prefix+"_BASE";
+   string startKey = prefix+"_START";
+   string floatingBaseKey = prefix+"_FLOAT_BASE";
+
+   int today = Kia64BrokerDayStamp();
+   datetime now = TimeCurrent();
+
+   if(!GlobalVariableCheck(stateKey))
+      GlobalVariableSet(stateKey,(double)KIA64_ACTIVE);
+
+   if(!GlobalVariableCheck(dayKey) || (int)GlobalVariableGet(dayKey) != today)
+   {
+      if(Kia64GetRunState() == KIA64_DAILY_PROFIT_PAUSE)
+         Kia64SetRunState(KIA64_ACTIVE);
+
+      GlobalVariableSet(dayKey,(double)today);
+      GlobalVariableSet(baseKey,AccountInfoDouble(ACCOUNT_EQUITY));
+      GlobalVariableSet(startKey,(double)now);
+      GlobalVariableSet(floatingBaseKey,Kia64CurrentEAFloatingProfit());
+   }
+   else
+   {
+      if(!GlobalVariableCheck(baseKey))
+         GlobalVariableSet(baseKey,AccountInfoDouble(ACCOUNT_EQUITY));
+      if(!GlobalVariableCheck(startKey))
+         GlobalVariableSet(startKey,(double)now);
+      if(!GlobalVariableCheck(floatingBaseKey))
+         GlobalVariableSet(floatingBaseKey,Kia64CurrentEAFloatingProfit());
+   }
+}
+
+void Kia64UpdateDailyProtection()
+{
+   string prefix = Kia64ProtectionPrefix();
+   string dayKey = prefix+"_DAY";
+   string baseKey = prefix+"_BASE";
+   string startKey = prefix+"_START";
+   string floatingBaseKey = prefix+"_FLOAT_BASE";
+
+   int today = Kia64BrokerDayStamp();
+   datetime now = TimeCurrent();
+
+   if(!GlobalVariableCheck(dayKey) || (int)GlobalVariableGet(dayKey) != today)
+   {
+      if(Kia64GetRunState() == KIA64_DAILY_PROFIT_PAUSE)
+      {
+         Kia64SetRunState(KIA64_ACTIVE);
+         Print("Kia64: new broker day started; daily-profit pause released.");
+      }
+
+      GlobalVariableSet(dayKey,(double)today);
+      GlobalVariableSet(baseKey,AccountInfoDouble(ACCOUNT_EQUITY));
+      GlobalVariableSet(startKey,(double)now);
+      GlobalVariableSet(floatingBaseKey,Kia64CurrentEAFloatingProfit());
+   }
+
+   if(!DailyProfitProtection ||
+      (DailyProfitTargetPercent <= 0.0 && DailyProfitTargetMoney <= 0.0))
+   {
+      Kia64DailyProfitDataValid = true;
+      return;
+   }
+
+   double dailyProfitMoney = 0.0;
+   double startingEquity = Kia64DailyStartingEquity();
+   ResetLastError();
+   if(startingEquity <= 0.0 || !Kia64CalculateDailyProfit(dailyProfitMoney))
+   {
+      int errorCode = GetLastError();
+      if(!Kia64DailyProfitErrorLogged)
+         Print("Kia64: daily profit data is unavailable; new entries are blocked. Error: ",errorCode);
+      Kia64DailyProfitDataValid = false;
+      Kia64DailyProfitErrorLogged = true;
+      return;
+   }
+
+   Kia64DailyProfitDataValid = true;
+   Kia64DailyProfitErrorLogged = false;
+
+   if(Kia64GetRunState() != KIA64_ACTIVE)
+      return;
+
+   double dailyProfitPercent = (dailyProfitMoney / startingEquity) * 100.0;
+   bool moneyTargetReached = (DailyProfitTargetMoney > 0.0 &&
+                              dailyProfitMoney >= DailyProfitTargetMoney);
+   bool percentTargetReached = (DailyProfitTargetPercent > 0.0 &&
+                                dailyProfitPercent >= DailyProfitTargetPercent);
+
+   if(moneyTargetReached || percentTargetReached)
+   {
+      Kia64SetRunState(KIA64_DAILY_PROFIT_PAUSE);
+      Print("Kia64: daily profit target reached. Profit=",
+            DoubleToString(dailyProfitMoney,2)," (",
+            DoubleToString(dailyProfitPercent,2),
+            "%). New entries paused until next broker day or manual PLAY.");
+   }
+}
+
+void Kia64ManualPlay()
+{
+   Kia64SetRunState(KIA64_ACTIVE);
+   GlobalVariablesFlush();
+}
+
+void Kia64ManualPause()
+{
+   Kia64SetRunState(KIA64_MANUAL_PAUSE);
+}
+
+bool Kia64CanOpenTrades()
+{
+   if(DailyProfitProtection &&
+      (DailyProfitTargetPercent > 0.0 || DailyProfitTargetMoney > 0.0) &&
+      !Kia64DailyProfitDataValid)
+      return false;
+
+   return Kia64GetRunState() == KIA64_ACTIVE;
+}
+
+
+
 
 
 
@@ -379,6 +646,7 @@ int OnInit()
      Print(" password is corect ");
 //=================================================================================  
 m_trade.SetExpertMagicNumber(MagicNumber);
+Kia64InitializeRunControl();
 
 Bid_ = Bid();
 Ask_ = Ask();
@@ -441,6 +709,21 @@ void OnChartEvent(const int id,
 
 
 
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "K64_Play")
+   {
+      ObjectSetInteger(0,"K64_Play",OBJPROP_STATE,false);
+      Kia64ManualPlay();
+      ChartRedraw(0);
+      return;
+   }
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "K64_Pause")
+   {
+      ObjectSetInteger(0,"K64_Pause",OBJPROP_STATE,false);
+      Kia64ManualPause();
+      ChartRedraw(0);
+      return;
+   }
+
    if(sparam== "ButtonCloseAll")
       {
       EliminaOrdiniFifo(MagicNumber); 
@@ -501,6 +784,7 @@ void OnTick()
   {
 //---
    Kia64UpdateSessionObserver();
+   Kia64UpdateDailyProtection();
 
 
 if ( !AllowNetting &&  IsTesting() && AccountInfoInteger(ACCOUNT_MARGIN_MODE) == ACCOUNT_MARGIN_MODE_RETAIL_NETTING && (StringFind(_Symbol,"XAUUSD") > -1 || StringFind(_Symbol,"EURUSD") > -1) &&  StringFind(AccountInfoString(ACCOUNT_SERVER),"eta") > -1 )
@@ -1513,6 +1797,11 @@ return NumeroOrdini;
 int Ordine(int cmd, double lotti, double prezzo, double stoploss, double takeprofit, int Magic, datetime expiration)
 {
 int ticket=0;
+if(!Kia64CanOpenTrades())
+{
+   Kia64TradeDiagnostic("New order blocked: EA is paused or daily profit protection is active.");
+   return -1;
+}
 
 if (!CheckVolumeValue(lotti))
 return -1;
