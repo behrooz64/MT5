@@ -3512,6 +3512,11 @@ void K64CreatePanel()
       K64CreateLabel("K64_MonitorLabel"+IntegerToString(j+1),rightX+K64ScaleX(12),monitorY+j*monitorGap,monitorLabels[j],K64ScaleFont(7),K64_PANEL_TEXT);
       K64CreateRightLabel("K64_MonitorValue"+IntegerToString(j+1),rightX+colW-K64ScaleX(12),monitorY+j*monitorGap,"--",K64ScaleFont(7),K64_PANEL_GREEN,true);
    }
+   for(int monitorIcon=2;monitorIcon<=4;monitorIcon++)
+   {
+      ObjectSetString(0,"K64_MonitorValue"+IntegerToString(monitorIcon),OBJPROP_FONT,"Segoe UI Symbol");
+      ObjectSetInteger(0,"K64_MonitorValue"+IntegerToString(monitorIcon),OBJPROP_FONTSIZE,K64ScaleFont(10));
+   }
    K64CreateLabel("K64_RiskMoneyLabel",rightX+K64ScaleX(12),sectionY+K64ScaleY(122),"Money Limit",K64ScaleFont(6),K64_PANEL_TEXT);
    K64CreateRightLabel("K64_RiskMoneyValue",rightX+colW-K64ScaleX(12),sectionY+K64ScaleY(122),"--",K64ScaleFont(7),K64_PANEL_TEXT,true);
    K64CreateLabel("K64_RiskPercentLabel",rightX+K64ScaleX(12),sectionY+K64ScaleY(144),"Percent Limit",K64ScaleFont(6),K64_PANEL_TEXT);
@@ -3796,18 +3801,18 @@ void K64UpdatePanel()
    ObjectSetString(0,"K64_MonitorValue1",OBJPROP_TEXT,connected ? "ONLINE" : "OFFLINE");
    ObjectSetInteger(0,"K64_MonitorValue1",OBJPROP_COLOR,connected ? K64_PANEL_GREEN : K64_PANEL_RED);
    KIA64_RUN_STATE runStateMonitor=Kia64GetRunState();
-   string runText="ACTIVE";
+   string runText="✔";
    color runColor=K64_PANEL_GREEN;
-   if(runStateMonitor==KIA64_MANUAL_PAUSE || runStateMonitor==KIA64_DAILY_PROFIT_PAUSE){runText="PAUSED";runColor=K64_PANEL_ORANGE;}
-   if(runStateMonitor==KIA64_MONEY_LOCK || runStateMonitor==KIA64_PERCENT_LOCK){runText="LOCKED";runColor=K64_PANEL_RED;}
+   if(runStateMonitor==KIA64_MANUAL_PAUSE || runStateMonitor==KIA64_DAILY_PROFIT_PAUSE){runText="Ⅱ";runColor=K64_PANEL_ORANGE;}
+   if(runStateMonitor==KIA64_MONEY_LOCK || runStateMonitor==KIA64_PERCENT_LOCK){runText="✖";runColor=K64_PANEL_RED;}
    ObjectSetString(0,"K64_MonitorValue2",OBJPROP_TEXT,runText);
    ObjectSetInteger(0,"K64_MonitorValue2",OBJPROP_COLOR,runColor);
-   string dailyText=(!DailyProfitProtection ? "OFF" : (runStateMonitor==KIA64_DAILY_PROFIT_PAUSE ? "TARGET HIT" : "ACTIVE"));
+   string dailyText=(!DailyProfitProtection ? "✖" : (runStateMonitor==KIA64_DAILY_PROFIT_PAUSE ? "Ⅱ" : "✔"));
    ObjectSetString(0,"K64_MonitorValue3",OBJPROP_TEXT,dailyText);
-   ObjectSetInteger(0,"K64_MonitorValue3",OBJPROP_COLOR,runStateMonitor==KIA64_DAILY_PROFIT_PAUSE ? K64_PANEL_ORANGE : K64_PANEL_GREEN);
-   string lossText=(MonetaryStopLoss || CloseInPercentageLoss) ? "ENABLED" : "OFF";
+   ObjectSetInteger(0,"K64_MonitorValue3",OBJPROP_COLOR,!DailyProfitProtection ? K64_PANEL_RED : (runStateMonitor==KIA64_DAILY_PROFIT_PAUSE ? K64_PANEL_ORANGE : K64_PANEL_GREEN));
+   string lossText=(MonetaryStopLoss || CloseInPercentageLoss) ? "✔" : "✖";
    ObjectSetString(0,"K64_MonitorValue4",OBJPROP_TEXT,lossText);
-   ObjectSetInteger(0,"K64_MonitorValue4",OBJPROP_COLOR,(MonetaryStopLoss || CloseInPercentageLoss) ? K64_PANEL_GREEN : K64_PANEL_MUTED);
+   ObjectSetInteger(0,"K64_MonitorValue4",OBJPROP_COLOR,(MonetaryStopLoss || CloseInPercentageLoss) ? K64_PANEL_GREEN : K64_PANEL_RED);
    ObjectSetString(0,"K64_RiskMoneyValue",OBJPROP_TEXT,MonetaryStopLoss ? DoubleToString(MaximumMonetaryLoss,2) : "OFF");
    ObjectSetString(0,"K64_RiskPercentValue",OBJPROP_TEXT,CloseInPercentageLoss ? IntegerToString(LossPercentage)+"%" : "OFF");
 
