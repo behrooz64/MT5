@@ -275,15 +275,15 @@ enum ClosureModality
 
 
 string MonetaryLoss = "Monetary Loss Settings";//Monetary Loss  // in
-input bool MonetaryStopLoss = false;//Enable Monetary Stop Loss     
+input bool MonetaryStopLoss = true;//Enable Monetary Stop Loss     
 input bool EveryMicrolot = false;//If true, Multiply Monetary Stop Loss Amount*Start Lot size*100   
-input bool StopTradingWhenHit = false;//Stop EA after Monetary loss              
-input int MaximumMonetaryLoss = 3000;//Monetary Stop Loss Amount (expressed in the account currency)   
+input bool StopTradingWhenHit = true;//Stop EA after Monetary loss              
+input int MaximumMonetaryLoss = 35;//Monetary Stop Loss Amount (expressed in the account currency)   
 
 string PercentageLoss = "Percentage Loss Settings";//Percentage Loss // in
-input bool CloseInPercentageLoss = false;//Enable Close In Percentage Loss   
+input bool CloseInPercentageLoss = true;//Enable Close In Percentage Loss   
 input bool StopTradingAfterPercentageLoss = false;//Stop EA After Percentage Loss  
-input int LossPercentage = 30;//Loss Amount in Percentage
+input int LossPercentage = 25;//Loss Amount in Percentage
 
 string DailyProfitProtectionSettings = "DAILY PROFIT PROTECTION";
 input bool DailyProfitProtection = true; // Enable daily profit protection
