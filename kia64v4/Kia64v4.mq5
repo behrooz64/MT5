@@ -3296,7 +3296,8 @@ bool HLineMove(const long   chart_ID=0,   // chart's ID
 
 
 
-color K64_PANEL_PURPLE=C'187,131,245';
+color K64_PANEL_AQUA=clrAqua;
+color K64_PANEL_ACCENT=clrDarkOrange;
 color K64_PANEL_BG=C'16,13,24';
 color K64_PANEL_CARD=C'10,8,16';
 color K64_PANEL_BORDER=C'48,38,63';
@@ -3409,7 +3410,7 @@ void K64CreatePanel()
    K64PanelScaleY=(660.0/412.0)*K64PanelZoom;
    K64CreateRect("K64_Main",px,py,pw,ph,K64_PANEL_BG,K64_PANEL_BORDER);
 
-   K64CreateLabel("K64_Brand",px+K64ScaleX(20),py+K64ScaleY(20),"KIA64",K64ScaleFont(10),K64_PANEL_PURPLE,true);
+   K64CreateLabel("K64_Brand",px+K64ScaleX(20),py+K64ScaleY(20),"KIA64",K64ScaleFont(10),K64_PANEL_AQUA,true);
    ObjectSetString(0,"K64_Brand",OBJPROP_FONT,"Segoe UI Black");
    K64CreateButton("K64_ZoomIn",px+K64ScaleX(300),py+K64ScaleY(13),K64ScaleX(24),K64ScaleY(20),"+",K64_PANEL_TEXT,C'48,43,62',C'104,88,133',K64ScaleFont(8));
    K64CreateButton("K64_ZoomOut",px+K64ScaleX(330),py+K64ScaleY(13),K64ScaleX(24),K64ScaleY(20),"-",K64_PANEL_TEXT,C'48,43,62',C'104,88,133',K64ScaleFont(8));
@@ -3437,7 +3438,7 @@ void K64CreatePanel()
    int sectionY=colY+K64ScaleY(10),colW=K64ScaleX(194);
    int leftX=px+K64ScaleX(20),rightX=px+K64ScaleX(226),sectionH=K64ScaleY(190);
    K64CreateRect("K64_PerformanceCard",leftX,sectionY,colW,sectionH,K64_PANEL_CARD,K64_PANEL_BORDER);
-   K64CreateLabel("K64_PerformanceTitle",leftX+K64ScaleX(12),sectionY+K64ScaleY(10),"EA LIVE PERFORMANCE",K64ScaleFont(8),K64_PANEL_PURPLE,true);
+   K64CreateLabel("K64_PerformanceTitle",leftX+K64ScaleX(12),sectionY+K64ScaleY(10),"EA LIVE PERFORMANCE",K64ScaleFont(8),K64_PANEL_AQUA,true);
    int rowY=sectionY+K64ScaleY(34),rowGap=K64ScaleY(18);
    string leftLabels[7]={"Account P/L","Floating P/L","Symbol P/L","Magic P/L","Chart P/L","Drawdown","Start Lot"};
    string leftNames[7]={"K64_PerfValue1","K64_PerfValue2","K64_PerfValue3","K64_PerfValue4","K64_PerfValue5","K64_PerfValue6","K64_PerfValue7"};
@@ -3448,7 +3449,7 @@ void K64CreatePanel()
    }
 
    K64CreateRect("K64_MonitorCard",rightX,sectionY,colW,sectionH,K64_PANEL_CARD,K64_PANEL_BORDER);
-   K64CreateLabel("K64_MonitorTitle",rightX+K64ScaleX(12),sectionY+K64ScaleY(10),"SYSTEM MONITOR",K64ScaleFont(8),K64_PANEL_PURPLE,true);
+   K64CreateLabel("K64_MonitorTitle",rightX+K64ScaleX(12),sectionY+K64ScaleY(10),"SYSTEM MONITOR",K64ScaleFont(8),K64_PANEL_AQUA,true);
    int monitorY=sectionY+K64ScaleY(34),monitorGap=K64ScaleY(22);
    string monitorLabels[4]={"Connection","Run State","Daily Protection","Loss Protection"};
    for(int j=0;j<4;j++)
@@ -3465,7 +3466,7 @@ void K64CreatePanel()
    int accountX=px+K64ScaleX(20),accountY=sectionY+sectionH+K64ScaleY(10);
    int accountW=K64ScaleX(400),accountH=K64ScaleY(92);
    K64CreateRect("K64_ProtectionCard",accountX,accountY,accountW,accountH,K64_PANEL_CARD,K64_PANEL_BORDER);
-   K64CreateLabel("K64_ProtectionTitle",accountX+K64ScaleX(12),accountY+K64ScaleY(7),"DAILY PROFIT PROTECTION",K64ScaleFont(7),K64_PANEL_PURPLE,true);
+   K64CreateLabel("K64_ProtectionTitle",accountX+K64ScaleX(12),accountY+K64ScaleY(7),"DAILY PROFIT PROTECTION",K64ScaleFont(7),K64_PANEL_ACCENT,true);
    K64CreateLabel("K64_ProtectionTargetLabel",accountX+K64ScaleX(12),accountY+K64ScaleY(30),"Configured target",K64ScaleFont(6),K64_PANEL_MUTED);
    K64CreateLabel("K64_ProtectionTargetValue",accountX+K64ScaleX(12),accountY+K64ScaleY(43),"--",K64ScaleFont(8),K64_PANEL_TEXT,true);
    K64CreateLabel("K64_ProtectionStatusLabel",accountX+K64ScaleX(145),accountY+K64ScaleY(30),"Protection state",K64ScaleFont(6),K64_PANEL_MUTED);
