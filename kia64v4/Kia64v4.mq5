@@ -920,8 +920,8 @@ if (!OnlyEndOfBar || (EndBar < iTime(_Symbol,OrderTimeframe,0)) )
 
       if ( TakeTargetOnAtr )
       {
-      TakeTargetBuy = NormalizeDouble(TakeTargetAtrMultiplier*iatr(_Symbol,TakeTargetAtrTimeframe,TakeTargetAtrPeriod,1),_Digits);
-      TakeTargetSell = NormalizeDouble(TakeTargetAtrMultiplier*iatr(_Symbol,TakeTargetAtrTimeframe,TakeTargetAtrPeriod,1),_Digits);
+      TakeTargetBuy = (int)NormalizeDouble(TakeTargetAtrMultiplier*iatr(_Symbol,TakeTargetAtrTimeframe,TakeTargetAtrPeriod,1),_Digits);
+      TakeTargetSell = (int)NormalizeDouble(TakeTargetAtrMultiplier*iatr(_Symbol,TakeTargetAtrTimeframe,TakeTargetAtrPeriod,1),_Digits);
       }
       
       
@@ -3390,10 +3390,10 @@ bool K64CreateButton(string n,int x,int y,int w,int h,string t,color tc,color bg
 void K64UpdatePanelHeader()
 {
    if(ObjectFind(0,"K64_Status")<0) return;
-   KIA64_RUN_STATE st=Kia64GetRunState();
+   KIA64_RUN_STATE runStateHeader=Kia64GetRunState();
    string txt="● ACTIVE"; color c=K64_PANEL_GREEN;
-   if(st==KIA64_MONEY_LOCK || st==KIA64_PERCENT_LOCK){txt="● LOCKED";c=K64_PANEL_RED;}
-   else if(st==KIA64_MANUAL_PAUSE || st==KIA64_DAILY_PROFIT_PAUSE){txt="Ⅱ PAUSED";c=K64_PANEL_ORANGE;}
+   if(runStateHeader==KIA64_MONEY_LOCK || runStateHeader==KIA64_PERCENT_LOCK){txt="● LOCKED";c=K64_PANEL_RED;}
+   else if(runStateHeader==KIA64_MANUAL_PAUSE || runStateHeader==KIA64_DAILY_PROFIT_PAUSE){txt="Ⅱ PAUSED";c=K64_PANEL_ORANGE;}
    else if(!Kia64DailyProfitDataValid && DailyProfitProtection &&
            (DailyProfitTargetPercent>0.0 || DailyProfitTargetMoney>0.0)){txt="● DATA ERROR";c=K64_PANEL_RED;}
    ObjectSetString(0,"K64_Status",OBJPROP_TEXT,txt);
@@ -3515,14 +3515,14 @@ void K64UpdatePanel()
    bool connected=(bool)TerminalInfoInteger(TERMINAL_CONNECTED);
    ObjectSetString(0,"K64_MonitorValue1",OBJPROP_TEXT,connected ? "ONLINE" : "OFFLINE");
    ObjectSetInteger(0,"K64_MonitorValue1",OBJPROP_COLOR,connected ? K64_PANEL_GREEN : K64_PANEL_RED);
-   KIA64_RUN_STATE st=Kia64GetRunState();
+   KIA64_RUN_STATE runStateMonitor=Kia64GetRunState();
    string runText="ACTIVE";
    color runColor=K64_PANEL_GREEN;
-   if(st==KIA64_MANUAL_PAUSE || st==KIA64_DAILY_PROFIT_PAUSE){runText="PAUSED";runColor=K64_PANEL_ORANGE;}
-   if(st==KIA64_MONEY_LOCK || st==KIA64_PERCENT_LOCK){runText="LOCKED";runColor=K64_PANEL_RED;}
+   if(runStateMonitor==KIA64_MANUAL_PAUSE || runStateMonitor==KIA64_DAILY_PROFIT_PAUSE){runText="PAUSED";runColor=K64_PANEL_ORANGE;}
+   if(runStateMonitor==KIA64_MONEY_LOCK || runStateMonitor==KIA64_PERCENT_LOCK){runText="LOCKED";runColor=K64_PANEL_RED;}
    ObjectSetString(0,"K64_MonitorValue2",OBJPROP_TEXT,runText);
    ObjectSetInteger(0,"K64_MonitorValue2",OBJPROP_COLOR,runColor);
-   string dailyText=(!DailyProfitProtection ? "OFF" : (st==KIA64_DAILY_PROFIT_PAUSE ? "TARGET HIT" : "ACTIVE"));
+   string dailyText=(!DailyProfitProtection ? "OFF" : (runStateMonitor==KIA64_DAILY_PROFIT_PAUSE ? "TARGET HIT" : "ACTIVE"));
    ObjectSetString(0,"K64_MonitorValue3",OBJPROP_TEXT,dailyText);
    ObjectSetInteger(0,"K64_MonitorValue3",OBJPROP_COLOR,st==KIA64_DAILY_PROFIT_PAUSE ? K64_PANEL_ORANGE : K64_PANEL_GREEN);
    string lossText=(MonetaryStopLoss || CloseInPercentageLoss) ? "ENABLED" : "OFF";
@@ -4354,7 +4354,7 @@ bool RectLabelDelete(const long   chart_ID=0,       // chart's ID
 
 bool IsTesting()
 {
-return MQLInfoInteger(MQL_TESTER);
+return (MQLInfoInteger(MQL_TESTER) != 0);
 }
 
 
@@ -4390,14 +4390,14 @@ string OrderSymbol()
 {
 return PositionGetString(POSITION_SYMBOL);
 }
-ulong OrderMagicNumber()
+long OrderMagicNumber()
 {
 return PositionGetInteger(POSITION_MAGIC);
 }
 
 datetime OrderOpenTime()
 {
-return PositionGetInteger(POSITION_TIME);
+return (datetime)PositionGetInteger(POSITION_TIME);
 }
 
 double OrderLots()
@@ -4418,7 +4418,7 @@ return PositionGetDouble(POSITION_PRICE_OPEN);
 
 int OrderType()
 {
-return PositionGetInteger(POSITION_TYPE);
+return (int)PositionGetInteger(POSITION_TYPE);
 }
 
 ulong OrderTicket()
@@ -4433,7 +4433,19 @@ return PositionGetDouble(POSITION_SWAP);
 }
 double OrderCommission()
 {
-return PositionGetDouble(POSITION_COMMISSION); 
+   // POSITION_COMMISSION is deprecated; sum commissions from all deals linked to this position.
+   ulong positionIdentifier=(ulong)PositionGetInteger(POSITION_IDENTIFIER);
+   if(positionIdentifier==0 || !HistorySelectByPosition(positionIdentifier))
+      return 0.0;
+
+   double totalCommission=0.0;
+   for(int i=0; i<HistoryDealsTotal(); i++)
+   {
+      ulong dealTicket=HistoryDealGetTicket(i);
+      if(dealTicket>0)
+         totalCommission+=HistoryDealGetDouble(dealTicket,DEAL_COMMISSION);
+   }
+   return totalCommission;
 }
 
 
@@ -4465,12 +4477,12 @@ return (StrutturaTemporale.day_of_week);
 
 bool IsTradeAllowed()
 {
-return MQLInfoInteger(MQL_TRADE_ALLOWED);
+return (MQLInfoInteger(MQL_TRADE_ALLOWED) != 0);
 }
 
 bool IsVisualMode()
 {
-return MQLInfoInteger(MQL_VISUAL_MODE);
+return (MQLInfoInteger(MQL_VISUAL_MODE) != 0);
 }
 
 
