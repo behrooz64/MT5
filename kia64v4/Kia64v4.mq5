@@ -713,7 +713,12 @@ void OnChartEvent(const int id,
    {
       string buttonNames[5]={"K64_ZoomIn","K64_ZoomOut","K64_Play","K64_Pause","K64_CloseAll"};
       color normalColors[5]={C'48,43,62',C'48,43,62',C'34,112,78',C'151,105,35',C'142,47,62'};
-      color hoverColors[5]={C'91,70,135',C'91,70,135',C'45,145,100',C'185,130,45',C'180,65,80'};
+      color hoverColors[5]={K64_PANEL_GREEN,K64_PANEL_GREEN,C'45,145,100',C'185,130,45',C'180,65,80'};
+      color zoomAccent=K64_PANEL_GREEN;
+      if(ObjectFind(0,"K64_Status")>=0)
+         zoomAccent=(color)ObjectGetInteger(0,"K64_Status",OBJPROP_COLOR);
+      hoverColors[0]=zoomAccent;
+      hoverColors[1]=zoomAccent;
       int mouseX=(int)lparam;
       int mouseY=(int)dparam;
       bool changed=false;
@@ -726,10 +731,12 @@ void OnChartEvent(const int id,
          int bh=(int)ObjectGetInteger(0,buttonNames[i],OBJPROP_YSIZE);
          bool over=(mouseX>=bx && mouseX<bx+bw && mouseY>=by && mouseY<by+bh);
          color buttonColor=over ? hoverColors[i] : normalColors[i];
-         if((color)ObjectGetInteger(0,buttonNames[i],OBJPROP_BGCOLOR)!=buttonColor)
+         color borderColor=(i<2 ? zoomAccent : buttonColor);
+         if((color)ObjectGetInteger(0,buttonNames[i],OBJPROP_BGCOLOR)!=buttonColor ||
+            (color)ObjectGetInteger(0,buttonNames[i],OBJPROP_BORDER_COLOR)!=borderColor)
          {
             ObjectSetInteger(0,buttonNames[i],OBJPROP_BGCOLOR,buttonColor);
-            ObjectSetInteger(0,buttonNames[i],OBJPROP_BORDER_COLOR,buttonColor);
+            ObjectSetInteger(0,buttonNames[i],OBJPROP_BORDER_COLOR,borderColor);
             changed=true;
          }
       }
@@ -3379,6 +3386,43 @@ bool K64CreateButton(string n,int x,int y,int w,int h,string t,color tc,color bg
    ObjectSetInteger(0,n,OBJPROP_ZORDER,100);
    return true;
 }
+// Center the two square zoom controls in the live gap between KIA64 and the status label.
+void K64PositionHeaderZoomControls()
+{
+   if(ObjectFind(0,"K64_Brand")<0 || ObjectFind(0,"K64_Status")<0 ||
+      ObjectFind(0,"K64_ZoomIn")<0 || ObjectFind(0,"K64_ZoomOut")<0)
+      return;
+
+   int brandLeft=(int)ObjectGetInteger(0,"K64_Brand",OBJPROP_XDISTANCE);
+   int brandWidth=(int)ObjectGetInteger(0,"K64_Brand",OBJPROP_XSIZE);
+   int statusRight=(int)ObjectGetInteger(0,"K64_Status",OBJPROP_XDISTANCE);
+   int statusWidth=(int)ObjectGetInteger(0,"K64_Status",OBJPROP_XSIZE);
+   int gapLeft=brandLeft+brandWidth;
+   int gapRight=statusRight-statusWidth;
+   int gapWidth=gapRight-gapLeft;
+
+   int buttonSize=(int)ObjectGetInteger(0,"K64_ZoomIn",OBJPROP_XSIZE);
+   int buttonGap=K64ScaleX(8);
+   int controlsWidth=(2*buttonSize)+buttonGap;
+   if(gapWidth<controlsWidth)
+      return;
+
+   int controlsLeft=gapLeft+(gapWidth-controlsWidth)/2;
+   ObjectSetInteger(0,"K64_ZoomIn",OBJPROP_XDISTANCE,controlsLeft);
+   ObjectSetInteger(0,"K64_ZoomOut",OBJPROP_XDISTANCE,controlsLeft+buttonSize+buttonGap);
+
+   int brandTop=(int)ObjectGetInteger(0,"K64_Brand",OBJPROP_YDISTANCE);
+   int brandHeight=(int)ObjectGetInteger(0,"K64_Brand",OBJPROP_YSIZE);
+   int statusTop=(int)ObjectGetInteger(0,"K64_Status",OBJPROP_YDISTANCE);
+   int statusHeight=(int)ObjectGetInteger(0,"K64_Status",OBJPROP_YSIZE);
+   int brandCenter=brandTop+(brandHeight/2);
+   int statusCenter=statusTop+(statusHeight/2);
+   int headerCenter=(brandCenter+statusCenter)/2;
+   int buttonY=headerCenter-(buttonSize/2);
+   ObjectSetInteger(0,"K64_ZoomIn",OBJPROP_YDISTANCE,buttonY);
+   ObjectSetInteger(0,"K64_ZoomOut",OBJPROP_YDISTANCE,buttonY);
+}
+
 void K64UpdatePanelHeader()
 {
    if(ObjectFind(0,"K64_Status")<0) return;
@@ -3390,6 +3434,12 @@ void K64UpdatePanelHeader()
            (DailyProfitTargetPercent>0.0 || DailyProfitTargetMoney>0.0)){txt="● DATA ERROR";c=K64_PANEL_RED;}
    ObjectSetString(0,"K64_Status",OBJPROP_TEXT,txt);
    ObjectSetInteger(0,"K64_Status",OBJPROP_COLOR,c);
+   if(ObjectFind(0,"K64_ZoomIn")>=0 && ObjectFind(0,"K64_ZoomOut")>=0)
+   {
+      ObjectSetInteger(0,"K64_ZoomIn",OBJPROP_BORDER_COLOR,c);
+      ObjectSetInteger(0,"K64_ZoomOut",OBJPROP_BORDER_COLOR,c);
+   }
+   K64PositionHeaderZoomControls();
 }
 void K64CreatePanel()
 {
@@ -3404,9 +3454,12 @@ void K64CreatePanel()
 
    K64CreateLabel("K64_Brand",px+K64ScaleX(20),py+K64ScaleY(20),"KIA64",K64ScaleFont(10),K64_PANEL_AQUA,true);
    ObjectSetString(0,"K64_Brand",OBJPROP_FONT,"Segoe UI Black");
-   K64CreateButton("K64_ZoomIn",px+K64ScaleX(300),py+K64ScaleY(13),K64ScaleX(24),K64ScaleY(20),"+",K64_PANEL_TEXT,C'48,43,62',C'104,88,133',K64ScaleFont(8));
-   K64CreateButton("K64_ZoomOut",px+K64ScaleX(330),py+K64ScaleY(13),K64ScaleX(24),K64ScaleY(20),"-",K64_PANEL_TEXT,C'48,43,62',C'104,88,133',K64ScaleFont(8));
-   K64CreateRightLabel("K64_Status",px+K64ScaleX(420),py+K64ScaleY(20),"● ACTIVE",K64ScaleFont(8),K64_PANEL_GREEN,true);
+   int zoomButtonSize=MathMax(1,K64ScaleX(24));
+    K64CreateButton("K64_ZoomIn",px+K64ScaleX(300),py+K64ScaleY(13),zoomButtonSize,zoomButtonSize,"+",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_GREEN,K64ScaleFont(8));
+    K64CreateButton("K64_ZoomOut",px+K64ScaleX(330),py+K64ScaleY(13),zoomButtonSize,zoomButtonSize,"-",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_GREEN,K64ScaleFont(8));
+    K64CreateRightLabel("K64_Status",px+K64ScaleX(420),py+K64ScaleY(20),"● ACTIVE",K64ScaleFont(8),K64_PANEL_GREEN,true);
+    ChartRedraw(0);
+    K64PositionHeaderZoomControls();
    K64CreateLabel("K64_Subtitle",px+K64ScaleX(20),py+K64ScaleY(43),"ALGORITHMIC TRADING SYSTEM",K64ScaleFont(7),K64_PANEL_MUTED);
    K64CreateRect("K64_Div1",px+K64ScaleX(20),py+K64ScaleY(58),K64ScaleX(400),MathMax(1,K64ScaleY(1)),K64_PANEL_BORDER,K64_PANEL_BORDER);
    K64CreateLabel("K64_SymbolCaption",px+K64ScaleX(20),py+K64ScaleY(68),"SYMBOL / TF",K64ScaleFont(7),K64_PANEL_MUTED);
