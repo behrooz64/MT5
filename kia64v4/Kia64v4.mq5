@@ -491,6 +491,7 @@ void Kia64InitializeRunControl()
    string baseKey = prefix+"_BASE";
    string startKey = prefix+"_START";
    string floatingBaseKey = prefix+"_FLOAT_BASE";
+   string overrideKey = prefix+"_OVERRIDE";
 
    int today = Kia64BrokerDayStamp();
    datetime now = TimeCurrent();
@@ -507,6 +508,7 @@ void Kia64InitializeRunControl()
       GlobalVariableSet(baseKey,AccountInfoDouble(ACCOUNT_EQUITY));
       GlobalVariableSet(startKey,(double)now);
       GlobalVariableSet(floatingBaseKey,Kia64CurrentEAFloatingProfit());
+      GlobalVariableSet(overrideKey,0.0);
    }
    else
    {
@@ -570,6 +572,11 @@ void Kia64UpdateDailyProtection()
    if(Kia64GetRunState() != KIA64_ACTIVE)
       return;
 
+   string overrideKey = prefix+"_OVERRIDE";
+   if(GlobalVariableCheck(overrideKey) &&
+      (int)GlobalVariableGet(overrideKey) == today)
+      return;
+
    double dailyProfitPercent = (dailyProfitMoney / startingEquity) * 100.0;
    bool moneyTargetReached = (DailyProfitTargetMoney > 0.0 &&
                               dailyProfitMoney >= DailyProfitTargetMoney);
@@ -589,6 +596,7 @@ void Kia64UpdateDailyProtection()
 void Kia64ManualPlay()
 {
    Kia64SetRunState(KIA64_ACTIVE);
+   GlobalVariableSet(Kia64ProtectionPrefix()+"_OVERRIDE",(double)Kia64BrokerDayStamp());
    GlobalVariablesFlush();
 }
 
