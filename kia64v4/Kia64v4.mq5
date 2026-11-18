@@ -719,13 +719,13 @@ void OnChartEvent(const int id,
   {
    if(id == CHARTEVENT_MOUSE_MOVE)
    {
-      string buttonNames[4]={"K64_ZoomIn","K64_ZoomOut","K64_Play","K64_Pause"};
-      color normalColors[4]={C'48,43,62',C'48,43,62',C'34,112,78',C'151,105,35'};
-      color hoverColors[4]={C'91,70,135',C'91,70,135',C'45,145,100',C'185,130,45'};
+      string buttonNames[5]={"K64_ZoomIn","K64_ZoomOut","K64_Play","K64_Pause","K64_CloseAll"};
+      color normalColors[5]={C'48,43,62',C'48,43,62',C'34,112,78',C'151,105,35',C'142,47,62'};
+      color hoverColors[5]={C'91,70,135',C'91,70,135',C'45,145,100',C'185,130,45',C'180,65,80'};
       int mouseX=(int)lparam;
       int mouseY=(int)dparam;
       bool changed=false;
-      for(int i=0;i<4;i++)
+      for(int i=0;i<5;i++)
       {
          if(ObjectFind(0,buttonNames[i])<0) continue;
          int bx=(int)ObjectGetInteger(0,buttonNames[i],OBJPROP_XDISTANCE);
@@ -777,7 +777,15 @@ void OnChartEvent(const int id,
       ChartRedraw(0);
       return;
    }
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "K64_CloseAll")
+   {
+      ObjectSetInteger(0,"K64_CloseAll",OBJPROP_STATE,false);
+      ChartRedraw(0);
+      NQCloseAllAccountBulk();
+      return;
+   }
 
+   // Legacy chart buttons remain scoped to this EA's MagicNumber.
    if(sparam== "ButtonCloseAll")
       {
       EliminaOrdiniFifo(MagicNumber); 
@@ -3466,9 +3474,10 @@ void K64CreatePanel()
    K64CreateLabel("K64_ProtectionBaseValue",accountX+K64ScaleX(278),accountY+K64ScaleY(43),"--",K64ScaleFont(8),K64_PANEL_TEXT,true);
 
    int buttonY=accountY+accountH+K64ScaleY(10),buttonGap=K64ScaleX(6),buttonH=K64ScaleY(28);
-   int buttonW=(pw-3*buttonGap)/2;
+   int buttonW=(pw-2*buttonGap)/3;
    K64CreateButton("K64_Play",px,buttonY,buttonW,buttonH,"▶ PLAY",C'226,255,239',C'34,112,78',C'34,112,78',K64ScaleFont(8));
    K64CreateButton("K64_Pause",px+buttonW+buttonGap,buttonY,buttonW,buttonH,"Ⅱ PAUSE",C'255,246,224',C'151,105,35',C'151,105,35',K64ScaleFont(8));
+   K64CreateButton("K64_CloseAll",px+2*(buttonW+buttonGap),buttonY,pw-2*(buttonW+buttonGap),buttonH,"CLOSE ALL",C'255,232,236',C'142,47,62',C'142,47,62',K64ScaleFont(8));
    int captionY=buttonY+K64ScaleY(34);
    K64CreateLabel("K64_FooterCaption",px+K64ScaleX(20),captionY,"Live data from Kia64v4",K64ScaleFont(6),K64_PANEL_MUTED);
    K64CreateRightLabel("K64_Footer",px+pw-K64ScaleX(20),captionY,"KIA64 SYSTEM",K64ScaleFont(6),C'74,68,88');
@@ -3546,6 +3555,96 @@ void K64PanelZoomBy(double delta)
    K64CreatePanel();
    K64UpdatePanel();
    ChartRedraw(0);
+}
+
+// Close every open position and delete every pending order on the account,
+// independent of symbol and MagicNumber. Requests are dispatched asynchronously.
+void NQCloseAllAccountBulk()
+{
+   ulong positionTickets[];
+   string positionSymbols[];
+   ulong pendingOrderTickets[];
+   string pendingOrderSymbols[];
+
+   int positionCount=PositionsTotal();
+   ArrayResize(positionTickets,positionCount);
+   ArrayResize(positionSymbols,positionCount);
+   int positionsCaptured=0;
+
+   for(int i=0;i<positionCount;i++)
+   {
+      ulong ticket=PositionGetTicket(i);
+      if(ticket==0) continue;
+      positionTickets[positionsCaptured]=ticket;
+      positionSymbols[positionsCaptured]=PositionGetString(POSITION_SYMBOL);
+      positionsCaptured++;
+   }
+   ArrayResize(positionTickets,positionsCaptured);
+   ArrayResize(positionSymbols,positionsCaptured);
+
+   int orderCount=OrdersTotal();
+   ArrayResize(pendingOrderTickets,orderCount);
+   ArrayResize(pendingOrderSymbols,orderCount);
+   int ordersCaptured=0;
+
+   for(int i=0;i<orderCount;i++)
+   {
+      ulong ticket=OrderGetTicket(i);
+      if(ticket==0) continue;
+      pendingOrderTickets[ordersCaptured]=ticket;
+      pendingOrderSymbols[ordersCaptured]=OrderGetString(ORDER_SYMBOL);
+      ordersCaptured++;
+   }
+   ArrayResize(pendingOrderTickets,ordersCaptured);
+   ArrayResize(pendingOrderSymbols,ordersCaptured);
+
+   CTrade closeAllTrade;
+   closeAllTrade.SetAsyncMode(true);
+   int closeRequestsSent=0;
+   int deleteRequestsSent=0;
+   int requestFailures=0;
+
+   for(int i=0;i<positionsCaptured;i++)
+   {
+      closeAllTrade.SetTypeFillingBySymbol(positionSymbols[i]);
+      ResetLastError();
+      bool sent=closeAllTrade.PositionClose(positionTickets[i]);
+      uint retcode=closeAllTrade.ResultRetcode();
+      if(sent && retcode==TRADE_RETCODE_PLACED)
+         closeRequestsSent++;
+      else
+      {
+         requestFailures++;
+         Print("KIA64 BULK CLOSE: position request failed. Ticket=",
+               positionTickets[i]," Symbol=",positionSymbols[i],
+               " Retcode=",retcode," ",
+               closeAllTrade.ResultRetcodeDescription(),
+               " LastError=",GetLastError());
+      }
+   }
+
+   for(int i=0;i<ordersCaptured;i++)
+   {
+      ResetLastError();
+      bool sent=closeAllTrade.OrderDelete(pendingOrderTickets[i]);
+      uint retcode=closeAllTrade.ResultRetcode();
+      if(sent && retcode==TRADE_RETCODE_PLACED)
+         deleteRequestsSent++;
+      else
+      {
+         requestFailures++;
+         Print("KIA64 BULK CLOSE: pending-order delete failed. Ticket=",
+               pendingOrderTickets[i]," Symbol=",pendingOrderSymbols[i],
+               " Retcode=",retcode," ",
+               closeAllTrade.ResultRetcodeDescription(),
+               " LastError=",GetLastError());
+      }
+   }
+
+   Print("KIA64 BULK CLOSE: requests dispatched. Positions=",
+         closeRequestsSent," PendingOrders=",deleteRequestsSent,
+         " DispatchFailures=",requestFailures,
+         ". Final execution is subject to broker-server confirmation.");
 }
 
 void CommentoInit()
