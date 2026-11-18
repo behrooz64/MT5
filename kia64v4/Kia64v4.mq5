@@ -7,7 +7,7 @@
 #property description "Owner : Kia64 "
 #property link        "https://kia64.ir"
 #property description "Kia64 Academy Presentation"
-input string AllowedBroker = "AMarkets"; // Allowed broker server
+// Broker restriction removed; server is detected automatically at initialization.
 #define EXPIRATION_DATE "2027.01.20"
 #define CORRECT_PASSWORD "Kia64"
 
@@ -628,15 +628,7 @@ int OnInit()
 //---
 //==================================coder robo ===============================
  string broker_name = AccountInfoString(ACCOUNT_SERVER);
-
-    if (broker_name != AllowedBroker)
-    {
-        Print("This Expert only works on the selected broker server: ", AllowedBroker);
-        ExpertRemove();
-        return(INIT_FAILED); 
-    }
-
-    Print("Expert is activated. Brokerage is allowed : ", broker_name);
+    Print("Expert initialized on trading server: ", broker_name);
     
     
     
