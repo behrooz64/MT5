@@ -1406,7 +1406,7 @@ EliminaOrdini(Magic,cmd);
 void EliminaOrdiniFifo(int Magic)
 {
 
-int Ticket[];
+ulong Ticket[];
 ArrayResize(Ticket,PositionsTotal());
 
    for(int i = PositionsTotal()-1; i >= 0; i--)
