@@ -1373,7 +1373,7 @@ for(int i=0;i<5;i++)
 void EliminaOrdiniFifo(int Magic,int cmd)
 {
 
-int Ticket[];
+ulong Ticket[];
 ArrayResize(Ticket,PositionsTotal());
 
    for(int i = PositionsTotal()-1; i >= 0; i--)
@@ -3524,7 +3524,7 @@ void K64UpdatePanel()
    ObjectSetInteger(0,"K64_MonitorValue2",OBJPROP_COLOR,runColor);
    string dailyText=(!DailyProfitProtection ? "OFF" : (runStateMonitor==KIA64_DAILY_PROFIT_PAUSE ? "TARGET HIT" : "ACTIVE"));
    ObjectSetString(0,"K64_MonitorValue3",OBJPROP_TEXT,dailyText);
-   ObjectSetInteger(0,"K64_MonitorValue3",OBJPROP_COLOR,st==KIA64_DAILY_PROFIT_PAUSE ? K64_PANEL_ORANGE : K64_PANEL_GREEN);
+   ObjectSetInteger(0,"K64_MonitorValue3",OBJPROP_COLOR,runStateMonitor==KIA64_DAILY_PROFIT_PAUSE ? K64_PANEL_ORANGE : K64_PANEL_GREEN);
    string lossText=(MonetaryStopLoss || CloseInPercentageLoss) ? "ENABLED" : "OFF";
    ObjectSetString(0,"K64_MonitorValue4",OBJPROP_TEXT,lossText);
    ObjectSetInteger(0,"K64_MonitorValue4",OBJPROP_COLOR,(MonetaryStopLoss || CloseInPercentageLoss) ? K64_PANEL_GREEN : K64_PANEL_MUTED);
