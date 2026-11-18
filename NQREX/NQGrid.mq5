@@ -206,7 +206,7 @@ tipigestione GridManagement = LotsSum;//Grid Management  // in
 
 double CoefficientGridManagement = 1;//Coefficient Grid Management  // in
 
-input int MinDistanzaPiramide = 750;//Min Distance (for the grid orders)    // in
+input int GridStepPoints = 750;// Grid Distance (Points)    // in
 double MinDistanceMultiplier = 1;   //Min Distance Multiplier (multiply Min Distance for each order) // in
 bool OneTradeBarGrid = true;//One Trade Bar Grid (if true, open max one trade for bar)   // in
 
@@ -1943,7 +1943,7 @@ void KiaXAMLogCloseDiagnostic(string reason, string side, double referencePrice,
       DoubleToString(_Point,8),DoubleToString(SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE),8),
       IntegerToString(count),DoubleToString(totalLots,2),DoubleToString(floatingProfit,2),
       AccountInfoString(ACCOUNT_CURRENCY),(OnlyEndOfBar ? "true" : "false"),IntegerToString((int)CloseMode),
-      IntegerToString(TakeTarget),IntegerToString(MinDistanzaPiramide));
+      IntegerToString(TakeTarget),IntegerToString(GridStepPoints));
    FileFlush(h);
    FileClose(h);
 }
@@ -2255,11 +2255,11 @@ void KiaXAMUpdateCycleObserver()
          KiaXAMCycleMaxFloatingProfit = floating;
          KiaXAMCycleMaxFloatingLoss = floating;
          KiaXAMCycleStartTakeTarget = TakeTarget;
-         KiaXAMCycleStartGridPoints = MinDistanzaPiramide;
+         KiaXAMCycleStartGridPoints = GridStepPoints;
          Kia64AppendCsvRow(KIAXAM_CYCLE_LOG_FILE, "CYCLE_STARTED",
             "start_time="+TimeToString(now,TIME_DATE|TIME_SECONDS)+
             "; target_points="+IntegerToString(TakeTarget)+
-            "; grid_distance_points="+IntegerToString(MinDistanzaPiramide)+
+            "; grid_distance_points="+IntegerToString(GridStepPoints)+
             "; positions="+IntegerToString(positions)+
             "; lots="+DoubleToString(lots,2)+
             "; floating_pl="+DoubleToString(floating,2)+
@@ -3150,7 +3150,7 @@ double MinimalDistance = 0;
 if ( MinDistanceOnAtr )
 MinimalDistance = AtrMultiplier*iatr(_Symbol,DistanceAtrTimeframe,DistanceAtrPeriod,1);
 else
-MinimalDistance = MinDistanzaPiramide * _Point;
+MinimalDistance = GridStepPoints * _Point;
 
    for(int i=1;i<NumOrdini;i++)
      {
