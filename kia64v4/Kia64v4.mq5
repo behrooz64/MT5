@@ -719,10 +719,23 @@ void OnChartEvent(const int id,
 
 
 
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "K64_ZoomIn")
+   {
+      ObjectSetInteger(0,"K64_ZoomIn",OBJPROP_STATE,false);
+      K64PanelZoomBy(0.10);
+      return;
+   }
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "K64_ZoomOut")
+   {
+      ObjectSetInteger(0,"K64_ZoomOut",OBJPROP_STATE,false);
+      K64PanelZoomBy(-0.10);
+      return;
+   }
    if(id == CHARTEVENT_OBJECT_CLICK && sparam == "K64_Play")
    {
       ObjectSetInteger(0,"K64_Play",OBJPROP_STATE,false);
       Kia64ManualPlay();
+      K64UpdatePanelHeader();
       ChartRedraw(0);
       return;
    }
@@ -730,6 +743,7 @@ void OnChartEvent(const int id,
    {
       ObjectSetInteger(0,"K64_Pause",OBJPROP_STATE,false);
       Kia64ManualPause();
+      K64UpdatePanelHeader();
       ChartRedraw(0);
       return;
    }
@@ -775,6 +789,7 @@ void OnChartEvent(const int id,
 //+------------------------------------------------------------------+
 void OnDeinit(const int reason)
   {
+   K64DeletePanelObjects();
 ObjectsDeleteAll(0,-1,OBJ_BUTTON);
 ObjectsDeleteAll(0,-1,OBJ_LABEL);
 ObjectsDeleteAll(0,-1,OBJ_EDIT);
@@ -3242,6 +3257,206 @@ bool HLineMove(const long   chart_ID=0,   // chart's ID
 
 
 
+
+color K64_PANEL_PURPLE=C'187,131,245';
+color K64_PANEL_BG=C'16,13,24';
+color K64_PANEL_CARD=C'10,8,16';
+color K64_PANEL_BORDER=C'48,38,63';
+color K64_PANEL_TEXT=C'200,197,208';
+color K64_PANEL_MUTED=C'110,104,125';
+color K64_PANEL_GREEN=C'66,201,138';
+color K64_PANEL_RED=C'227,107,125';
+color K64_PANEL_ORANGE=C'240,160,75';
+color K64_PANEL_BLUE=C'82,118,185';
+double K64PanelZoom=1.0;
+double K64PanelScaleX=1.0;
+double K64PanelScaleY=1.0;
+
+int K64ScaleX(int v){return (int)MathRound((double)v*K64PanelScaleX);}
+int K64ScaleY(int v){return (int)MathRound((double)v*K64PanelScaleY);}
+int K64ScaleFont(int v){return (int)MathMax(6,MathRound((double)v*MathMin(K64PanelScaleX,K64PanelScaleY)));}
+
+void K64DeletePanelObjects()
+{
+   for(int i=ObjectsTotal(0,0,-1)-1;i>=0;i--)
+   {
+      string n=ObjectName(0,i,0,-1);
+      if(StringFind(n,"K64_")==0) ObjectDelete(0,n);
+   }
+}
+bool K64CreateRect(string n,int x,int y,int w,int h,color bg,color border)
+{
+   if(ObjectFind(0,n)>=0) ObjectDelete(0,n);
+   if(!ObjectCreate(0,n,OBJ_RECTANGLE_LABEL,0,0,0)) return false;
+   ObjectSetInteger(0,n,OBJPROP_CORNER,CORNER_LEFT_UPPER);
+   ObjectSetInteger(0,n,OBJPROP_XDISTANCE,x);
+   ObjectSetInteger(0,n,OBJPROP_YDISTANCE,y);
+   ObjectSetInteger(0,n,OBJPROP_XSIZE,w);
+   ObjectSetInteger(0,n,OBJPROP_YSIZE,h);
+   ObjectSetInteger(0,n,OBJPROP_BGCOLOR,bg);
+   ObjectSetInteger(0,n,OBJPROP_BORDER_TYPE,BORDER_FLAT);
+   ObjectSetInteger(0,n,OBJPROP_COLOR,border);
+   ObjectSetInteger(0,n,OBJPROP_WIDTH,1);
+   ObjectSetInteger(0,n,OBJPROP_BACK,false);
+   ObjectSetInteger(0,n,OBJPROP_SELECTABLE,false);
+   ObjectSetInteger(0,n,OBJPROP_HIDDEN,true);
+   ObjectSetInteger(0,n,OBJPROP_ZORDER,1);
+   return true;
+}
+bool K64CreateLabel(string n,int x,int y,string t,int fs,color c,bool bold=false)
+{
+   if(ObjectFind(0,n)>=0) ObjectDelete(0,n);
+   if(!ObjectCreate(0,n,OBJ_LABEL,0,0,0)) return false;
+   ObjectSetInteger(0,n,OBJPROP_CORNER,CORNER_LEFT_UPPER);
+   ObjectSetInteger(0,n,OBJPROP_ANCHOR,ANCHOR_LEFT_UPPER);
+   ObjectSetInteger(0,n,OBJPROP_XDISTANCE,x);
+   ObjectSetInteger(0,n,OBJPROP_YDISTANCE,y);
+   ObjectSetString(0,n,OBJPROP_TEXT,t);
+   ObjectSetString(0,n,OBJPROP_FONT,bold ? "Segoe UI Semibold" : "Segoe UI");
+   ObjectSetInteger(0,n,OBJPROP_FONTSIZE,fs);
+   ObjectSetInteger(0,n,OBJPROP_COLOR,c);
+   ObjectSetInteger(0,n,OBJPROP_SELECTABLE,false);
+   ObjectSetInteger(0,n,OBJPROP_HIDDEN,true);
+   ObjectSetInteger(0,n,OBJPROP_BACK,false);
+   return true;
+}
+bool K64CreateRightLabel(string n,int x,int y,string t,int fs,color c,bool bold=false)
+{
+   if(!K64CreateLabel(n,x,y,t,fs,c,bold)) return false;
+   ObjectSetInteger(0,n,OBJPROP_ANCHOR,ANCHOR_RIGHT_UPPER);
+   return true;
+}
+bool K64CreateButton(string n,int x,int y,int w,int h,string t,color tc,color bg,color bc,int fs)
+{
+   if(ObjectFind(0,n)>=0) ObjectDelete(0,n);
+   if(!ObjectCreate(0,n,OBJ_BUTTON,0,0,0)) return false;
+   ObjectSetInteger(0,n,OBJPROP_CORNER,CORNER_LEFT_UPPER);
+   ObjectSetInteger(0,n,OBJPROP_XDISTANCE,x);
+   ObjectSetInteger(0,n,OBJPROP_YDISTANCE,y);
+   ObjectSetInteger(0,n,OBJPROP_XSIZE,w);
+   ObjectSetInteger(0,n,OBJPROP_YSIZE,h);
+   ObjectSetString(0,n,OBJPROP_TEXT,t);
+   ObjectSetString(0,n,OBJPROP_FONT,"Segoe UI Semibold");
+   ObjectSetInteger(0,n,OBJPROP_FONTSIZE,fs);
+   ObjectSetInteger(0,n,OBJPROP_COLOR,tc);
+   ObjectSetInteger(0,n,OBJPROP_BGCOLOR,bg);
+   ObjectSetInteger(0,n,OBJPROP_BORDER_COLOR,bc);
+   ObjectSetInteger(0,n,OBJPROP_STATE,false);
+   ObjectSetInteger(0,n,OBJPROP_BACK,false);
+   ObjectSetInteger(0,n,OBJPROP_SELECTABLE,true);
+   ObjectSetInteger(0,n,OBJPROP_HIDDEN,true);
+   ObjectSetInteger(0,n,OBJPROP_ZORDER,100);
+   return true;
+}
+void K64UpdatePanelHeader()
+{
+   if(ObjectFind(0,"K64_Status")<0) return;
+   KIA64_RUN_STATE st=Kia64GetRunState();
+   string txt="● ACTIVE"; color c=K64_PANEL_GREEN;
+   if(st==KIA64_MONEY_LOCK || st==KIA64_PERCENT_LOCK){txt="● LOCKED";c=K64_PANEL_RED;}
+   else if(st==KIA64_MANUAL_PAUSE || st==KIA64_DAILY_PROFIT_PAUSE){txt="Ⅱ PAUSED";c=K64_PANEL_ORANGE;}
+   else if(!Kia64DailyProfitDataValid && DailyProfitProtection &&
+           (DailyProfitTargetPercent>0.0 || DailyProfitTargetMoney>0.0)){txt="● DATA ERROR";c=K64_PANEL_RED;}
+   ObjectSetString(0,"K64_Status",OBJPROP_TEXT,txt);
+   ObjectSetInteger(0,"K64_Status",OBJPROP_COLOR,c);
+}
+void K64CreatePanel()
+{
+   if(!ShowPanel || SiamoInTestOscuro) return;
+   K64DeletePanelObjects();
+   int px=10,py=10;
+   int pw=(int)MathRound(420.0*K64PanelZoom),ph=(int)MathRound(430.0*K64PanelZoom);
+   K64PanelScaleX=(double)pw/420.0; K64PanelScaleY=(double)ph/430.0;
+   K64CreateRect("K64_Main",px,py,pw,ph,K64_PANEL_BG,K64_PANEL_BORDER);
+   K64CreateLabel("K64_Brand",px+K64ScaleX(20),py+K64ScaleY(17),"KIA64",K64ScaleFont(11),K64_PANEL_PURPLE,true);
+   ObjectSetString(0,"K64_Brand",OBJPROP_FONT,"Segoe UI Black");
+   K64CreateButton("K64_ZoomIn",px+K64ScaleX(260),py+K64ScaleY(13),K64ScaleX(24),K64ScaleY(20),"+",K64_PANEL_TEXT,C'48,43,62',C'104,88,133',K64ScaleFont(8));
+   K64CreateButton("K64_ZoomOut",px+K64ScaleX(290),py+K64ScaleY(13),K64ScaleX(24),K64ScaleY(20),"-",K64_PANEL_TEXT,C'48,43,62',C'104,88,133',K64ScaleFont(8));
+   K64CreateRightLabel("K64_Status",px+pw-K64ScaleX(18),py+K64ScaleY(19),"● ACTIVE",K64ScaleFont(8),K64_PANEL_GREEN,true);
+   K64CreateLabel("K64_Subtitle",px+K64ScaleX(20),py+K64ScaleY(40),"ALGORITHMIC TRADING SYSTEM",K64ScaleFont(7),K64_PANEL_MUTED);
+   K64CreateRect("K64_Div1",px+K64ScaleX(20),py+K64ScaleY(58),K64ScaleX(380),MathMax(1,K64ScaleY(1)),K64_PANEL_BORDER,K64_PANEL_BORDER);
+   K64CreateLabel("K64_SymbolCaption",px+K64ScaleX(20),py+K64ScaleY(68),"SYMBOL / TIMEFRAME",K64ScaleFont(7),K64_PANEL_MUTED);
+   K64CreateRightLabel("K64_Symbol",px+pw-K64ScaleX(20),py+K64ScaleY(67),_Symbol+"  |  "+EnumToString(_Period),K64ScaleFont(8),K64_PANEL_TEXT,true);
+   K64CreateRect("K64_Div2",px+K64ScaleX(20),py+K64ScaleY(88),K64ScaleX(380),MathMax(1,K64ScaleY(1)),K64_PANEL_BORDER,K64_PANEL_BORDER);
+
+   int cy=py+K64ScaleY(99),cw=K64ScaleX(116),ch=K64ScaleY(55),gap=K64ScaleX(8),cx=px+K64ScaleX(20);
+   K64CreateRect("K64_CardBalance",cx,cy,cw,ch,K64_PANEL_CARD,K64_PANEL_BORDER);
+   K64CreateRect("K64_CardEquity",cx+cw+gap,cy,cw,ch,K64_PANEL_CARD,K64_PANEL_BORDER);
+   K64CreateRect("K64_CardEA",cx+2*(cw+gap),cy,cw,ch,K64_PANEL_CARD,K64_PANEL_BORDER);
+   K64CreateLabel("K64_BalanceTitle",cx+K64ScaleX(9),cy+K64ScaleY(8),"BALANCE",K64ScaleFont(7),K64_PANEL_MUTED);
+   K64CreateLabel("K64_BalanceValue",cx+K64ScaleX(9),cy+K64ScaleY(27),"-",K64ScaleFont(9),K64_PANEL_TEXT,true);
+   K64CreateLabel("K64_EquityTitle",cx+cw+gap+K64ScaleX(9),cy+K64ScaleY(8),"EQUITY",K64ScaleFont(7),K64_PANEL_MUTED);
+   K64CreateLabel("K64_EquityValue",cx+cw+gap+K64ScaleX(9),cy+K64ScaleY(27),"-",K64ScaleFont(9),K64_PANEL_TEXT,true);
+   K64CreateLabel("K64_EATitle",cx+2*(cw+gap)+K64ScaleX(9),cy+K64ScaleY(8),"EA P/L",K64ScaleFont(7),K64_PANEL_MUTED);
+   K64CreateLabel("K64_EAValue",cx+2*(cw+gap)+K64ScaleX(9),cy+K64ScaleY(27),"-",K64ScaleFont(9),K64_PANEL_TEXT,true);
+
+   K64CreateLabel("K64_SectionAccount",px+K64ScaleX(20),py+K64ScaleY(169),"ACCOUNT / MARKET",K64ScaleFont(7),K64_PANEL_BLUE);
+   K64CreateLabel("K64_Drawdown",px+K64ScaleX(20),py+K64ScaleY(190),"Drawdown: -",K64ScaleFont(8),K64_PANEL_TEXT);
+   K64CreateRightLabel("K64_Spread",px+pw-K64ScaleX(20),py+K64ScaleY(190),"Spread: -",K64ScaleFont(8),K64_PANEL_TEXT);
+   K64CreateLabel("K64_SymbolPL",px+K64ScaleX(20),py+K64ScaleY(211),"Symbol P/L: -",K64ScaleFont(8),K64_PANEL_TEXT);
+   K64CreateRightLabel("K64_MagicPL",px+pw-K64ScaleX(20),py+K64ScaleY(211),"Magic P/L: -",K64ScaleFont(8),K64_PANEL_TEXT);
+   K64CreateLabel("K64_ChartPL",px+K64ScaleX(20),py+K64ScaleY(232),"Chart P/L: -",K64ScaleFont(8),K64_PANEL_TEXT);
+   K64CreateRightLabel("K64_Lot",px+pw-K64ScaleX(20),py+K64ScaleY(232),"Start lot: -",K64ScaleFont(8),K64_PANEL_TEXT);
+   K64CreateRect("K64_Div3",px+K64ScaleX(20),py+K64ScaleY(253),K64ScaleX(380),MathMax(1,K64ScaleY(1)),K64_PANEL_BORDER,K64_PANEL_BORDER);
+   K64CreateLabel("K64_SectionProtection",px+K64ScaleX(20),py+K64ScaleY(264),"PROTECTION",K64ScaleFont(7),K64_PANEL_BLUE);
+   K64CreateLabel("K64_DailyTarget",px+K64ScaleX(20),py+K64ScaleY(285),"Daily target: -",K64ScaleFont(8),K64_PANEL_TEXT);
+   K64CreateRightLabel("K64_DailyState",px+pw-K64ScaleX(20),py+K64ScaleY(285),"READY",K64ScaleFont(8),K64_PANEL_GREEN,true);
+   K64CreateLabel("K64_PercentProtection",px+K64ScaleX(20),py+K64ScaleY(306),"Percent loss: -",K64ScaleFont(8),K64_PANEL_TEXT);
+   K64CreateRightLabel("K64_MoneyProtection",px+pw-K64ScaleX(20),py+K64ScaleY(306),"Money loss: -",K64ScaleFont(8),K64_PANEL_TEXT);
+   int by=py+K64ScaleY(350),bw=K64ScaleX(180),bh=K64ScaleY(30);
+   K64CreateButton("K64_Play",px+K64ScaleX(20),by,bw,bh,"PLAY",clrWhite,C'34,112,78',C'45,145,100',K64ScaleFont(8));
+   K64CreateButton("K64_Pause",px+K64ScaleX(220),by,bw,bh,"PAUSE",clrWhite,C'151,105,35',C'185,130,45',K64ScaleFont(8));
+   K64CreateRightLabel("K64_Footer",px+pw-K64ScaleX(20),py+K64ScaleY(402),"KIA64 SYSTEM",K64ScaleFont(6),K64_PANEL_MUTED);
+   K64UpdatePanelHeader();
+}
+void K64UpdatePanel()
+{
+   if(!ShowPanel || SiamoInTestOscuro) return;
+   if(ObjectFind(0,"K64_Main")<0) K64CreatePanel();
+   double ps=0.0,pm=0.0,pc=0.0;
+   CalcolaDati(ps,pm,pc);
+   double bal=AccountInfoDouble(ACCOUNT_BALANCE),eq=AccountInfoDouble(ACCOUNT_EQUITY);
+   double dd=(bal>0.0 ? 100.0-(eq/bal)*100.0 : 0.0);
+   ObjectSetString(0,"K64_BalanceValue",OBJPROP_TEXT,DoubleToString(bal,2));
+   ObjectSetString(0,"K64_EquityValue",OBJPROP_TEXT,DoubleToString(eq,2));
+   ObjectSetString(0,"K64_EAValue",OBJPROP_TEXT,DoubleToString(pm,2));
+   ObjectSetInteger(0,"K64_EAValue",OBJPROP_COLOR,pm>=0.0 ? K64_PANEL_GREEN : K64_PANEL_RED);
+   ObjectSetString(0,"K64_Drawdown",OBJPROP_TEXT,"Drawdown: "+DoubleToString(dd,2)+"%");
+   ObjectSetString(0,"K64_Spread",OBJPROP_TEXT,"Spread: "+DoubleToString((double)SymbolInfoInteger(_Symbol,SYMBOL_SPREAD),0));
+   ObjectSetString(0,"K64_SymbolPL",OBJPROP_TEXT,"Symbol P/L: "+DoubleToString(ps,2));
+   ObjectSetString(0,"K64_MagicPL",OBJPROP_TEXT,"Magic P/L: "+DoubleToString(pm,2));
+   ObjectSetString(0,"K64_ChartPL",OBJPROP_TEXT,"Chart P/L: "+DoubleToString(pc,2));
+   ObjectSetString(0,"K64_Lot",OBJPROP_TEXT,"Start lot: "+DoubleToString(LottoDaTradare,2));
+   string target="Daily target: ";
+   if(!DailyProfitProtection || (DailyProfitTargetPercent<=0.0 && DailyProfitTargetMoney<=0.0)) target+="OFF";
+   else
+   {
+      if(DailyProfitTargetPercent>0.0) target+=DoubleToString(DailyProfitTargetPercent,2)+"%";
+      if(DailyProfitTargetPercent>0.0 && DailyProfitTargetMoney>0.0) target+=" / ";
+      if(DailyProfitTargetMoney>0.0) target+=DoubleToString(DailyProfitTargetMoney,2);
+   }
+   ObjectSetString(0,"K64_DailyTarget",OBJPROP_TEXT,target);
+   KIA64_RUN_STATE st=Kia64GetRunState();
+   string ds="READY"; color dc=K64_PANEL_GREEN;
+   if(st==KIA64_DAILY_PROFIT_PAUSE){ds="TARGET HIT";dc=K64_PANEL_ORANGE;}
+   else if(!Kia64DailyProfitDataValid && DailyProfitProtection &&
+           (DailyProfitTargetPercent>0.0 || DailyProfitTargetMoney>0.0)){ds="DATA ERROR";dc=K64_PANEL_RED;}
+   ObjectSetString(0,"K64_DailyState",OBJPROP_TEXT,ds);
+   ObjectSetInteger(0,"K64_DailyState",OBJPROP_COLOR,dc);
+   ObjectSetString(0,"K64_PercentProtection",OBJPROP_TEXT,CloseInPercentageLoss ? "Percent loss: ON ("+IntegerToString(LossPercentage)+"%)" : "Percent loss: OFF");
+   ObjectSetString(0,"K64_MoneyProtection",OBJPROP_TEXT,MonetaryStopLoss ? "Money loss: ON ("+IntegerToString(MaximumMonetaryLoss)+")" : "Money loss: OFF");
+   ObjectSetInteger(0,"K64_PercentProtection",OBJPROP_COLOR,CloseInPercentageLoss ? K64_PANEL_GREEN : K64_PANEL_MUTED);
+   ObjectSetInteger(0,"K64_MoneyProtection",OBJPROP_COLOR,MonetaryStopLoss ? K64_PANEL_GREEN : K64_PANEL_MUTED);
+   K64UpdatePanelHeader();
+}
+void K64PanelZoomBy(double delta)
+{
+   K64PanelZoom=MathMax(0.80,MathMin(1.50,K64PanelZoom+delta));
+   K64CreatePanel();
+   K64UpdatePanel();
+   ChartRedraw(0);
+}
+
 void CommentoInit()
 {
 
@@ -3270,28 +3485,8 @@ void CommentoInit()
    }
    
    
-   if ( ShowPanel && !SiamoInTestOscuro )
-   {
-   // Kia64 v1.1 panel: repositioned to the top-left with a dark glass-like appearance.
-   // Native MQL5 rectangle labels do not support true blur/transparency.
-   RectLabelCreate(0,"RectLabelKevin",0,10,10,320,350,C'24,29,36',BORDER_FLAT,CORNER_LEFT_UPPER,C'72,82,92',STYLE_SOLID,1,false,false,true,0);
-   LabelCreate(0,"Kevin1",0,20,20,CORNER_LEFT_UPPER,WindowExpertName(),"Arial",10,C'255,165,65',0,ANCHOR_LEFT);
-   LabelCreate(0,"KevinSection1",0,20,43,CORNER_LEFT_UPPER,"ACCOUNT OVERVIEW","Arial",8,C'120,190,220',0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin2",0,20,63,CORNER_LEFT_UPPER,"Account Balance: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin3",0,20,82,CORNER_LEFT_UPPER,"Account Equity: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin4",0,20,101,CORNER_LEFT_UPPER,"Account Profit/Loss: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin8",0,20,120,CORNER_LEFT_UPPER,"Drawdown Percentage: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"KevinSection2",0,20,143,CORNER_LEFT_UPPER,"EA / MARKET INFO","Arial",8,C'120,190,220',0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin9",0,20,163,CORNER_LEFT_UPPER,"Spread: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin10",0,20,182,CORNER_LEFT_UPPER,"Start Lot Size: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin11",0,20,201,CORNER_LEFT_UPPER,"Percentage Loss Protection: ","Arial",9,C'255,165,65',0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin12",0,20,220,CORNER_LEFT_UPPER,"Monetary Loss Protection: ","Arial",9,C'255,165,65',0,ANCHOR_LEFT);
-   LabelCreate(0,"KevinSection3",0,20,243,CORNER_LEFT_UPPER,"ADDITIONAL PROFIT / LOSS","Arial",8,C'120,190,220',0,ANCHOR_LEFT);
-   string Simbolo = StringSubstr(_Symbol,1,5); StringToLower(Simbolo); Simbolo = StringSubstr(_Symbol,0,1)+Simbolo;
-   LabelCreate(0,"Kevin5",0,20,263,CORNER_LEFT_UPPER,Simbolo+" Profit/Loss: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin6",0,20,282,CORNER_LEFT_UPPER,"MagicN Profit/Loss: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   LabelCreate(0,"Kevin7",0,20,301,CORNER_LEFT_UPPER,"Chart Profit/Loss: ","Arial",9,clrWhiteSmoke,0,ANCHOR_LEFT);
-   }
+   if(ShowPanel && !SiamoInTestOscuro)
+      K64CreatePanel();
 
 
 
@@ -3303,49 +3498,7 @@ void CommentoInit()
 
 void Commento()
 {
-       if(!SiamoInTestOscuro && ShowPanel)
-       {
-       
-              
-       double ProfitSimbol = 0;
-       double ProfitMagic = 0;
-       double ProfitChart = 0;
-       
-       CalcolaDati(ProfitSimbol,ProfitMagic, ProfitChart);
-       
-      LabelTextChange(0,"Kevin2","Account Balance: "+DoubleToString(AccountBalance(),2));
-      LabelTextChange(0,"Kevin3","Account Equity: "+DoubleToString(AccountEquity(),2));
-      LabelTextChange(0,"Kevin4","Account Profit/Loss: "+DoubleToString(AccountEquity()-AccountBalance(),2));
-      
-      string Simbolo = StringSubstr(_Symbol,1,5); StringToLower(Simbolo); Simbolo = StringSubstr(_Symbol,0,1)+Simbolo;
-      LabelTextChange(0,"Kevin5",Simbolo+" Profit/Loss: "+DoubleToString(ProfitSimbol,2));
-      LabelTextChange(0,"Kevin6","MagicN Profit/Loss: "+DoubleToString(ProfitMagic,2));
-      LabelTextChange(0,"Kevin7","Chart Profit/Loss: "+DoubleToString(ProfitChart,2));
-      
-      if ( AccountEquity() != 0 && AccountBalance() != 0 )
-      LabelTextChange(0,"Kevin8","Drawdown Percentage: "+DoubleToString(100-(AccountEquity()/AccountBalance())*100,2));
-      LabelTextChange(0,"Kevin9","Spread: "+DoubleToString(SymbolInfoInteger(_Symbol,SYMBOL_SPREAD),0));
-      LabelTextChange(0,"Kevin10","Start Lot Size: "+DoubleToString(LottoDaTradare,2));
-      // This EA does not implement a separate whole-account drawdown protection.
-      string percentageProtection = (CloseInPercentageLoss ? "ACTIVE" : "INACTIVE");
-      LabelTextChange(0,"Kevin11","Percentage Loss Protection: "+percentageProtection+" ("+IntegerToString(LossPercentage)+"%)");
-      string monetaryProtection = (MonetaryStopLoss ? "ACTIVE" : "INACTIVE");
-      LabelTextChange(0,"Kevin12","Monetary Loss Protection: "+monetaryProtection+" ($"+IntegerToString(MaximumMonetaryLoss)+")");
-      ObjectSetInteger(0,"Kevin11",OBJPROP_COLOR,CloseInPercentageLoss ? C'80,210,130' : C'255,165,65');
-      ObjectSetInteger(0,"Kevin12",OBJPROP_COLOR,MonetaryStopLoss ? C'80,210,130' : C'255,165,65');
-      
-      // Visual-only profit/loss coloring; trading calculations and decisions are unchanged.
-      color accountPLColor = (AccountEquity()-AccountBalance() >= 0) ? C'80,210,130' : C'255,95,95';
-      color symbolPLColor = (ProfitSimbol >= 0) ? C'80,210,130' : C'255,95,95';
-      color magicPLColor = (ProfitMagic >= 0) ? C'80,210,130' : C'255,95,95';
-      color chartPLColor = (ProfitChart >= 0) ? C'80,210,130' : C'255,95,95';
-      ObjectSetInteger(0,"Kevin4",OBJPROP_COLOR,accountPLColor);
-      ObjectSetInteger(0,"Kevin5",OBJPROP_COLOR,symbolPLColor);
-      ObjectSetInteger(0,"Kevin6",OBJPROP_COLOR,magicPLColor);
-      ObjectSetInteger(0,"Kevin7",OBJPROP_COLOR,chartPLColor);      
-      
-      
-       }
+   K64UpdatePanel();
 }
 
 
