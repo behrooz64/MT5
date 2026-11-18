@@ -3457,7 +3457,14 @@ void K64UpdatePanel()
    ObjectSetString(0,"K64_ValueEquity",OBJPROP_TEXT,DoubleToString(eq,2));
    ObjectSetString(0,"K64_ValueSpread",OBJPROP_TEXT,DoubleToString((double)SymbolInfoInteger(_Symbol,SYMBOL_SPREAD),0));
    ObjectSetString(0,"K64_ValueLots",OBJPROP_TEXT,DoubleToString(LottoDaTradare,2));
-   double values[7]={accountPL,pm,ps,pm,pc,dd,LottoDaTradare};
+   double values[7];
+   values[0]=accountPL;
+   values[1]=pm;
+   values[2]=ps;
+   values[3]=pm;
+   values[4]=pc;
+   values[5]=dd;
+   values[6]=LottoDaTradare;
    for(int i=0;i<7;i++)
    {
       string valueText=(i==5 ? DoubleToString(values[i],2)+"%" : DoubleToString(values[i],2));
