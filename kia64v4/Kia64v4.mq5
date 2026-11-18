@@ -3467,15 +3467,15 @@ void K64CreatePanel()
    K64CreateRect("K64_Div2",px+K64ScaleX(20),py+K64ScaleY(88),K64ScaleX(400),MathMax(1,K64ScaleY(1)),K64_PANEL_BORDER,K64_PANEL_BORDER);
 
    int cardY=py+K64ScaleY(98),cardW=K64ScaleX(94),cardH=K64ScaleY(52),cardGap=K64ScaleX(8),startX=px+K64ScaleX(20);
-   string cardTitles[4]={"BALANCE","EQUITY","LIVE SPREAD","LOT SIZE"};
+   string cardTitles[4]={"BALANCE","EQUITY","SPREAD","LOT SIZE"};
    string cardNames[4]={"K64_CardBalance","K64_CardEquity","K64_CardSpread","K64_CardLots"};
    string valueNames[4]={"K64_ValueBalance","K64_ValueEquity","K64_ValueSpread","K64_ValueLots"};
    for(int i=0;i<4;i++)
    {
       int cx=startX+i*(cardW+cardGap);
       K64CreateRect(cardNames[i],cx,cardY,cardW,cardH,K64_PANEL_CARD,K64_PANEL_BORDER);
-      K64CreateLabel("K64_CardTitle"+IntegerToString(i),cx+K64ScaleX(5),cardY+K64ScaleY(9),cardTitles[i],K64ScaleFont(6),K64_PANEL_MUTED);
-      K64CreateLabel(valueNames[i],cx+K64ScaleX(5),cardY+K64ScaleY(27),"--",K64ScaleFont(9),K64_PANEL_TEXT,true);
+      K64CreateLabel("K64_CardTitle"+IntegerToString(i),cx+cardW/2,cardY+K64ScaleY(9),cardTitles[i],K64ScaleFont(6),K64_PANEL_MUTED);\n      ObjectSetInteger(0,"K64_CardTitle"+IntegerToString(i),OBJPROP_ANCHOR,ANCHOR_UPPER);
+      K64CreateLabel(valueNames[i],cx+cardW/2,cardY+K64ScaleY(27),"--",K64ScaleFont(9),K64_PANEL_TEXT,true);\n      ObjectSetInteger(0,valueNames[i],OBJPROP_ANCHOR,ANCHOR_UPPER);
    }
 
    int colY=cardY+cardH+K64ScaleY(10);
@@ -3688,8 +3688,8 @@ void K64UpdatePanel()
    CalcolaDati(ps,pm,pc);
    double bal=AccountInfoDouble(ACCOUNT_BALANCE),eq=AccountInfoDouble(ACCOUNT_EQUITY);
    ObjectSetString(0,"K64_ValueBalance",OBJPROP_TEXT,DoubleToString(bal,2));
-   ObjectSetString(0,"K64_ValueEquity",OBJPROP_TEXT,DoubleToString(eq,2));
-   ObjectSetString(0,"K64_ValueSpread",OBJPROP_TEXT,DoubleToString((double)SymbolInfoInteger(_Symbol,SYMBOL_SPREAD),0));
+   ObjectSetString(0,"K64_ValueEquity",OBJPROP_TEXT,DoubleToString(eq,2));\n   ObjectSetInteger(0,"K64_ValueEquity",OBJPROP_COLOR,eq<bal?K64_PANEL_RED:(eq>bal?K64_PANEL_GREEN:K64_PANEL_TEXT));
+   double spreadBid=SymbolInfoDouble(_Symbol,SYMBOL_BID);\n   double spreadAsk=SymbolInfoDouble(_Symbol,SYMBOL_ASK);\n   double spreadPoints=(_Point>0.0)?(spreadAsk-spreadBid)/_Point:0.0;\n   ObjectSetString(0,"K64_ValueSpread",OBJPROP_TEXT,DoubleToString(spreadPoints,0));
    ObjectSetString(0,"K64_ValueLots",OBJPROP_TEXT,DoubleToString(LottoDaTradare,2));
    int todayTrades=0;
    double todayPL=0.0;
