@@ -357,7 +357,9 @@ enum KIA64_RUN_STATE
 {
    KIA64_ACTIVE = 0,
    KIA64_MANUAL_PAUSE = 1,
-   KIA64_DAILY_PROFIT_PAUSE = 2
+   KIA64_DAILY_PROFIT_PAUSE = 2,
+   KIA64_MONEY_LOCK = 3,
+   KIA64_PERCENT_LOCK = 4
 };
 
 bool Kia64DailyProfitDataValid = true;
@@ -388,7 +390,7 @@ KIA64_RUN_STATE Kia64GetRunState()
       return KIA64_ACTIVE;
 
    int value = (int)GlobalVariableGet(key);
-   if(value < KIA64_ACTIVE || value > KIA64_DAILY_PROFIT_PAUSE)
+   if(value < KIA64_ACTIVE || value > KIA64_PERCENT_LOCK)
       return KIA64_ACTIVE;
    return (KIA64_RUN_STATE)value;
 }
@@ -940,8 +942,9 @@ HLineMove(0,"StopLineSell",PrezzoPrimoOrdineSell()+(StopTarget*_Point));
                EliminaOrdiniFifo(MagicNumber);
                if (StopTradingWhenHit)
                {
-               Comment("Stop Trading When Hit, I removed the Expert, to continue insert it again");
-               ExpertRemove();
+                  Kia64SetRunState(KIA64_MONEY_LOCK);
+                  Comment("Monetary loss limit reached. New entries are locked; press PLAY to reactivate.");
+                  Print("Kia64: monetary loss limit reached; new entries locked until manual PLAY.");
                }               
                }
                   
@@ -965,8 +968,9 @@ double profit = CalcolaProfitto(MagicNumber);
       EliminaOrdiniFifo(MagicNumber);
       if ( StopTradingAfterPercentageLoss )
       {
-         Comment("Stop Trading After Percentage Loss, I removed the Expert, to continue insert it again");
-         ExpertRemove();
+         Kia64SetRunState(KIA64_PERCENT_LOCK);
+         Comment("Percentage loss limit reached. New entries are locked; press PLAY to reactivate.");
+         Print("Kia64: percentage loss limit reached; new entries locked until manual PLAY.");
       }
    }
 }
