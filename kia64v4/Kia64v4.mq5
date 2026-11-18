@@ -3690,10 +3690,28 @@ void K64UpdatePanel()
    ObjectSetString(0,"K64_ValueBalance",OBJPROP_TEXT,DoubleToString(bal,2));
    ObjectSetString(0,"K64_ValueEquity",OBJPROP_TEXT,DoubleToString(eq,2));
    ObjectSetInteger(0,"K64_ValueEquity",OBJPROP_COLOR,eq<bal?K64_PANEL_RED:(eq>bal?K64_PANEL_GREEN:K64_PANEL_TEXT));
-   double spreadBid=SymbolInfoDouble(_Symbol,SYMBOL_BID);
-   double spreadAsk=SymbolInfoDouble(_Symbol,SYMBOL_ASK);
-   double spreadPoints=(_Point>0.0)?(spreadAsk-spreadBid)/_Point:0.0;
-   ObjectSetString(0,"K64_ValueSpread",OBJPROP_TEXT,DoubleToString(spreadPoints,0));
+   MqlTick spreadTick;
+   double spreadPoints=0.0;
+   int spreadDigits=0;
+   double spreadTickSize=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE);
+   if(SymbolInfoTick(_Symbol,spreadTick) && _Point>0.0 &&
+      spreadTick.bid>0.0 && spreadTick.ask>=spreadTick.bid)
+   {
+      spreadPoints=(spreadTick.ask-spreadTick.bid)/_Point;
+      double tickPoints=(spreadTickSize>0.0)?spreadTickSize/_Point:1.0;
+      double precisionScale=1.0;
+      for(int precision=0;precision<=8;precision++)
+      {
+         if(MathAbs(tickPoints*precisionScale-MathRound(tickPoints*precisionScale))<0.00000001)
+         {
+            spreadDigits=precision;
+            break;
+         }
+         spreadDigits=precision;
+         precisionScale*=10.0;
+      }
+   }
+   ObjectSetString(0,"K64_ValueSpread",OBJPROP_TEXT,DoubleToString(spreadPoints,spreadDigits));
    ObjectSetString(0,"K64_ValueLots",OBJPROP_TEXT,DoubleToString(LottoDaTradare,2));
    int todayTrades=0;
    double todayPL=0.0;
