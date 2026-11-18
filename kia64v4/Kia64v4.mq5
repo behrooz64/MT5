@@ -7,7 +7,7 @@
 #property description "Owner : Kia64 "
 #property link        "https://kia64.ir"
 #property description "Kia64 Academy Presentation"
-input string AllowedBroker = "GTCGlobalTrade-Demo"; // Allowed broker server
+input string AllowedBroker = "AMarkets"; // Allowed broker server
 #define EXPIRATION_DATE "2027.01.20"
 #define CORRECT_PASSWORD "Kia64"
 
