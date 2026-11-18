@@ -3512,7 +3512,7 @@ void K64CreatePanel()
       K64CreateLabel("K64_MonitorLabel"+IntegerToString(j+1),rightX+K64ScaleX(12),monitorY+j*monitorGap,monitorLabels[j],K64ScaleFont(7),K64_PANEL_TEXT);
       K64CreateRightLabel("K64_MonitorValue"+IntegerToString(j+1),rightX+colW-K64ScaleX(12),monitorY+j*monitorGap,"--",K64ScaleFont(7),K64_PANEL_GREEN,true);
    }
-   for(int monitorIcon=2;monitorIcon<=4;monitorIcon++)
+   for(int monitorIcon=1;monitorIcon<=4;monitorIcon++)
    {
       ObjectSetString(0,"K64_MonitorValue"+IntegerToString(monitorIcon),OBJPROP_FONT,"Segoe UI Symbol");
       ObjectSetInteger(0,"K64_MonitorValue"+IntegerToString(monitorIcon),OBJPROP_FONTSIZE,K64ScaleFont(10));
@@ -3798,7 +3798,7 @@ void K64UpdatePanel()
    ObjectSetInteger(0,"K64_LossTrack",OBJPROP_YSIZE,MathMax(5,K64ScaleY(6)));
 
    bool connected=(bool)TerminalInfoInteger(TERMINAL_CONNECTED);
-   ObjectSetString(0,"K64_MonitorValue1",OBJPROP_TEXT,connected ? "ONLINE" : "OFFLINE");
+   ObjectSetString(0,"K64_MonitorValue1",OBJPROP_TEXT,connected ? "✔" : "✖");
    ObjectSetInteger(0,"K64_MonitorValue1",OBJPROP_COLOR,connected ? K64_PANEL_GREEN : K64_PANEL_RED);
    KIA64_RUN_STATE runStateMonitor=Kia64GetRunState();
    string runText="✔";
