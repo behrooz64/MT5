@@ -3483,7 +3483,7 @@ void K64CreatePanel()
    int sectionY=colY+K64ScaleY(10),colW=K64ScaleX(194);
    int leftX=px+K64ScaleX(20),rightX=px+K64ScaleX(226),sectionH=K64ScaleY(190);
    K64CreateRect("K64_PerformanceCard",leftX,sectionY,colW,sectionH,K64_PANEL_CARD,K64_PANEL_BORDER);
-   K64CreateLabel("K64_PerformanceTitle",leftX+K64ScaleX(12),sectionY+K64ScaleY(10),"EA LIVE PERFORMANCE",K64ScaleFont(8),K64_PANEL_AQUA,true);
+   K64CreateLabel("K64_PerformanceTitle",leftX+K64ScaleX(12),sectionY+K64ScaleY(10),"EA PERFORMANCE",K64ScaleFont(8),K64_PANEL_AQUA,true);
    int rowY=sectionY+K64ScaleY(34),rowGap=K64ScaleY(18);
    string leftLabels[6]={"Today's Trades","Today P/L","Floating P/L","Symbol P/L","Win Rate","Profit Factor"};
    string leftNames[6]={"K64_PerfValue1","K64_PerfValue2","K64_PerfValue3","K64_PerfValue4","K64_PerfValue5","K64_PerfValue6"};
@@ -3492,6 +3492,16 @@ void K64CreatePanel()
       K64CreateLabel("K64_PerfLabel"+IntegerToString(i+1),leftX+K64ScaleX(12),rowY+i*rowGap,leftLabels[i],K64ScaleFont(7),K64_PANEL_TEXT);
       K64CreateRightLabel(leftNames[i],leftX+colW-K64ScaleX(12),rowY+i*rowGap,"--",K64ScaleFont(7),K64_PANEL_TEXT,true);
    }
+
+   int profitBarLabelY=sectionY+K64ScaleY(160);
+   int profitBarY=sectionY+K64ScaleY(178);
+   int profitBarH=MathMax(5,K64ScaleY(6));
+   int profitBarX=leftX+K64ScaleX(12);
+   int profitBarW=colW-K64ScaleX(24);
+   K64CreateLabel("K64_ProfitBarLabel",profitBarX,profitBarLabelY,"PROFIT USAGE",K64ScaleFont(6),K64_PANEL_MUTED,true);
+   K64CreateRightLabel("K64_ProfitBarValue",leftX+colW-K64ScaleX(12),profitBarLabelY,"--",K64ScaleFont(6),K64_PANEL_GREEN,true);
+   K64CreateRect("K64_ProfitTrack",profitBarX,profitBarY,profitBarW,profitBarH,C'72,60,88',C'72,60,88');
+   K64CreateRect("K64_ProfitFill",profitBarX,profitBarY,1,profitBarH,K64_PANEL_GREEN,K64_PANEL_GREEN);
 
    K64CreateRect("K64_MonitorCard",rightX,sectionY,colW,sectionH,K64_PANEL_CARD,K64_PANEL_BORDER);
    K64CreateLabel("K64_MonitorTitle",rightX+K64ScaleX(12),sectionY+K64ScaleY(10),"SYSTEM MONITOR",K64ScaleFont(8),K64_PANEL_AQUA,true);
@@ -3719,6 +3729,35 @@ void K64UpdatePanel()
    ObjectSetInteger(0,"K64_PerfValue4",OBJPROP_COLOR,ps>=0.0 ? K64_PANEL_GREEN : K64_PANEL_RED);
    ObjectSetInteger(0,"K64_PerfValue5",OBJPROP_COLOR,eaWinRate>=50.0 ? K64_PANEL_GREEN : K64_PANEL_ORANGE);
    ObjectSetInteger(0,"K64_PerfValue6",OBJPROP_COLOR,eaProfitFactor<0.0 || eaProfitFactor>=1.0 ? K64_PANEL_GREEN : K64_PANEL_ORANGE);
+   if(DailyProfitProtection && DailyProfitTargetPercent>0.0)
+   {
+      double dailyProfitMoney=0.0;
+      double startingEquity=Kia64DailyStartingEquity();
+      if(Kia64CalculateDailyProfit(dailyProfitMoney) && startingEquity>0.0)
+      {
+         double dailyProfitPercent=(dailyProfitMoney/startingEquity)*100.0;
+         double profitUsage=MathMax(0.0,MathMin(100.0,
+                               (dailyProfitPercent/DailyProfitTargetPercent)*100.0));
+         int profitFillWidth=(int)MathRound(K64ScaleX(170)*(profitUsage/100.0));
+         ObjectSetString(0,"K64_ProfitBarValue",OBJPROP_TEXT,DoubleToString(profitUsage,0)+"%");
+         ObjectSetInteger(0,"K64_ProfitBarValue",OBJPROP_COLOR,dailyProfitPercent>=0.0 ? K64_PANEL_GREEN : K64_PANEL_RED);
+         ObjectSetInteger(0,"K64_ProfitFill",OBJPROP_XSIZE,MathMax(1,profitFillWidth));
+      }
+      else
+      {
+         ObjectSetString(0,"K64_ProfitBarValue",OBJPROP_TEXT,"DATA ERROR");
+         ObjectSetInteger(0,"K64_ProfitBarValue",OBJPROP_COLOR,K64_PANEL_RED);
+         ObjectSetInteger(0,"K64_ProfitFill",OBJPROP_XSIZE,1);
+      }
+      ObjectSetInteger(0,"K64_ProfitFill",OBJPROP_YSIZE,MathMax(5,K64ScaleY(6)));
+      ObjectSetInteger(0,"K64_ProfitTrack",OBJPROP_YSIZE,MathMax(5,K64ScaleY(6)));
+   }
+   else
+   {
+      ObjectSetString(0,"K64_ProfitBarValue",OBJPROP_TEXT,"OFF");
+      ObjectSetInteger(0,"K64_ProfitBarValue",OBJPROP_COLOR,K64_PANEL_MUTED);
+      ObjectSetInteger(0,"K64_ProfitFill",OBJPROP_XSIZE,1);
+   }
    bool connected=(bool)TerminalInfoInteger(TERMINAL_CONNECTED);
    ObjectSetString(0,"K64_MonitorValue1",OBJPROP_TEXT,connected ? "ONLINE" : "OFFLINE");
    ObjectSetInteger(0,"K64_MonitorValue1",OBJPROP_COLOR,connected ? K64_PANEL_GREEN : K64_PANEL_RED);
