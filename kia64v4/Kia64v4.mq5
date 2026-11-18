@@ -3341,12 +3341,12 @@ bool K64CreateRect(string n,int x,int y,int w,int h,color bg,color border)
    ObjectSetInteger(0,n,OBJPROP_ZORDER,1);
    return true;
 }
-bool K64CreateLabel(string n,int x,int y,string t,int fs,color c,bool bold=false)
+bool K64CreateLabel(string n,int x,int y,string t,int fs,color c,bool bold=false,ENUM_ANCHOR_POINT anchor=ANCHOR_LEFT_UPPER)
 {
    if(ObjectFind(0,n)>=0) ObjectDelete(0,n);
    if(!ObjectCreate(0,n,OBJ_LABEL,0,0,0)) return false;
    ObjectSetInteger(0,n,OBJPROP_CORNER,CORNER_LEFT_UPPER);
-   ObjectSetInteger(0,n,OBJPROP_ANCHOR,ANCHOR_LEFT_UPPER);
+   ObjectSetInteger(0,n,OBJPROP_ANCHOR,anchor);
    ObjectSetInteger(0,n,OBJPROP_XDISTANCE,x);
    ObjectSetInteger(0,n,OBJPROP_YDISTANCE,y);
    ObjectSetString(0,n,OBJPROP_TEXT,t);
@@ -3474,10 +3474,8 @@ void K64CreatePanel()
    {
       int cx=startX+i*(cardW+cardGap);
       K64CreateRect(cardNames[i],cx,cardY,cardW,cardH,K64_PANEL_CARD,K64_PANEL_BORDER);
-      K64CreateLabel("K64_CardTitle"+IntegerToString(i),cx+cardW/2,cardY+K64ScaleY(9),cardTitles[i],K64ScaleFont(6),K64_PANEL_MUTED);
-      ObjectSetInteger(0,"K64_CardTitle"+IntegerToString(i),OBJPROP_ANCHOR,ANCHOR_UPPER);
-      K64CreateLabel(valueNames[i],cx+cardW/2,cardY+K64ScaleY(27),"--",K64ScaleFont(9),K64_PANEL_TEXT,true);
-      ObjectSetInteger(0,valueNames[i],OBJPROP_ANCHOR,ANCHOR_UPPER);
+      K64CreateLabel("K64_CardTitle"+IntegerToString(i),cx+cardW/2,cardY+K64ScaleY(9),cardTitles[i],K64ScaleFont(6),K64_PANEL_MUTED,false,ANCHOR_UPPER);
+      K64CreateLabel(valueNames[i],cx+cardW/2,cardY+K64ScaleY(27),"--",K64ScaleFont(9),K64_PANEL_TEXT,true,ANCHOR_UPPER);
    }
 
    int colY=cardY+cardH+K64ScaleY(10);
