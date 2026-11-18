@@ -206,7 +206,7 @@ tipigestione GridManagement = LotsSum;//Grid Management  // in
 
 double CoefficientGridManagement = 1;//Coefficient Grid Management  // in
 
-int MinDistanzaPiramide = 750;//Min Distance (for the grid orders)    // in
+input int MinDistanzaPiramide = 750;//Min Distance (for the grid orders)    // in
 double MinDistanceMultiplier = 1;   //Min Distance Multiplier (multiply Min Distance for each order) // in
 bool OneTradeBarGrid = true;//One Trade Bar Grid (if true, open max one trade for bar)   // in
 
