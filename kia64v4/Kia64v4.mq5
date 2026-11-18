@@ -624,6 +624,7 @@ bool Kia64CanOpenTrades()
 
 int OnInit()
   {
+   ChartSetInteger(0,CHART_EVENT_MOUSE_MOVE,true);
 //---
 //==================================coder robo ===============================
  string broker_name = AccountInfoString(ACCOUNT_SERVER);
@@ -716,6 +717,35 @@ void OnChartEvent(const int id,
                   const double &dparam,
                   const string &sparam)
   {
+   if(id == CHARTEVENT_MOUSE_MOVE)
+   {
+      string buttonNames[4]={"K64_ZoomIn","K64_ZoomOut","K64_Play","K64_Pause"};
+      color normalColors[4]={C'48,43,62',C'48,43,62',C'34,112,78',C'151,105,35'};
+      color hoverColors[4]={C'91,70,135',C'91,70,135',C'45,145,100',C'185,130,45'};
+      int mouseX=(int)lparam;
+      int mouseY=(int)dparam;
+      bool changed=false;
+      for(int i=0;i<4;i++)
+      {
+         if(ObjectFind(0,buttonNames[i])<0) continue;
+         int bx=(int)ObjectGetInteger(0,buttonNames[i],OBJPROP_XDISTANCE);
+         int by=(int)ObjectGetInteger(0,buttonNames[i],OBJPROP_YDISTANCE);
+         int bw=(int)ObjectGetInteger(0,buttonNames[i],OBJPROP_XSIZE);
+         int bh=(int)ObjectGetInteger(0,buttonNames[i],OBJPROP_YSIZE);
+         bool over=(mouseX>=bx && mouseX<bx+bw && mouseY>=by && mouseY<by+bh);
+         color buttonColor=over ? hoverColors[i] : normalColors[i];
+         if((color)ObjectGetInteger(0,buttonNames[i],OBJPROP_BGCOLOR)!=buttonColor)
+         {
+            ObjectSetInteger(0,buttonNames[i],OBJPROP_BGCOLOR,buttonColor);
+            ObjectSetInteger(0,buttonNames[i],OBJPROP_BORDER_COLOR,buttonColor);
+            changed=true;
+         }
+      }
+      if(changed) ChartRedraw(0);
+      return;
+   }
+
+
 
 
 
