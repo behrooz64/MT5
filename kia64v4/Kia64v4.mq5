@@ -3498,17 +3498,10 @@ void K64CreatePanel()
    int profitBarH=MathMax(5,K64ScaleY(6));
    int profitBarX=leftX+K64ScaleX(12);
    int profitBarW=colW-K64ScaleX(24);
-   int usageBarGap=K64ScaleX(8);
-   int usageBarW=(profitBarW-usageBarGap)/2;
-   int lossBarX=profitBarX+usageBarW+usageBarGap;
    K64CreateLabel("K64_ProfitBarLabel",profitBarX,profitBarLabelY,"PROFIT USAGE",K64ScaleFont(6),K64_PANEL_MUTED,true);
-   K64CreateRightLabel("K64_ProfitBarValue",profitBarX+usageBarW,profitBarLabelY,"--",K64ScaleFont(6),K64_PANEL_GREEN,true);
-   K64CreateRect("K64_ProfitTrack",profitBarX,profitBarY,usageBarW,profitBarH,C'72,60,88',C'72,60,88');
+   K64CreateRightLabel("K64_ProfitBarValue",profitBarX+profitBarW,profitBarLabelY,"--",K64ScaleFont(6),K64_PANEL_GREEN,true);
+   K64CreateRect("K64_ProfitTrack",profitBarX,profitBarY,profitBarW,profitBarH,C'72,60,88',C'72,60,88');
    K64CreateRect("K64_ProfitFill",profitBarX,profitBarY,1,profitBarH,K64_PANEL_GREEN,K64_PANEL_GREEN);
-   K64CreateLabel("K64_LossBarLabel",lossBarX,profitBarLabelY,"LOSS USAGE",K64ScaleFont(6),K64_PANEL_MUTED,true);
-   K64CreateRightLabel("K64_LossBarValue",lossBarX+usageBarW,profitBarLabelY,"--",K64ScaleFont(6),K64_PANEL_ORANGE,true);
-   K64CreateRect("K64_LossTrack",lossBarX,profitBarY,usageBarW,profitBarH,C'72,60,88',C'72,60,88');
-   K64CreateRect("K64_LossFill",lossBarX,profitBarY,1,profitBarH,K64_PANEL_ORANGE,K64_PANEL_ORANGE);
 
    K64CreateRect("K64_MonitorCard",rightX,sectionY,colW,sectionH,K64_PANEL_CARD,K64_PANEL_BORDER);
    K64CreateLabel("K64_MonitorTitle",rightX+K64ScaleX(12),sectionY+K64ScaleY(10),"SYSTEM MONITOR",K64ScaleFont(8),K64_PANEL_AQUA,true);
@@ -3523,7 +3516,15 @@ void K64CreatePanel()
    K64CreateRightLabel("K64_RiskMoneyValue",rightX+colW-K64ScaleX(12),sectionY+K64ScaleY(122),"--",K64ScaleFont(7),K64_PANEL_TEXT,true);
    K64CreateLabel("K64_RiskPercentLabel",rightX+K64ScaleX(12),sectionY+K64ScaleY(144),"Percent Limit",K64ScaleFont(6),K64_PANEL_TEXT);
    K64CreateRightLabel("K64_RiskPercentValue",rightX+colW-K64ScaleX(12),sectionY+K64ScaleY(144),"--",K64ScaleFont(7),K64_PANEL_TEXT,true);
-   K64CreateLabel("K64_RiskBarLabel",rightX+K64ScaleX(12),sectionY+K64ScaleY(160),"DAILY PROFIT TARGET",K64ScaleFont(6),K64_PANEL_MUTED,true);
+   int lossBarLabelY=sectionY+K64ScaleY(160);
+   int lossBarY=sectionY+K64ScaleY(178);
+   int lossBarH=MathMax(5,K64ScaleY(6));
+   int lossBarX=rightX+K64ScaleX(12);
+   int lossBarW=colW-K64ScaleX(24);
+   K64CreateLabel("K64_LossBarLabel",lossBarX,lossBarLabelY,"LOSS USAGE",K64ScaleFont(6),K64_PANEL_MUTED,true);
+   K64CreateRightLabel("K64_LossBarValue",lossBarX+lossBarW,lossBarLabelY,"--",K64ScaleFont(6),K64_PANEL_ORANGE,true);
+   K64CreateRect("K64_LossTrack",lossBarX,lossBarY,lossBarW,lossBarH,C'72,60,88',C'72,60,88');
+   K64CreateRect("K64_LossFill",lossBarX,lossBarY,1,lossBarH,K64_PANEL_ORANGE,K64_PANEL_ORANGE);
 
    int accountX=px+K64ScaleX(20),accountY=sectionY+sectionH+K64ScaleY(10);
    int accountW=K64ScaleX(400),accountH=K64ScaleY(92);
@@ -3745,7 +3746,7 @@ void K64UpdatePanel()
          double dailyProfitPercent=(dailyProfitMoney/startingEquity)*100.0;
          double profitUsage=MathMax(0.0,MathMin(100.0,
                                (dailyProfitPercent/DailyProfitTargetPercent)*100.0));
-         int profitFillWidth=(int)MathRound(((K64ScaleX(194)-K64ScaleX(24)-K64ScaleX(8))/2)*(profitUsage/100.0));
+         int profitFillWidth=(int)MathRound((K64ScaleX(194)-K64ScaleX(24))*(profitUsage/100.0));
          ObjectSetString(0,"K64_ProfitBarValue",OBJPROP_TEXT,DoubleToString(profitUsage,0)+"%");
          ObjectSetInteger(0,"K64_ProfitBarValue",OBJPROP_COLOR,dailyProfitPercent>=0.0 ? K64_PANEL_GREEN : K64_PANEL_RED);
          ObjectSetInteger(0,"K64_ProfitFill",OBJPROP_XSIZE,MathMax(1,profitFillWidth));
@@ -3765,7 +3766,7 @@ void K64UpdatePanel()
       ObjectSetInteger(0,"K64_ProfitBarValue",OBJPROP_COLOR,K64_PANEL_MUTED);
       ObjectSetInteger(0,"K64_ProfitFill",OBJPROP_XSIZE,1);
    }
-   int lossBarWidth=(K64ScaleX(194)-K64ScaleX(24)-K64ScaleX(8))/2;
+   int lossBarWidth=K64ScaleX(194)-K64ScaleX(24);
    if(!MonetaryStopLoss)
    {
       ObjectSetString(0,"K64_LossBarValue",OBJPROP_TEXT,"OFF");
