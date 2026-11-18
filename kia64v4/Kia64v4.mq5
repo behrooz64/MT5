@@ -157,9 +157,9 @@ bool Sunday = false;                           // in
 string Separo4="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 string Direction="TRADING DIRECTIONS";//TRADING DIRECTIONS  // in
-input bool AllowBuy = true;//Allow Buy                            
-input bool AllowSell = true;//Allow Sell                          
-input bool AllowBuyAndSellAtSameTime = true; //Allow Buy and Sell at the same time    
+bool AllowBuy = true;//Allow Buy                            
+bool AllowSell = true;//Allow Sell                          
+bool AllowBuyAndSellAtSameTime = true; //Allow Buy and Sell at the same time    
 bool AllowOrdersFromOthersPairsAtSameTime = true; //Allow Order From Others Charts, At Same Time    // in
 string ForTheParameterAbove = "(if it is false, will not open orders if there are Open Trades with a Magic numbers between +10 and -10, Compared to the current Magic Number)";//For This Parameter Above    // in 
 string Separo5="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
