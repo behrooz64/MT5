@@ -3485,9 +3485,9 @@ void K64CreatePanel()
    K64CreateRect("K64_PerformanceCard",leftX,sectionY,colW,sectionH,K64_PANEL_CARD,K64_PANEL_BORDER);
    K64CreateLabel("K64_PerformanceTitle",leftX+K64ScaleX(12),sectionY+K64ScaleY(10),"EA LIVE PERFORMANCE",K64ScaleFont(8),K64_PANEL_AQUA,true);
    int rowY=sectionY+K64ScaleY(34),rowGap=K64ScaleY(18);
-   string leftLabels[7]={"Account P/L","Floating P/L","Symbol P/L","Magic P/L","Chart P/L","Drawdown","Start Lot"};
-   string leftNames[7]={"K64_PerfValue1","K64_PerfValue2","K64_PerfValue3","K64_PerfValue4","K64_PerfValue5","K64_PerfValue6","K64_PerfValue7"};
-   for(int i=0;i<7;i++)
+   string leftLabels[6]={"Today's Trades","Today P/L","Floating P/L","Symbol P/L","Win Rate","Profit Factor"};
+   string leftNames[6]={"K64_PerfValue1","K64_PerfValue2","K64_PerfValue3","K64_PerfValue4","K64_PerfValue5","K64_PerfValue6"};
+   for(int i=0;i<6;i++)
    {
       K64CreateLabel("K64_PerfLabel"+IntegerToString(i+1),leftX+K64ScaleX(12),rowY+i*rowGap,leftLabels[i],K64ScaleFont(7),K64_PANEL_TEXT);
       K64CreateRightLabel(leftNames[i],leftX+colW-K64ScaleX(12),rowY+i*rowGap,"--",K64ScaleFont(7),K64_PANEL_TEXT,true);
@@ -3529,6 +3529,134 @@ void K64CreatePanel()
    K64CreateRightLabel("K64_Footer",px+pw-K64ScaleX(20),captionY,"KIA64 SYSTEM",K64ScaleFont(6),C'74,68,88');
    K64UpdatePanelHeader();
 }
+struct K64EAHistoryPositionStat
+{
+   ulong positionId;
+   double netResult;
+   bool isClosed;
+};
+
+void K64GetEAHistoryStats(int &trades,double &winRate,double &profitFactor,
+                          int &wins,int &losses)
+{
+   trades=0;
+   winRate=0.0;
+   profitFactor=0.0;
+   wins=0;
+   losses=0;
+
+   if(!HistorySelect(0,TimeCurrent()))
+      return;
+
+   static int cachedHistoryDeals=-1;
+   static int cachedTrades=0,cachedWins=0,cachedLosses=0;
+   static double cachedWinRate=0.0,cachedProfitFactor=0.0;
+   int totalDeals=HistoryDealsTotal();
+   if(totalDeals==cachedHistoryDeals)
+   {
+      trades=cachedTrades;
+      winRate=cachedWinRate;
+      profitFactor=cachedProfitFactor;
+      wins=cachedWins;
+      losses=cachedLosses;
+      return;
+   }
+
+   K64EAHistoryPositionStat positions[];
+   int positionCount=0;
+
+   for(int d=0;d<totalDeals;d++)
+   {
+      ulong deal=HistoryDealGetTicket(d);
+      if(deal==0) continue;
+      if(HistoryDealGetInteger(deal,DEAL_MAGIC)!=MagicNumber) continue;
+      if(HistoryDealGetString(deal,DEAL_SYMBOL)!=_Symbol) continue;
+
+      long dealType=HistoryDealGetInteger(deal,DEAL_TYPE);
+      if(dealType!=DEAL_TYPE_BUY && dealType!=DEAL_TYPE_SELL)
+         continue;
+
+      ulong positionId=(ulong)HistoryDealGetInteger(deal,DEAL_POSITION_ID);
+      if(positionId==0) continue;
+
+      int index=-1;
+      for(int p=0;p<positionCount;p++)
+      {
+         if(positions[p].positionId==positionId)
+         {
+            index=p;
+            break;
+         }
+      }
+
+      if(index<0)
+      {
+         index=positionCount;
+         positionCount++;
+         ArrayResize(positions,positionCount);
+         positions[index].positionId=positionId;
+         positions[index].netResult=0.0;
+         positions[index].isClosed=false;
+      }
+
+      positions[index].netResult+=HistoryDealGetDouble(deal,DEAL_PROFIT)
+                                 +HistoryDealGetDouble(deal,DEAL_SWAP)
+                                 +HistoryDealGetDouble(deal,DEAL_COMMISSION)
+                                 +HistoryDealGetDouble(deal,DEAL_FEE);
+
+      long entry=HistoryDealGetInteger(deal,DEAL_ENTRY);
+      if(entry==DEAL_ENTRY_OUT || entry==DEAL_ENTRY_OUT_BY || entry==DEAL_ENTRY_INOUT)
+         positions[index].isClosed=true;
+   }
+
+   for(int p=0;p<positionCount;p++)
+   {
+      for(int pos=0;pos<PositionsTotal();pos++)
+      {
+         ulong ticket=PositionGetTicket(pos);
+         if(ticket==0) continue;
+         if((ulong)PositionGetInteger(POSITION_IDENTIFIER)==positions[p].positionId)
+         {
+            positions[p].isClosed=false;
+            break;
+         }
+      }
+   }
+
+   double grossProfit=0.0;
+   double grossLoss=0.0;
+   for(int p=0;p<positionCount;p++)
+   {
+      if(!positions[p].isClosed) continue;
+      double result=positions[p].netResult;
+      trades++;
+      if(result>0.0)
+      {
+         wins++;
+         grossProfit+=result;
+      }
+      else if(result<0.0)
+      {
+         losses++;
+         grossLoss+=MathAbs(result);
+      }
+   }
+
+   if(trades>0)
+      winRate=100.0*(double)wins/(double)trades;
+   if(grossLoss>0.0)
+      profitFactor=grossProfit/grossLoss;
+   else if(grossProfit>0.0)
+      profitFactor=-1.0;
+
+   cachedHistoryDeals=totalDeals;
+   cachedTrades=trades;
+   cachedWinRate=winRate;
+   cachedProfitFactor=profitFactor;
+   cachedWins=wins;
+   cachedLosses=losses;
+}
+
 void K64UpdatePanel()
 {
    if(!ShowPanel || SiamoInTestOscuro) return;
@@ -3542,21 +3670,57 @@ void K64UpdatePanel()
    ObjectSetString(0,"K64_ValueEquity",OBJPROP_TEXT,DoubleToString(eq,2));
    ObjectSetString(0,"K64_ValueSpread",OBJPROP_TEXT,DoubleToString((double)SymbolInfoInteger(_Symbol,SYMBOL_SPREAD),0));
    ObjectSetString(0,"K64_ValueLots",OBJPROP_TEXT,DoubleToString(LottoDaTradare,2));
-   double values[7];
-   values[0]=accountPL;
-   values[1]=pm;
-   values[2]=ps;
-   values[3]=pm;
-   values[4]=pc;
-   values[5]=dd;
-   values[6]=LottoDaTradare;
-   for(int i=0;i<7;i++)
+   int todayTrades=0;
+   double todayPL=0.0;
+   datetime now=TimeCurrent();
+   MqlDateTime today;
+   TimeToStruct(now,today);
+   today.hour=0;
+   today.min=0;
+   today.sec=0;
+   datetime dayStart=StructToTime(today);
+   if(HistorySelect(dayStart,now))
    {
-      string valueText=(i==5 ? DoubleToString(values[i],2)+"%" : DoubleToString(values[i],2));
-      ObjectSetString(0,"K64_PerfValue"+IntegerToString(i+1),OBJPROP_TEXT,valueText);
-      ObjectSetInteger(0,"K64_PerfValue"+IntegerToString(i+1),OBJPROP_COLOR,
-                       (i<=4 ? (values[i]>=0.0 ? K64_PANEL_GREEN : K64_PANEL_RED) : K64_PANEL_TEXT));
+      for(int d=0;d<HistoryDealsTotal();d++)
+      {
+         ulong deal=HistoryDealGetTicket(d);
+         if(deal==0) continue;
+         if(HistoryDealGetInteger(deal,DEAL_MAGIC)!=MagicNumber) continue;
+         if(HistoryDealGetString(deal,DEAL_SYMBOL)!=_Symbol) continue;
+         long entry=HistoryDealGetInteger(deal,DEAL_ENTRY);
+         todayPL+=HistoryDealGetDouble(deal,DEAL_PROFIT)
+                 +HistoryDealGetDouble(deal,DEAL_SWAP)
+                 +HistoryDealGetDouble(deal,DEAL_COMMISSION);
+         if(entry==DEAL_ENTRY_OUT || entry==DEAL_ENTRY_OUT_BY)
+            todayTrades++;
+      }
    }
+
+   int eaClosedTrades=0,eaWins=0,eaLosses=0;
+   double eaWinRate=0.0,eaProfitFactor=0.0;
+   K64GetEAHistoryStats(eaClosedTrades,eaWinRate,eaProfitFactor,eaWins,eaLosses);
+
+   string values[6];
+   values[0]=IntegerToString(todayTrades);
+   values[1]=DoubleToString(todayPL,2);
+   values[2]=DoubleToString(pc,2);
+   values[3]=DoubleToString(ps,2);
+   values[4]=DoubleToString(eaWinRate,1)+"%";
+   values[5]="--";
+   if(eaProfitFactor<0.0)
+      values[5]="INF";
+   else if(eaClosedTrades>0)
+      values[5]=DoubleToString(eaProfitFactor,2);
+
+   for(int i=0;i<6;i++)
+      ObjectSetString(0,"K64_PerfValue"+IntegerToString(i+1),OBJPROP_TEXT,values[i]);
+
+   ObjectSetInteger(0,"K64_PerfValue1",OBJPROP_COLOR,K64_PANEL_TEXT);
+   ObjectSetInteger(0,"K64_PerfValue2",OBJPROP_COLOR,todayPL>=0.0 ? K64_PANEL_GREEN : K64_PANEL_RED);
+   ObjectSetInteger(0,"K64_PerfValue3",OBJPROP_COLOR,pc>=0.0 ? K64_PANEL_GREEN : K64_PANEL_RED);
+   ObjectSetInteger(0,"K64_PerfValue4",OBJPROP_COLOR,ps>=0.0 ? K64_PANEL_GREEN : K64_PANEL_RED);
+   ObjectSetInteger(0,"K64_PerfValue5",OBJPROP_COLOR,eaWinRate>=50.0 ? K64_PANEL_GREEN : K64_PANEL_ORANGE);
+   ObjectSetInteger(0,"K64_PerfValue6",OBJPROP_COLOR,eaProfitFactor<0.0 || eaProfitFactor>=1.0 ? K64_PANEL_GREEN : K64_PANEL_ORANGE);
    bool connected=(bool)TerminalInfoInteger(TERMINAL_CONNECTED);
    ObjectSetString(0,"K64_MonitorValue1",OBJPROP_TEXT,connected ? "ONLINE" : "OFFLINE");
    ObjectSetInteger(0,"K64_MonitorValue1",OBJPROP_COLOR,connected ? K64_PANEL_GREEN : K64_PANEL_RED);
