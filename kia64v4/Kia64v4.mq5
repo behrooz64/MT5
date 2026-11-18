@@ -17,7 +17,7 @@ CTrade m_trade;
 
 input string st ="==Security==";
 input string user_password = "";
-input string Set = "==========Setting Bot=========";
+string Set = "==========Setting Bot========="; // Display-only separator; hidden from Inputs.
 string KamalEA = "Kia64 UNLIMITED VERSION"; // in
 int MagicNumber = 8398;//Magic Number                           // in
 int MaxSpread = 500;//Max Spread (for open a trade)             //in
