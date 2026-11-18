@@ -3543,7 +3543,7 @@ void K64UpdatePanel()
    ObjectSetString(0,"K64_ProtectionTargetValue",OBJPROP_TEXT,target);
    string protectionState="READY";
    color protectionColor=K64_PANEL_GREEN;
-   if(st==KIA64_DAILY_PROFIT_PAUSE){protectionState="TARGET HIT";protectionColor=K64_PANEL_ORANGE;}
+   if(runStateMonitor==KIA64_DAILY_PROFIT_PAUSE){protectionState="TARGET HIT";protectionColor=K64_PANEL_ORANGE;}
    else if(!Kia64DailyProfitDataValid && DailyProfitProtection){protectionState="DATA ERROR";protectionColor=K64_PANEL_RED;}
    ObjectSetString(0,"K64_ProtectionStatusValue",OBJPROP_TEXT,protectionState);
    ObjectSetInteger(0,"K64_ProtectionStatusValue",OBJPROP_COLOR,protectionColor);
