@@ -3664,8 +3664,6 @@ void K64UpdatePanel()
    double ps=0.0,pm=0.0,pc=0.0;
    CalcolaDati(ps,pm,pc);
    double bal=AccountInfoDouble(ACCOUNT_BALANCE),eq=AccountInfoDouble(ACCOUNT_EQUITY);
-   double accountPL=eq-bal;
-   double dd=(bal>0.0 ? 100.0-(eq/bal)*100.0 : 0.0);
    ObjectSetString(0,"K64_ValueBalance",OBJPROP_TEXT,DoubleToString(bal,2));
    ObjectSetString(0,"K64_ValueEquity",OBJPROP_TEXT,DoubleToString(eq,2));
    ObjectSetString(0,"K64_ValueSpread",OBJPROP_TEXT,DoubleToString((double)SymbolInfoInteger(_Symbol,SYMBOL_SPREAD),0));
