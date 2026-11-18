@@ -15,7 +15,7 @@ input string AllowedBroker = "AMarkets"; // Allowed broker server
 CTrade m_trade;
 
 
-input string st ="==Security password=="; // Give Me Code
+input string st ="==Security==";
 input string user_password = "";
 input string Set = "==========Setting Bot=========";
 string KamalEA = "Kia64 UNLIMITED VERSION"; // in
@@ -139,7 +139,7 @@ input int TradingStartHour = 0;//Trading Start Hour
 input int TradingStartMinute = 0;//Trading Start Minute                  
 input int TradingStopHour = 9;//Trading Stop Hour                         
 input int TradingStopMinute = 0;//Trading Stop Minute                     
-input bool CloseOutHour = false;//Close everything Out of hours           
+input bool CloseOutHour = false;//Close After Hours
 int coefstart;
 int coefstop;
 
@@ -275,19 +275,19 @@ enum ClosureModality
 
 
 string MonetaryLoss = "Monetary Loss Settings";//Monetary Loss  // in
-input bool MonetaryStopLoss = true;//Enable Monetary Stop Loss     
+input bool MonetaryStopLoss = true;//Money Loss Protection
 input bool EveryMicrolot = false;//If true, Multiply Monetary Stop Loss Amount*Start Lot size*100   
-input bool StopTradingWhenHit = true;//Stop EA after Monetary loss              
-input int MaximumMonetaryLoss = 35;//Monetary Stop Loss Amount (expressed in the account currency)   
+input bool StopTradingWhenHit = true;//Stop After Loss
+input int MaximumMonetaryLoss = 35;//Max Money Loss
 
 string PercentageLoss = "Percentage Loss Settings";//Percentage Loss // in
-input bool CloseInPercentageLoss = true;//Enable Close In Percentage Loss   
-input bool StopTradingAfterPercentageLoss = false;//Stop EA After Percentage Loss  
-input int LossPercentage = 25;//Loss Amount in Percentage
+input bool CloseInPercentageLoss = true;//Loss Protection
+input bool StopTradingAfterPercentageLoss = false;//Stop After Loss
+input int LossPercentage = 25;//Max Loss %
 
 string DailyProfitProtectionSettings = "DAILY PROFIT PROTECTION";
-input bool DailyProfitProtection = true; // Enable daily profit protection
-input double DailyProfitTargetPercent = 1.0; // Daily target percentage (0 = disabled)
+input bool DailyProfitProtection = true; // Daily Profit Guard
+input double DailyProfitTargetPercent = 1.0; // Target %
 input double DailyProfitTargetMoney = 0.0; // Daily target in account currency (0 = disabled)
  
 
