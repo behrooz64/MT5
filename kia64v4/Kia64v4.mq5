@@ -3512,9 +3512,10 @@ void K64CreatePanel()
    int sectionY=colY+K64ScaleY(10),colW=K64ScaleX(194);
    int leftX=px+K64ScaleX(20),rightX=px+K64ScaleX(226),sectionH=K64ScaleY(190);
    K64CreateRect("K64_PerformanceCard",leftX,sectionY,colW,sectionDisplayHeight,K64_PANEL_CARD,K64_PANEL_BORDER);
-   K64CreateLabel("K64_PerformanceTitle",leftX+K64ScaleX(10),sectionY+K64ScaleY(10),"EA PERFORMANCE",K64ScaleFont(7),K64_PANEL_AQUA,true);
-    int collapseButtonSize=MathMax(1,K64ScaleX(18));
-    K64CreateButton("K64_GroupToggleEA",leftX+colW-K64ScaleX(26),sectionY+K64ScaleY(6),collapseButtonSize,collapseButtonSize,K64PerformanceGroupCollapsed?"+":"-",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_BORDER,K64ScaleFont(7));
+   int collapseButtonSize=MathMax(12,K64ScaleX(16));
+   int collapseButtonRightGap=K64ScaleX(8);
+   K64CreateLabel("K64_PerformanceTitle",leftX+K64ScaleX(10),sectionY+K64ScaleY(10),"EA PERFORMANCE",K64ScaleFont(6),K64_PANEL_AQUA,true);
+   K64CreateButton("K64_GroupToggleEA",leftX+colW-collapseButtonSize-collapseButtonRightGap,sectionY+K64ScaleY(7),collapseButtonSize,collapseButtonSize,K64PerformanceGroupCollapsed?"+":"-",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_BORDER,K64ScaleFont(7));
    int rowY=sectionY+K64ScaleY(34),rowGap=K64ScaleY(18);
    string leftLabels[6]={"Today's Trades","Today P/L","Floating P/L","Symbol P/L","Win Rate","Profit Factor"};
    string leftNames[6]={"K64_PerfValue1","K64_PerfValue2","K64_PerfValue3","K64_PerfValue4","K64_PerfValue5","K64_PerfValue6"};
@@ -3535,8 +3536,8 @@ void K64CreatePanel()
    K64CreateRect("K64_ProfitFill",profitBarX,profitBarY,1,profitBarH,K64_PANEL_GREEN,K64_PANEL_GREEN);
 
    K64CreateRect("K64_MonitorCard",rightX,sectionY,colW,sectionDisplayHeight,K64_PANEL_CARD,K64_PANEL_BORDER);
-   K64CreateLabel("K64_MonitorTitle",rightX+K64ScaleX(10),sectionY+K64ScaleY(10),"SYSTEM MONITOR",K64ScaleFont(7),K64_PANEL_AQUA,true);
-    K64CreateButton("K64_GroupToggleMonitor",rightX+colW-K64ScaleX(26),sectionY+K64ScaleY(6),collapseButtonSize,collapseButtonSize,K64PerformanceGroupCollapsed?"+":"-",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_BORDER,K64ScaleFont(7));
+   K64CreateLabel("K64_MonitorTitle",rightX+K64ScaleX(10),sectionY+K64ScaleY(10),"SYSTEM MONITOR",K64ScaleFont(6),K64_PANEL_AQUA,true);
+   K64CreateButton("K64_GroupToggleMonitor",rightX+colW-collapseButtonSize-collapseButtonRightGap,sectionY+K64ScaleY(7),collapseButtonSize,collapseButtonSize,K64PerformanceGroupCollapsed?"+":"-",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_BORDER,K64ScaleFont(7));
    int monitorY=sectionY+K64ScaleY(34),monitorGap=K64ScaleY(22);
    string monitorLabels[4]={"Connection","Run State","Daily Protection","Loss Protection"};
    for(int j=0;j<4;j++)
