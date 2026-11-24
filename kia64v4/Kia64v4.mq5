@@ -3533,14 +3533,30 @@ void K64CreatePanel()
 
    int accountX=px+K64ScaleX(20),accountY=sectionY+sectionH+K64ScaleY(10);
    int accountW=K64ScaleX(400),accountH=K64ScaleY(92);
-   K64CreateRect("K64_ProtectionCard",accountX,accountY,accountW,accountH,K64_PANEL_CARD,K64_PANEL_BORDER);
-   K64CreateLabel("K64_ProtectionTitle",accountX+K64ScaleX(12),accountY+K64ScaleY(7),"DAILY PROFIT PROTECTION",K64ScaleFont(7),K64_PANEL_ACCENT,true);
-   K64CreateLabel("K64_ProtectionTargetLabel",accountX+K64ScaleX(12),accountY+K64ScaleY(27),"Configured target",K64ScaleFont(6),K64_PANEL_MUTED);
-   K64CreateLabel("K64_ProtectionTargetValue",accountX+K64ScaleX(12),accountY+K64ScaleY(39),"--",K64ScaleFont(8),K64_PANEL_TEXT,true);
-   K64CreateLabel("K64_ProtectionStatusLabel",accountX+K64ScaleX(139),accountY+K64ScaleY(27),"Protection state",K64ScaleFont(6),K64_PANEL_MUTED);
-   K64CreateLabel("K64_ProtectionStatusValue",accountX+K64ScaleX(139),accountY+K64ScaleY(39),"--",K64ScaleFont(8),K64_PANEL_TEXT,true);
-   K64CreateLabel("K64_ProtectionBaseLabel",accountX+K64ScaleX(266),accountY+K64ScaleY(27),"Daily baseline",K64ScaleFont(6),K64_PANEL_MUTED);
-   K64CreateLabel("K64_ProtectionBaseValue",accountX+K64ScaleX(266),accountY+K64ScaleY(39),"--",K64ScaleFont(8),K64_PANEL_TEXT,true);
+   K64CreateRect("K64_AccountPerformanceCard",accountX,accountY,accountW,accountH,K64_PANEL_CARD,K64_PANEL_BORDER);
+   K64CreateLabel("K64_AccountPerformanceTitle",accountX+K64ScaleX(12),accountY+K64ScaleY(7),"ACCOUNT PERFORMANCE",K64ScaleFont(7),K64_PANEL_ACCENT,true);
+
+   int accountLabelY1=accountY+K64ScaleY(27);
+   int accountValueY1=accountY+K64ScaleY(39);
+   int accountLabelY2=accountY+K64ScaleY(59);
+   int accountValueY2=accountY+K64ScaleY(71);
+   int accountCol1=accountX+K64ScaleX(12);
+   int accountCol2=accountX+K64ScaleX(139);
+   int accountCol3=accountX+K64ScaleX(266);
+
+   K64CreateLabel("K64_AccountTradesLabel",accountCol1,accountLabelY1,"Closed Trades",K64ScaleFont(5),K64_PANEL_MUTED,false);
+   K64CreateLabel("K64_AccountTradesValue",accountCol1,accountValueY1,"--",K64ScaleFont(7),K64_PANEL_TEXT,true);
+   K64CreateLabel("K64_AccountNetLabel",accountCol2,accountLabelY1,"Net P/L",K64ScaleFont(5),K64_PANEL_MUTED,false);
+   K64CreateLabel("K64_AccountNetValue",accountCol2,accountValueY1,"--",K64ScaleFont(7),K64_PANEL_TEXT,true);
+   K64CreateLabel("K64_AccountWinRateLabel",accountCol3,accountLabelY1,"Win Rate",K64ScaleFont(5),K64_PANEL_MUTED,false);
+   K64CreateLabel("K64_AccountWinRateValue",accountCol3,accountValueY1,"--",K64ScaleFont(7),K64_PANEL_TEXT,true);
+
+   K64CreateLabel("K64_AccountFactorLabel",accountCol1,accountLabelY2,"Profit Factor",K64ScaleFont(5),K64_PANEL_MUTED,false);
+   K64CreateLabel("K64_AccountFactorValue",accountCol1,accountValueY2,"--",K64ScaleFont(7),K64_PANEL_TEXT,true);
+   K64CreateLabel("K64_AccountWinsLabel",accountCol2,accountLabelY2,"Profit History",K64ScaleFont(5),K64_PANEL_MUTED,false);
+   K64CreateLabel("K64_AccountWinsValue",accountCol2,accountValueY2,"--",K64ScaleFont(7),K64_PANEL_MUTED,true);
+   K64CreateLabel("K64_AccountLossesLabel",accountCol3,accountLabelY2,"Trading Commission",K64ScaleFont(5),K64_PANEL_MUTED,false);
+   K64CreateLabel("K64_AccountLossesValue",accountCol3,accountValueY2,"--",K64ScaleFont(7),K64_PANEL_MUTED,true);
 
    int buttonY=accountY+accountH+K64ScaleY(10),buttonGap=K64ScaleX(6),buttonH=K64ScaleY(28);
    int buttonW=(pw-2*buttonGap)/3;
@@ -3680,6 +3696,85 @@ void K64GetEAHistoryStats(int &trades,double &winRate,double &profitFactor,
    cachedLosses=losses;
 }
 
+void K64GetAccountHistoryStats(int &trades,double &netPL,double &winRate,
+                                double &profitFactor,int &wins,int &losses)
+{
+   trades=0; netPL=0.0; winRate=0.0; profitFactor=0.0; wins=0; losses=0;
+   if(!HistorySelect(0,TimeCurrent())) return;
+
+   static int cachedHistoryDeals=-1;
+   static int cachedTrades=0,cachedWins=0,cachedLosses=0;
+   static double cachedNetPL=0.0,cachedWinRate=0.0,cachedProfitFactor=0.0;
+   int totalDeals=HistoryDealsTotal();
+   if(totalDeals==cachedHistoryDeals)
+   {
+      trades=cachedTrades; netPL=cachedNetPL; winRate=cachedWinRate;
+      profitFactor=cachedProfitFactor; wins=cachedWins; losses=cachedLosses;
+      return;
+   }
+
+   K64EAHistoryPositionStat positions[];
+   int positionCount=0;
+   for(int d=0;d<totalDeals;d++)
+   {
+      ulong deal=HistoryDealGetTicket(d);
+      if(deal==0) continue;
+      long dealType=HistoryDealGetInteger(deal,DEAL_TYPE);
+      if(dealType!=DEAL_TYPE_BUY && dealType!=DEAL_TYPE_SELL) continue;
+      ulong positionId=(ulong)HistoryDealGetInteger(deal,DEAL_POSITION_ID);
+      if(positionId==0) continue;
+
+      int index=-1;
+      for(int p=0;p<positionCount;p++)
+         if(positions[p].positionId==positionId) { index=p; break; }
+
+      if(index<0)
+      {
+         index=positionCount++;
+         ArrayResize(positions,positionCount);
+         positions[index].positionId=positionId;
+         positions[index].netResult=0.0;
+         positions[index].isClosed=false;
+      }
+      positions[index].netResult+=HistoryDealGetDouble(deal,DEAL_PROFIT)
+                                 +HistoryDealGetDouble(deal,DEAL_SWAP)
+                                 +HistoryDealGetDouble(deal,DEAL_COMMISSION)
+                                 +HistoryDealGetDouble(deal,DEAL_FEE);
+      long entry=HistoryDealGetInteger(deal,DEAL_ENTRY);
+      if(entry==DEAL_ENTRY_OUT || entry==DEAL_ENTRY_OUT_BY || entry==DEAL_ENTRY_INOUT)
+         positions[index].isClosed=true;
+   }
+
+   // A partially closed position is not counted until its remaining volume is closed.
+   for(int p=0;p<positionCount;p++)
+   {
+      for(int pos=0;pos<PositionsTotal();pos++)
+      {
+         ulong ticket=PositionGetTicket(pos);
+         if(ticket==0) continue;
+         if((ulong)PositionGetInteger(POSITION_IDENTIFIER)==positions[p].positionId)
+         { positions[p].isClosed=false; break; }
+      }
+   }
+
+   double grossProfit=0.0,grossLoss=0.0;
+   for(int p=0;p<positionCount;p++)
+   {
+      if(!positions[p].isClosed) continue;
+      double result=positions[p].netResult;
+      trades++; netPL+=result;
+      if(result>0.0) { wins++; grossProfit+=result; }
+      else if(result<0.0) { losses++; grossLoss+=MathAbs(result); }
+   }
+   if(trades>0) winRate=100.0*(double)wins/(double)trades;
+   if(grossLoss>0.0) profitFactor=grossProfit/grossLoss;
+   else if(grossProfit>0.0) profitFactor=-1.0;
+
+   cachedHistoryDeals=totalDeals; cachedTrades=trades; cachedNetPL=netPL;
+   cachedWinRate=winRate; cachedProfitFactor=profitFactor;
+   cachedWins=wins; cachedLosses=losses;
+}
+
 void K64UpdatePanel()
 {
    if(!ShowPanel || SiamoInTestOscuro) return;
@@ -3742,6 +3837,61 @@ void K64UpdatePanel()
    int eaClosedTrades=0,eaWins=0,eaLosses=0;
    double eaWinRate=0.0,eaProfitFactor=0.0;
    K64GetEAHistoryStats(eaClosedTrades,eaWinRate,eaProfitFactor,eaWins,eaLosses);
+
+   int accountTrades=0,accountWins=0,accountLosses=0;
+   double accountNetPL=0.0,accountWinRate=0.0,accountProfitFactor=0.0;
+   K64GetAccountHistoryStats(accountTrades,accountNetPL,accountWinRate,
+                             accountProfitFactor,accountWins,accountLosses);
+
+   // Daily account profit and commission include all symbols and magic numbers.
+   double dailyAccountProfit=0.0,dailyAccountCommission=0.0;
+   if(HistorySelect(dayStart,now))
+   {
+      for(int d=0;d<HistoryDealsTotal();d++)
+      {
+         ulong deal=HistoryDealGetTicket(d);
+         if(deal==0) continue;
+         long dealType=HistoryDealGetInteger(deal,DEAL_TYPE);
+         if(dealType!=DEAL_TYPE_BUY && dealType!=DEAL_TYPE_SELL) continue;
+         double dealCommission=HistoryDealGetDouble(deal,DEAL_COMMISSION);
+         dailyAccountProfit+=HistoryDealGetDouble(deal,DEAL_PROFIT)
+                            +HistoryDealGetDouble(deal,DEAL_SWAP)
+                            +dealCommission
+                            +HistoryDealGetDouble(deal,DEAL_FEE);
+         dailyAccountCommission+=dealCommission;
+      }
+   }
+
+   string dailyProfitHistoryText="$0.00";
+   color dailyProfitHistoryColor=K64_PANEL_MUTED;
+   if(dailyAccountProfit>0.0)
+   {
+      dailyProfitHistoryText="+$"+DoubleToString(dailyAccountProfit,2);
+      dailyProfitHistoryColor=K64_PANEL_GREEN;
+   }
+   else if(dailyAccountProfit<0.0)
+   {
+      dailyProfitHistoryText="-$"+DoubleToString(MathAbs(dailyAccountProfit),2);
+      dailyProfitHistoryColor=K64_PANEL_RED;
+   }
+   string dailyCommissionText="$0.00";
+   if(dailyAccountCommission>0.0)
+      dailyCommissionText="+$"+DoubleToString(dailyAccountCommission,2);
+   else if(dailyAccountCommission<0.0)
+      dailyCommissionText="-$"+DoubleToString(MathAbs(dailyAccountCommission),2);
+
+   ObjectSetString(0,"K64_AccountTradesValue",OBJPROP_TEXT,IntegerToString(accountTrades));
+   ObjectSetString(0,"K64_AccountNetValue",OBJPROP_TEXT,DoubleToString(accountNetPL,2));
+   ObjectSetString(0,"K64_AccountWinRateValue",OBJPROP_TEXT,DoubleToString(accountWinRate,1)+"%");
+   string accountFactorText="--";
+   if(accountProfitFactor<0.0) accountFactorText="INF";
+   else if(accountTrades>0) accountFactorText=DoubleToString(accountProfitFactor,2);
+   ObjectSetString(0,"K64_AccountFactorValue",OBJPROP_TEXT,accountFactorText);
+   ObjectSetString(0,"K64_AccountWinsValue",OBJPROP_TEXT,dailyProfitHistoryText);
+   ObjectSetInteger(0,"K64_AccountWinsValue",OBJPROP_COLOR,dailyProfitHistoryColor);
+   ObjectSetString(0,"K64_AccountLossesValue",OBJPROP_TEXT,dailyCommissionText);
+   ObjectSetInteger(0,"K64_AccountLossesValue",OBJPROP_COLOR,K64_PANEL_MUTED);
+   ObjectSetInteger(0,"K64_AccountNetValue",OBJPROP_COLOR,accountNetPL>=0.0?K64_PANEL_GREEN:K64_PANEL_RED);
 
    string values[6];
    values[0]=IntegerToString(todayTrades);
@@ -3838,23 +3988,6 @@ void K64UpdatePanel()
    ObjectSetString(0,"K64_RiskMoneyValue",OBJPROP_TEXT,MonetaryStopLoss ? DoubleToString(MaximumMonetaryLoss,2) : "OFF");
    ObjectSetString(0,"K64_RiskPercentValue",OBJPROP_TEXT,CloseInPercentageLoss ? IntegerToString(LossPercentage)+"%" : "OFF");
 
-   string target="OFF";
-   if(DailyProfitProtection)
-   {
-      target="";
-      if(DailyProfitTargetPercent>0.0) target=DoubleToString(DailyProfitTargetPercent,2)+"%";
-      if(DailyProfitTargetPercent>0.0 && DailyProfitTargetMoney>0.0) target+=" / ";
-      if(DailyProfitTargetMoney>0.0) target+=DoubleToString(DailyProfitTargetMoney,2);
-      if(target=="") target="OFF";
-   }
-   ObjectSetString(0,"K64_ProtectionTargetValue",OBJPROP_TEXT,target);
-   string protectionState="READY";
-   color protectionColor=K64_PANEL_GREEN;
-   if(runStateMonitor==KIA64_DAILY_PROFIT_PAUSE){protectionState="TARGET HIT";protectionColor=K64_PANEL_ORANGE;}
-   else if(!Kia64DailyProfitDataValid && DailyProfitProtection){protectionState="DATA ERROR";protectionColor=K64_PANEL_RED;}
-   ObjectSetString(0,"K64_ProtectionStatusValue",OBJPROP_TEXT,protectionState);
-   ObjectSetInteger(0,"K64_ProtectionStatusValue",OBJPROP_COLOR,protectionColor);
-   ObjectSetString(0,"K64_ProtectionBaseValue",OBJPROP_TEXT,DoubleToString(Kia64DailyStartingEquity(),2));
    K64UpdatePanelHeader();
 }
 void K64PanelZoomBy(double delta)
