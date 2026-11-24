@@ -3512,7 +3512,7 @@ void K64CreatePanel()
    int sectionY=colY+K64ScaleY(10),colW=K64ScaleX(194);
    int leftX=px+K64ScaleX(20),rightX=px+K64ScaleX(226),sectionH=K64ScaleY(190);
    K64CreateRect("K64_PerformanceCard",leftX,sectionY,colW,sectionDisplayHeight,K64_PANEL_CARD,K64_PANEL_BORDER);
-   K64CreateLabel("K64_PerformanceTitle",leftX+K64ScaleX(12),sectionY+K64ScaleY(10),"EA PERFORMANCE",K64ScaleFont(8),K64_PANEL_AQUA,true);
+   K64CreateLabel("K64_PerformanceTitle",leftX+K64ScaleX(10),sectionY+K64ScaleY(10),"EA PERFORMANCE",K64ScaleFont(7),K64_PANEL_AQUA,true);
     int collapseButtonSize=MathMax(1,K64ScaleX(18));
     K64CreateButton("K64_GroupToggleEA",leftX+colW-K64ScaleX(26),sectionY+K64ScaleY(6),collapseButtonSize,collapseButtonSize,K64PerformanceGroupCollapsed?"+":"-",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_BORDER,K64ScaleFont(7));
    int rowY=sectionY+K64ScaleY(34),rowGap=K64ScaleY(18);
@@ -3535,7 +3535,7 @@ void K64CreatePanel()
    K64CreateRect("K64_ProfitFill",profitBarX,profitBarY,1,profitBarH,K64_PANEL_GREEN,K64_PANEL_GREEN);
 
    K64CreateRect("K64_MonitorCard",rightX,sectionY,colW,sectionDisplayHeight,K64_PANEL_CARD,K64_PANEL_BORDER);
-   K64CreateLabel("K64_MonitorTitle",rightX+K64ScaleX(12),sectionY+K64ScaleY(10),"SYSTEM MONITOR",K64ScaleFont(8),K64_PANEL_AQUA,true);
+   K64CreateLabel("K64_MonitorTitle",rightX+K64ScaleX(10),sectionY+K64ScaleY(10),"SYSTEM MONITOR",K64ScaleFont(7),K64_PANEL_AQUA,true);
     K64CreateButton("K64_GroupToggleMonitor",rightX+colW-K64ScaleX(26),sectionY+K64ScaleY(6),collapseButtonSize,collapseButtonSize,K64PerformanceGroupCollapsed?"+":"-",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_BORDER,K64ScaleFont(7));
    int monitorY=sectionY+K64ScaleY(34),monitorGap=K64ScaleY(22);
    string monitorLabels[4]={"Connection","Run State","Daily Protection","Loss Protection"};
