@@ -3450,7 +3450,7 @@ void K64UpdatePanelHeader()
    KIA64_RUN_STATE runStateHeader=Kia64GetRunState();
    string txt="● ACTIVE"; color c=K64_PANEL_GREEN;
    if(runStateHeader==KIA64_MONEY_LOCK || runStateHeader==KIA64_PERCENT_LOCK){txt="● LOCKED";c=K64_PANEL_RED;}
-   else if(runStateHeader==KIA64_MANUAL_PAUSE || runStateHeader==KIA64_DAILY_PROFIT_PAUSE){txt="Ⅱ PAUSED";c=K64_PANEL_ORANGE;}
+   else if(runStateHeader==KIA64_MANUAL_PAUSE || runStateHeader==KIA64_DAILY_PROFIT_PAUSE){txt="⏸ PAUSED";c=K64_PANEL_ORANGE;}
    else if(!Kia64DailyProfitDataValid && DailyProfitProtection &&
            (DailyProfitTargetPercent>0.0 || DailyProfitTargetMoney>0.0)){txt="● DATA ERROR";c=K64_PANEL_RED;}
    ObjectSetString(0,"K64_Status",OBJPROP_TEXT,txt);
@@ -3486,6 +3486,7 @@ void K64CreatePanel()
     K64CreateButton("K64_ZoomIn",px+K64ScaleX(300),py+K64ScaleY(13),zoomButtonSize,zoomButtonSize,"+",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_GREEN,K64ScaleFont(8));
     K64CreateButton("K64_ZoomOut",px+K64ScaleX(330),py+K64ScaleY(13),zoomButtonSize,zoomButtonSize,"-",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_GREEN,K64ScaleFont(8));
     K64CreateRightLabel("K64_Status",px+K64ScaleX(420),py+K64ScaleY(20),"● ACTIVE",K64ScaleFont(8),K64_PANEL_GREEN,true);
+   ObjectSetString(0,"K64_Status",OBJPROP_FONT,"Segoe UI Symbol");
     ChartRedraw(0);
     K64PositionHeaderZoomControls();
    K64CreateLabel("K64_Subtitle",px+K64ScaleX(20),py+K64ScaleY(43),"ALGORITHMIC TRADING SYSTEM",K64ScaleFont(7),K64_PANEL_MUTED);
@@ -3593,12 +3594,14 @@ void K64CreatePanel()
    int buttonY=accountY+accountH+K64ScaleY(10),buttonGap=K64ScaleX(6),buttonH=K64ScaleY(28);
    int buttonW=(pw-2*buttonGap)/3;
    K64CreateButton("K64_Play",px,buttonY,buttonW,buttonH,"▶ PLAY",C'226,255,239',C'34,112,78',C'34,112,78',K64ScaleFont(8));
-   K64CreateButton("K64_Pause",px+buttonW+buttonGap,buttonY,buttonW,buttonH,"Ⅱ PAUSE",C'255,246,224',C'151,105,35',C'151,105,35',K64ScaleFont(8));
+   K64CreateButton("K64_Pause",px+buttonW+buttonGap,buttonY,buttonW,buttonH,"⏸ PAUSE",C'255,246,224',C'151,105,35',C'151,105,35',K64ScaleFont(8));
+   ObjectSetString(0,"K64_Pause",OBJPROP_FONT,"Segoe UI Symbol");
    K64CreateButton("K64_CloseAll",px+2*(buttonW+buttonGap),buttonY,pw-2*(buttonW+buttonGap),buttonH,"CLOSE ALL",C'255,232,236',C'142,47,62',C'142,47,62',K64ScaleFont(8));
    int captionY=buttonY+K64ScaleY(34);
    K64CreateLabel("K64_FooterCaption",px+K64ScaleX(20),captionY,"Live data from Kia64v4",K64ScaleFont(6),K64_PANEL_MUTED);
    K64CreateRightLabel("K64_Footer",px+pw-K64ScaleX(20),captionY,"KIA64 SYSTEM",K64ScaleFont(6),C'74,68,88');
    K64UpdatePanelHeader();
+   K64ApplyPanelCollapse();
 }
 
 void K64SetPanelObjectVisible(const string name,const bool visible)
