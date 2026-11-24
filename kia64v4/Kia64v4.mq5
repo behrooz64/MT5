@@ -3468,9 +3468,16 @@ void K64CreatePanel()
    K64DeletePanelObjects();
    int px=10,py=10;
    int pw=(int)MathRound(420.0*K64PanelZoom);
-   int ph=(int)MathRound(820.0*K64PanelZoom);
    K64PanelScaleX=(double)pw/440.0;
    K64PanelScaleY=(660.0/412.0)*K64PanelZoom;
+   int compactHeaderHeight=MathMax(1,K64ScaleY(30));
+   int fullSectionHeight=K64ScaleY(190);
+   int fullAccountHeight=K64ScaleY(92);
+   int sectionDisplayHeight=K64PerformanceGroupCollapsed?compactHeaderHeight:fullSectionHeight;
+   int accountDisplayHeight=K64AccountCardCollapsed?compactHeaderHeight:fullAccountHeight;
+   int ph=(int)MathRound(820.0*K64PanelZoom)
+         -(K64PerformanceGroupCollapsed?fullSectionHeight-compactHeaderHeight:0)
+         -(K64AccountCardCollapsed?fullAccountHeight-compactHeaderHeight:0);
    K64CreateRect("K64_Main",px,py,pw,ph,K64_PANEL_BG,K64_PANEL_BORDER);
 
    K64CreateLabel("K64_Brand",px+K64ScaleX(20),py+K64ScaleY(20),"KIA64",K64ScaleFont(10),K64_PANEL_AQUA,true);
@@ -3503,7 +3510,7 @@ void K64CreatePanel()
    K64CreateRect("K64_Div3",px+K64ScaleX(20),colY,K64ScaleX(400),MathMax(1,K64ScaleY(1)),K64_PANEL_BORDER,K64_PANEL_BORDER);
    int sectionY=colY+K64ScaleY(10),colW=K64ScaleX(194);
    int leftX=px+K64ScaleX(20),rightX=px+K64ScaleX(226),sectionH=K64ScaleY(190);
-   K64CreateRect("K64_PerformanceCard",leftX,sectionY,colW,sectionH,K64_PANEL_CARD,K64_PANEL_BORDER);
+   K64CreateRect("K64_PerformanceCard",leftX,sectionY,colW,sectionDisplayHeight,K64_PANEL_CARD,K64_PANEL_BORDER);
    K64CreateLabel("K64_PerformanceTitle",leftX+K64ScaleX(12),sectionY+K64ScaleY(10),"EA PERFORMANCE",K64ScaleFont(8),K64_PANEL_AQUA,true);
     int collapseButtonSize=MathMax(1,K64ScaleX(18));
     K64CreateButton("K64_GroupToggleEA",leftX+colW-K64ScaleX(26),sectionY+K64ScaleY(6),collapseButtonSize,collapseButtonSize,K64PerformanceGroupCollapsed?"+":"-",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_BORDER,K64ScaleFont(7));
@@ -3526,7 +3533,7 @@ void K64CreatePanel()
    K64CreateRect("K64_ProfitTrack",profitBarX,profitBarY,profitBarW,profitBarH,C'72,60,88',C'72,60,88');
    K64CreateRect("K64_ProfitFill",profitBarX,profitBarY,1,profitBarH,K64_PANEL_GREEN,K64_PANEL_GREEN);
 
-   K64CreateRect("K64_MonitorCard",rightX,sectionY,colW,sectionH,K64_PANEL_CARD,K64_PANEL_BORDER);
+   K64CreateRect("K64_MonitorCard",rightX,sectionY,colW,sectionDisplayHeight,K64_PANEL_CARD,K64_PANEL_BORDER);
    K64CreateLabel("K64_MonitorTitle",rightX+K64ScaleX(12),sectionY+K64ScaleY(10),"SYSTEM MONITOR",K64ScaleFont(8),K64_PANEL_AQUA,true);
     K64CreateButton("K64_GroupToggleMonitor",rightX+colW-K64ScaleX(26),sectionY+K64ScaleY(6),collapseButtonSize,collapseButtonSize,K64PerformanceGroupCollapsed?"+":"-",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_BORDER,K64ScaleFont(7));
    int monitorY=sectionY+K64ScaleY(34),monitorGap=K64ScaleY(22);
@@ -3555,8 +3562,8 @@ void K64CreatePanel()
    K64CreateRect("K64_LossTrack",lossBarX,lossBarY,lossBarW,lossBarH,C'72,60,88',C'72,60,88');
    K64CreateRect("K64_LossFill",lossBarX,lossBarY,1,lossBarH,K64_PANEL_ORANGE,K64_PANEL_ORANGE);
 
-   int accountX=px+K64ScaleX(20),accountY=sectionY+sectionH+K64ScaleY(10);
-   int accountW=K64ScaleX(400),accountH=K64ScaleY(92);
+   int accountX=px+K64ScaleX(20),accountY=sectionY+sectionDisplayHeight+K64ScaleY(10);
+   int accountW=K64ScaleX(400),accountH=accountDisplayHeight;
    K64CreateRect("K64_AccountPerformanceCard",accountX,accountY,accountW,accountH,K64_PANEL_CARD,K64_PANEL_BORDER);
    K64CreateLabel("K64_AccountPerformanceTitle",accountX+K64ScaleX(12),accountY+K64ScaleY(7),"ACCOUNT PERFORMANCE",K64ScaleFont(7),K64_PANEL_ACCENT,true);
     K64CreateButton("K64_AccountToggle",accountX+accountW-K64ScaleX(26),accountY+K64ScaleY(4),collapseButtonSize,collapseButtonSize,K64AccountCardCollapsed?"+":"-",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_BORDER,K64ScaleFont(7));
@@ -3591,20 +3598,13 @@ void K64CreatePanel()
    int captionY=buttonY+K64ScaleY(34);
    K64CreateLabel("K64_FooterCaption",px+K64ScaleX(20),captionY,"Live data from Kia64v4",K64ScaleFont(6),K64_PANEL_MUTED);
    K64CreateRightLabel("K64_Footer",px+pw-K64ScaleX(20),captionY,"KIA64 SYSTEM",K64ScaleFont(6),C'74,68,88');
-   K64ApplyPanelCollapse();
-    K64UpdatePanelHeader();
+   K64UpdatePanelHeader();
 }
 
 void K64SetPanelObjectVisible(const string name,const bool visible)
 {
    if(ObjectFind(0,name)<0) return;
    ObjectSetInteger(0,name,OBJPROP_TIMEFRAMES,visible ? OBJ_ALL_PERIODS : 0);
-}
-void K64MovePanelObjectY(const string name,const int delta)
-{
-   if(ObjectFind(0,name)<0) return;
-   int y=(int)ObjectGetInteger(0,name,OBJPROP_YDISTANCE);
-   ObjectSetInteger(0,name,OBJPROP_YDISTANCE,y+delta);
 }
 void K64ApplyPanelCollapse()
 {
@@ -3619,21 +3619,6 @@ void K64ApplyPanelCollapse()
    };
    for(int i=0;i<ArraySize(performanceObjects);i++)
       K64SetPanelObjectVisible(performanceObjects[i],!K64PerformanceGroupCollapsed);
-   int compactHeaderHeight=MathMax(1,K64ScaleY(30));
-   if(K64PerformanceGroupCollapsed)
-   {
-      ObjectSetInteger(0,"K64_PerformanceCard",OBJPROP_YSIZE,compactHeaderHeight);
-      ObjectSetInteger(0,"K64_MonitorCard",OBJPROP_YSIZE,compactHeaderHeight);
-      int shift=K64ScaleY(190)-compactHeaderHeight;
-      string accountObjects[]={
-         "K64_AccountPerformanceCard","K64_AccountPerformanceTitle","K64_AccountToggle",
-         "K64_AccountTradesLabel","K64_AccountTradesValue","K64_AccountNetLabel","K64_AccountNetValue",
-         "K64_AccountWinRateLabel","K64_AccountWinRateValue","K64_AccountFactorLabel","K64_AccountFactorValue",
-         "K64_AccountWinsLabel","K64_AccountWinsValue","K64_AccountLossesLabel","K64_AccountLossesValue"
-      };
-      for(int j=0;j<ArraySize(accountObjects);j++)
-         K64MovePanelObjectY(accountObjects[j],-shift);
-   }
    string accountContent[]={
       "K64_AccountTradesLabel","K64_AccountTradesValue","K64_AccountNetLabel","K64_AccountNetValue",
       "K64_AccountWinRateLabel","K64_AccountWinRateValue","K64_AccountFactorLabel","K64_AccountFactorValue",
@@ -3641,8 +3626,6 @@ void K64ApplyPanelCollapse()
    };
    for(int k=0;k<ArraySize(accountContent);k++)
       K64SetPanelObjectVisible(accountContent[k],!K64AccountCardCollapsed);
-   if(K64AccountCardCollapsed)
-      ObjectSetInteger(0,"K64_AccountPerformanceCard",OBJPROP_YSIZE,compactHeaderHeight);
 }
 
 struct K64EAHistoryPositionStat
