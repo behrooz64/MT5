@@ -3456,7 +3456,10 @@ bool K64CreateLabel(string n,int x,int y,string t,int fs,color c,bool bold=false
    string labelFont = (numericValueLabel && bold) ? "Consolas Bold" :
                       (bold ? "Tahoma Bold" : "Tahoma");
    ObjectSetString(0,n,OBJPROP_FONT,labelFont);
-   ObjectSetInteger(0,n,OBJPROP_FONTSIZE,fs);
+   int readableFontSize=fs;
+   if(numericValueLabel)
+      readableFontSize+=(StringFind(n,"K64_Account")==0 ? 1 : 2);
+   ObjectSetInteger(0,n,OBJPROP_FONTSIZE,readableFontSize);
    ObjectSetInteger(0,n,OBJPROP_COLOR,c);
    ObjectSetInteger(0,n,OBJPROP_SELECTABLE,false);
    ObjectSetInteger(0,n,OBJPROP_HIDDEN,true);
