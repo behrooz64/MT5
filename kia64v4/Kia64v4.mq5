@@ -3350,7 +3350,19 @@ bool K64AccountCardCollapsed=false;
 
 int K64ScaleX(int v){return (int)MathRound((double)v*K64PanelScaleX);}
 int K64ScaleY(int v){return (int)MathRound((double)v*K64PanelScaleY);}
-int K64ScaleFont(int v){return (int)MathMax(6,MathRound((double)v*MathMin(K64PanelScaleX,K64PanelScaleY)));}
+int K64ScaleFont(int v)
+{
+   int readableBase=v;
+   if(v<=6) readableBase=8;
+   else if(v<=7) readableBase=9;
+   else if(v<=8) readableBase=10;
+   else if(v<=9) readableBase=11;
+   else readableBase=12;
+
+   double scale=MathMin(K64PanelScaleX,K64PanelScaleY);
+   int minReadableSize=(K64PanelAutoScale<0.75 ? 7 : 8);
+   return (int)MathMax(minReadableSize,MathRound((double)readableBase*scale));
+}
 
 double K64CalculateAutoScale()
 {
@@ -3428,7 +3440,7 @@ bool K64CreateLabel(string n,int x,int y,string t,int fs,color c,bool bold=false
    ObjectSetInteger(0,n,OBJPROP_XDISTANCE,x);
    ObjectSetInteger(0,n,OBJPROP_YDISTANCE,y);
    ObjectSetString(0,n,OBJPROP_TEXT,t);
-   ObjectSetString(0,n,OBJPROP_FONT,bold ? "Segoe UI Semibold" : "Segoe UI");
+   ObjectSetString(0,n,OBJPROP_FONT,bold ? "Arial Bold" : "Arial");
    ObjectSetInteger(0,n,OBJPROP_FONTSIZE,fs);
    ObjectSetInteger(0,n,OBJPROP_COLOR,c);
    ObjectSetInteger(0,n,OBJPROP_SELECTABLE,false);
@@ -3452,7 +3464,7 @@ bool K64CreateButton(string n,int x,int y,int w,int h,string t,color tc,color bg
    ObjectSetInteger(0,n,OBJPROP_XSIZE,w);
    ObjectSetInteger(0,n,OBJPROP_YSIZE,h);
    ObjectSetString(0,n,OBJPROP_TEXT,t);
-   ObjectSetString(0,n,OBJPROP_FONT,"Segoe UI Semibold");
+   ObjectSetString(0,n,OBJPROP_FONT,"Arial Bold");
    ObjectSetInteger(0,n,OBJPROP_FONTSIZE,fs);
    ObjectSetInteger(0,n,OBJPROP_COLOR,tc);
    ObjectSetInteger(0,n,OBJPROP_BGCOLOR,bg);
@@ -3539,7 +3551,7 @@ void K64CreatePanel()
    K64CreateRect("K64_Main",px,py,pw,ph,K64_PANEL_BG,K64_PANEL_BORDER);
 
    K64CreateLabel("K64_Brand",px+K64ScaleX(20),py+K64ScaleY(20),"KIA64",K64ScaleFont(10),K64_PANEL_AQUA,true);
-   ObjectSetString(0,"K64_Brand",OBJPROP_FONT,"Segoe UI Black");
+   ObjectSetString(0,"K64_Brand",OBJPROP_FONT,"Arial Black");
    int zoomButtonSize=MathMax(1,K64ScaleX(24));
     K64CreateButton("K64_ZoomIn",px+K64ScaleX(300),py+K64ScaleY(13),zoomButtonSize,zoomButtonSize,"+",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_GREEN,K64ScaleFont(8));
     K64CreateButton("K64_ZoomOut",px+K64ScaleX(330),py+K64ScaleY(13),zoomButtonSize,zoomButtonSize,"-",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_GREEN,K64ScaleFont(8));
