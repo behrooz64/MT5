@@ -3535,12 +3535,12 @@ void K64CreatePanel()
    int accountW=K64ScaleX(400),accountH=K64ScaleY(92);
    K64CreateRect("K64_ProtectionCard",accountX,accountY,accountW,accountH,K64_PANEL_CARD,K64_PANEL_BORDER);
    K64CreateLabel("K64_ProtectionTitle",accountX+K64ScaleX(12),accountY+K64ScaleY(7),"DAILY PROFIT PROTECTION",K64ScaleFont(7),K64_PANEL_ACCENT,true);
-   K64CreateLabel("K64_ProtectionTargetLabel",accountX+K64ScaleX(12),accountY+K64ScaleY(30),"Configured target",K64ScaleFont(6),K64_PANEL_MUTED);
-   K64CreateLabel("K64_ProtectionTargetValue",accountX+K64ScaleX(12),accountY+K64ScaleY(43),"--",K64ScaleFont(8),K64_PANEL_TEXT,true);
-   K64CreateLabel("K64_ProtectionStatusLabel",accountX+K64ScaleX(145),accountY+K64ScaleY(30),"Protection state",K64ScaleFont(6),K64_PANEL_MUTED);
-   K64CreateLabel("K64_ProtectionStatusValue",accountX+K64ScaleX(145),accountY+K64ScaleY(43),"--",K64ScaleFont(8),K64_PANEL_TEXT,true);
-   K64CreateLabel("K64_ProtectionBaseLabel",accountX+K64ScaleX(278),accountY+K64ScaleY(30),"Daily baseline",K64ScaleFont(6),K64_PANEL_MUTED);
-   K64CreateLabel("K64_ProtectionBaseValue",accountX+K64ScaleX(278),accountY+K64ScaleY(43),"--",K64ScaleFont(8),K64_PANEL_TEXT,true);
+   K64CreateLabel("K64_ProtectionTargetLabel",accountX+K64ScaleX(12),accountY+K64ScaleY(27),"Configured target",K64ScaleFont(6),K64_PANEL_MUTED);
+   K64CreateLabel("K64_ProtectionTargetValue",accountX+K64ScaleX(12),accountY+K64ScaleY(39),"--",K64ScaleFont(8),K64_PANEL_TEXT,true);
+   K64CreateLabel("K64_ProtectionStatusLabel",accountX+K64ScaleX(139),accountY+K64ScaleY(27),"Protection state",K64ScaleFont(6),K64_PANEL_MUTED);
+   K64CreateLabel("K64_ProtectionStatusValue",accountX+K64ScaleX(139),accountY+K64ScaleY(39),"--",K64ScaleFont(8),K64_PANEL_TEXT,true);
+   K64CreateLabel("K64_ProtectionBaseLabel",accountX+K64ScaleX(266),accountY+K64ScaleY(27),"Daily baseline",K64ScaleFont(6),K64_PANEL_MUTED);
+   K64CreateLabel("K64_ProtectionBaseValue",accountX+K64ScaleX(266),accountY+K64ScaleY(39),"--",K64ScaleFont(8),K64_PANEL_TEXT,true);
 
    int buttonY=accountY+accountH+K64ScaleY(10),buttonGap=K64ScaleX(6),buttonH=K64ScaleY(28);
    int buttonW=(pw-2*buttonGap)/3;
