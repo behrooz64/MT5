@@ -625,6 +625,7 @@ bool Kia64CanOpenTrades()
 int OnInit()
   {
    ChartSetInteger(0,CHART_EVENT_MOUSE_MOVE,true);
+   EventSetTimer(2);
 //---
 //==================================coder robo ===============================
  string broker_name = AccountInfoString(ACCOUNT_SERVER);
@@ -709,6 +710,12 @@ void OnChartEvent(const int id,
                   const double &dparam,
                   const string &sparam)
   {
+   if(id == CHARTEVENT_CHART_CHANGE)
+   {
+      K64RefreshAutoLayout();
+      return;
+   }
+
    if(id == CHARTEVENT_MOUSE_MOVE)
    {
       string buttonNames[8]={"K64_ZoomIn","K64_ZoomOut","K64_GroupToggleEA","K64_GroupToggleMonitor","K64_AccountToggle","K64_Play","K64_Pause","K64_CloseAll"};
@@ -843,8 +850,14 @@ void OnChartEvent(const int id,
 //+------------------------------------------------------------------+
 //| Expert deinitialization function                                 |
 //+------------------------------------------------------------------+
+void OnTimer()
+  {
+   K64RefreshAutoLayout();
+  }
+
 void OnDeinit(const int reason)
   {
+   EventKillTimer();
    K64DeletePanelObjects();
 ObjectsDeleteAll(0,-1,OBJ_BUTTON);
 ObjectsDeleteAll(0,-1,OBJ_LABEL);
@@ -3328,12 +3341,56 @@ color K64_PANEL_BLUE=C'82,118,185';
 double K64PanelZoom=1.0;
 double K64PanelScaleX=1.0;
 double K64PanelScaleY=1.0;
+double K64PanelAutoScale=1.0;
+int K64PanelLastDPI=0;
+int K64PanelLastChartWidth=0;
+int K64PanelLastChartHeight=0;
 bool K64PerformanceGroupCollapsed=false;
 bool K64AccountCardCollapsed=false;
 
 int K64ScaleX(int v){return (int)MathRound((double)v*K64PanelScaleX);}
 int K64ScaleY(int v){return (int)MathRound((double)v*K64PanelScaleY);}
 int K64ScaleFont(int v){return (int)MathMax(6,MathRound((double)v*MathMin(K64PanelScaleX,K64PanelScaleY)));}
+
+double K64CalculateAutoScale()
+{
+   int dpi=(int)TerminalInfoInteger(TERMINAL_SCREEN_DPI);
+   if(dpi<=0) dpi=96;
+   long chartWidth=0,chartHeight=0;
+   if(!ChartGetInteger(0,CHART_WIDTH_IN_PIXELS,0,chartWidth) || chartWidth<=0) chartWidth=440;
+   if(!ChartGetInteger(0,CHART_HEIGHT_IN_PIXELS,0,chartHeight) || chartHeight<=0) chartHeight=840;
+   double dpiScale=(double)dpi/96.0;
+   double widthFit=(double)MathMax(1,(int)chartWidth-20)/(420.0*K64PanelZoom);
+   double heightFit=(double)MathMax(1,(int)chartHeight-20)/(820.0*K64PanelZoom);
+   double scale=MathMin(dpiScale,MathMin(widthFit,heightFit));
+   scale=MathMax(0.55,MathMin(1.50,scale));
+   K64PanelLastDPI=dpi;
+   K64PanelLastChartWidth=(int)chartWidth;
+   K64PanelLastChartHeight=(int)chartHeight;
+   return scale;
+}
+
+void K64RefreshAutoLayout()
+{
+   if(!ShowPanel || SiamoInTestOscuro) return;
+   int dpi=(int)TerminalInfoInteger(TERMINAL_SCREEN_DPI);
+   long chartWidth=0,chartHeight=0;
+   ChartGetInteger(0,CHART_WIDTH_IN_PIXELS,0,chartWidth);
+   ChartGetInteger(0,CHART_HEIGHT_IN_PIXELS,0,chartHeight);
+   if(dpi<=0) dpi=96;
+   bool environmentChanged=(dpi!=K64PanelLastDPI ||
+      (int)chartWidth!=K64PanelLastChartWidth ||
+      (int)chartHeight!=K64PanelLastChartHeight);
+   if(!environmentChanged) return;
+   double nextScale=K64CalculateAutoScale();
+   if(ObjectFind(0,"K64_Main")<0 || MathAbs(nextScale-K64PanelAutoScale)>0.005)
+   {
+      K64PanelAutoScale=nextScale;
+      K64CreatePanel();
+      K64UpdatePanel();
+      ChartRedraw(0);
+   }
+}
 
 void K64DeletePanelObjects()
 {
@@ -3467,15 +3524,16 @@ void K64CreatePanel()
    if(!ShowPanel || SiamoInTestOscuro) return;
    K64DeletePanelObjects();
    int px=10,py=10;
-   int pw=(int)MathRound(420.0*K64PanelZoom);
+   K64PanelAutoScale=K64CalculateAutoScale();
+   int pw=(int)MathRound(420.0*K64PanelZoom*K64PanelAutoScale);
    K64PanelScaleX=(double)pw/440.0;
-   K64PanelScaleY=(660.0/412.0)*K64PanelZoom;
+   K64PanelScaleY=(660.0/412.0)*K64PanelZoom*K64PanelAutoScale;
    int compactHeaderHeight=MathMax(1,K64ScaleY(30));
    int fullSectionHeight=K64ScaleY(190);
    int fullAccountHeight=K64ScaleY(92);
    int sectionDisplayHeight=K64PerformanceGroupCollapsed?compactHeaderHeight:fullSectionHeight;
    int accountDisplayHeight=K64AccountCardCollapsed?compactHeaderHeight:fullAccountHeight;
-   int ph=(int)MathRound(820.0*K64PanelZoom)
+   int ph=(int)MathRound(820.0*K64PanelZoom*K64PanelAutoScale)
          -(K64PerformanceGroupCollapsed?fullSectionHeight-compactHeaderHeight:0)
          -(K64AccountCardCollapsed?fullAccountHeight-compactHeaderHeight:0);
    K64CreateRect("K64_Main",px,py,pw,ph,K64_PANEL_BG,K64_PANEL_BORDER);
