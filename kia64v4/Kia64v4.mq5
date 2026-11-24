@@ -3360,8 +3360,8 @@ double K64CalculateAutoScale()
    if(!ChartGetInteger(0,CHART_WIDTH_IN_PIXELS,0,chartWidth) || chartWidth<=0) chartWidth=440;
    if(!ChartGetInteger(0,CHART_HEIGHT_IN_PIXELS,0,chartHeight) || chartHeight<=0) chartHeight=840;
    double dpiScale=(double)dpi/96.0;
-   double widthFit=(double)MathMax(1,(int)chartWidth-20)/(420.0*K64PanelZoom);
-   double heightFit=(double)MathMax(1,(int)chartHeight-20)/(820.0*K64PanelZoom);
+   double widthFit=(double)MathMax(1,(int)chartWidth-20)/420.0;
+   double heightFit=(double)MathMax(1,(int)chartHeight-20)/820.0;
    double scale=MathMin(dpiScale,MathMin(widthFit,heightFit));
    scale=MathMax(0.55,MathMin(1.50,scale));
    K64PanelLastDPI=dpi;
