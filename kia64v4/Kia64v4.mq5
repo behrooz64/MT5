@@ -711,9 +711,9 @@ void OnChartEvent(const int id,
   {
    if(id == CHARTEVENT_MOUSE_MOVE)
    {
-      string buttonNames[5]={"K64_ZoomIn","K64_ZoomOut","K64_Play","K64_Pause","K64_CloseAll"};
-      color normalColors[5]={C'48,43,62',C'48,43,62',C'34,112,78',C'151,105,35',C'142,47,62'};
-      color hoverColors[5]={C'66,201,138',C'66,201,138',C'45,145,100',C'185,130,45',C'180,65,80'};
+      string buttonNames[8]={"K64_ZoomIn","K64_ZoomOut","K64_GroupToggleEA","K64_GroupToggleMonitor","K64_AccountToggle","K64_Play","K64_Pause","K64_CloseAll"};
+      color normalColors[8]={C'48,43,62',C'48,43,62',C'48,43,62',C'48,43,62',C'48,43,62',C'34,112,78',C'151,105,35',C'142,47,62'};
+      color hoverColors[8]={C'66,201,138',C'66,201,138',C'66,201,138',C'66,201,138',C'66,201,138',C'45,145,100',C'185,130,45',C'180,65,80'};
       color zoomAccent=C'66,201,138';
       if(ObjectFind(0,"K64_Status")>=0)
          zoomAccent=(color)ObjectGetInteger(0,"K64_Status",OBJPROP_COLOR);
@@ -722,7 +722,7 @@ void OnChartEvent(const int id,
       int mouseX=(int)lparam;
       int mouseY=(int)dparam;
       bool changed=false;
-      for(int i=0;i<5;i++)
+      for(int i=0;i<8;i++)
       {
          if(ObjectFind(0,buttonNames[i])<0) continue;
          int bx=(int)ObjectGetInteger(0,buttonNames[i],OBJPROP_XDISTANCE);
@@ -760,6 +760,25 @@ void OnChartEvent(const int id,
       K64PanelZoomBy(-0.10);
       return;
    }
+   if(id == CHARTEVENT_OBJECT_CLICK && (sparam == "K64_GroupToggleEA" || sparam == "K64_GroupToggleMonitor"))
+   {
+      ObjectSetInteger(0,sparam,OBJPROP_STATE,false);
+      K64PerformanceGroupCollapsed=!K64PerformanceGroupCollapsed;
+      K64CreatePanel();
+      K64UpdatePanel();
+      ChartRedraw(0);
+      return;
+   }
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "K64_AccountToggle")
+   {
+      ObjectSetInteger(0,"K64_AccountToggle",OBJPROP_STATE,false);
+      K64AccountCardCollapsed=!K64AccountCardCollapsed;
+      K64CreatePanel();
+      K64UpdatePanel();
+      ChartRedraw(0);
+      return;
+   }
+
    if(id == CHARTEVENT_OBJECT_CLICK && sparam == "K64_Play")
    {
       ObjectSetInteger(0,"K64_Play",OBJPROP_STATE,false);
@@ -3309,6 +3328,8 @@ color K64_PANEL_BLUE=C'82,118,185';
 double K64PanelZoom=1.0;
 double K64PanelScaleX=1.0;
 double K64PanelScaleY=1.0;
+bool K64PerformanceGroupCollapsed=false;
+bool K64AccountCardCollapsed=false;
 
 int K64ScaleX(int v){return (int)MathRound((double)v*K64PanelScaleX);}
 int K64ScaleY(int v){return (int)MathRound((double)v*K64PanelScaleY);}
@@ -3484,6 +3505,8 @@ void K64CreatePanel()
    int leftX=px+K64ScaleX(20),rightX=px+K64ScaleX(226),sectionH=K64ScaleY(190);
    K64CreateRect("K64_PerformanceCard",leftX,sectionY,colW,sectionH,K64_PANEL_CARD,K64_PANEL_BORDER);
    K64CreateLabel("K64_PerformanceTitle",leftX+K64ScaleX(12),sectionY+K64ScaleY(10),"EA PERFORMANCE",K64ScaleFont(8),K64_PANEL_AQUA,true);
+    int collapseButtonSize=MathMax(1,K64ScaleX(18));
+    K64CreateButton("K64_GroupToggleEA",leftX+colW-K64ScaleX(26),sectionY+K64ScaleY(6),collapseButtonSize,collapseButtonSize,K64PerformanceGroupCollapsed?"+":"-",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_BORDER,K64ScaleFont(7));
    int rowY=sectionY+K64ScaleY(34),rowGap=K64ScaleY(18);
    string leftLabels[6]={"Today's Trades","Today P/L","Floating P/L","Symbol P/L","Win Rate","Profit Factor"};
    string leftNames[6]={"K64_PerfValue1","K64_PerfValue2","K64_PerfValue3","K64_PerfValue4","K64_PerfValue5","K64_PerfValue6"};
@@ -3505,6 +3528,7 @@ void K64CreatePanel()
 
    K64CreateRect("K64_MonitorCard",rightX,sectionY,colW,sectionH,K64_PANEL_CARD,K64_PANEL_BORDER);
    K64CreateLabel("K64_MonitorTitle",rightX+K64ScaleX(12),sectionY+K64ScaleY(10),"SYSTEM MONITOR",K64ScaleFont(8),K64_PANEL_AQUA,true);
+    K64CreateButton("K64_GroupToggleMonitor",rightX+colW-K64ScaleX(26),sectionY+K64ScaleY(6),collapseButtonSize,collapseButtonSize,K64PerformanceGroupCollapsed?"+":"-",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_BORDER,K64ScaleFont(7));
    int monitorY=sectionY+K64ScaleY(34),monitorGap=K64ScaleY(22);
    string monitorLabels[4]={"Connection","Run State","Daily Protection","Loss Protection"};
    for(int j=0;j<4;j++)
@@ -3535,6 +3559,7 @@ void K64CreatePanel()
    int accountW=K64ScaleX(400),accountH=K64ScaleY(92);
    K64CreateRect("K64_AccountPerformanceCard",accountX,accountY,accountW,accountH,K64_PANEL_CARD,K64_PANEL_BORDER);
    K64CreateLabel("K64_AccountPerformanceTitle",accountX+K64ScaleX(12),accountY+K64ScaleY(7),"ACCOUNT PERFORMANCE",K64ScaleFont(7),K64_PANEL_ACCENT,true);
+    K64CreateButton("K64_AccountToggle",accountX+accountW-K64ScaleX(26),accountY+K64ScaleY(4),collapseButtonSize,collapseButtonSize,K64AccountCardCollapsed?"+":"-",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_BORDER,K64ScaleFont(7));
 
    int accountLabelY1=accountY+K64ScaleY(27);
    int accountValueY1=accountY+K64ScaleY(39);
@@ -3566,8 +3591,60 @@ void K64CreatePanel()
    int captionY=buttonY+K64ScaleY(34);
    K64CreateLabel("K64_FooterCaption",px+K64ScaleX(20),captionY,"Live data from Kia64v4",K64ScaleFont(6),K64_PANEL_MUTED);
    K64CreateRightLabel("K64_Footer",px+pw-K64ScaleX(20),captionY,"KIA64 SYSTEM",K64ScaleFont(6),C'74,68,88');
-   K64UpdatePanelHeader();
+   K64ApplyPanelCollapse();
+    K64UpdatePanelHeader();
 }
+
+void K64SetPanelObjectVisible(const string name,const bool visible)
+{
+   if(ObjectFind(0,name)<0) return;
+   ObjectSetInteger(0,name,OBJPROP_TIMEFRAMES,visible ? OBJ_ALL_PERIODS : 0);
+}
+void K64MovePanelObjectY(const string name,const int delta)
+{
+   if(ObjectFind(0,name)<0) return;
+   int y=(int)ObjectGetInteger(0,name,OBJPROP_YDISTANCE);
+   ObjectSetInteger(0,name,OBJPROP_YDISTANCE,y+delta);
+}
+void K64ApplyPanelCollapse()
+{
+   string performanceObjects[]={
+      "K64_PerfLabel1","K64_PerfLabel2","K64_PerfLabel3","K64_PerfLabel4","K64_PerfLabel5","K64_PerfLabel6",
+      "K64_PerfValue1","K64_PerfValue2","K64_PerfValue3","K64_PerfValue4","K64_PerfValue5","K64_PerfValue6",
+      "K64_ProfitBarLabel","K64_ProfitBarValue","K64_ProfitTrack","K64_ProfitFill",
+      "K64_MonitorLabel1","K64_MonitorLabel2","K64_MonitorLabel3","K64_MonitorLabel4",
+      "K64_MonitorValue1","K64_MonitorValue2","K64_MonitorValue3","K64_MonitorValue4",
+      "K64_RiskMoneyLabel","K64_RiskMoneyValue","K64_RiskPercentLabel","K64_RiskPercentValue",
+      "K64_LossBarLabel","K64_LossBarValue","K64_LossTrack","K64_LossFill"
+   };
+   for(int i=0;i<ArraySize(performanceObjects);i++)
+      K64SetPanelObjectVisible(performanceObjects[i],!K64PerformanceGroupCollapsed);
+   int compactHeaderHeight=MathMax(1,K64ScaleY(30));
+   if(K64PerformanceGroupCollapsed)
+   {
+      ObjectSetInteger(0,"K64_PerformanceCard",OBJPROP_YSIZE,compactHeaderHeight);
+      ObjectSetInteger(0,"K64_MonitorCard",OBJPROP_YSIZE,compactHeaderHeight);
+      int shift=K64ScaleY(190)-compactHeaderHeight;
+      string accountObjects[]={
+         "K64_AccountPerformanceCard","K64_AccountPerformanceTitle","K64_AccountToggle",
+         "K64_AccountTradesLabel","K64_AccountTradesValue","K64_AccountNetLabel","K64_AccountNetValue",
+         "K64_AccountWinRateLabel","K64_AccountWinRateValue","K64_AccountFactorLabel","K64_AccountFactorValue",
+         "K64_AccountWinsLabel","K64_AccountWinsValue","K64_AccountLossesLabel","K64_AccountLossesValue"
+      };
+      for(int j=0;j<ArraySize(accountObjects);j++)
+         K64MovePanelObjectY(accountObjects[j],-shift);
+   }
+   string accountContent[]={
+      "K64_AccountTradesLabel","K64_AccountTradesValue","K64_AccountNetLabel","K64_AccountNetValue",
+      "K64_AccountWinRateLabel","K64_AccountWinRateValue","K64_AccountFactorLabel","K64_AccountFactorValue",
+      "K64_AccountWinsLabel","K64_AccountWinsValue","K64_AccountLossesLabel","K64_AccountLossesValue"
+   };
+   for(int k=0;k<ArraySize(accountContent);k++)
+      K64SetPanelObjectVisible(accountContent[k],!K64AccountCardCollapsed);
+   if(K64AccountCardCollapsed)
+      ObjectSetInteger(0,"K64_AccountPerformanceCard",OBJPROP_YSIZE,compactHeaderHeight);
+}
+
 struct K64EAHistoryPositionStat
 {
    ulong positionId;
