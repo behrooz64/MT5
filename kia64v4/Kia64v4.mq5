@@ -3440,7 +3440,22 @@ bool K64CreateLabel(string n,int x,int y,string t,int fs,color c,bool bold=false
    ObjectSetInteger(0,n,OBJPROP_XDISTANCE,x);
    ObjectSetInteger(0,n,OBJPROP_YDISTANCE,y);
    ObjectSetString(0,n,OBJPROP_TEXT,t);
-   ObjectSetString(0,n,OBJPROP_FONT,bold ? "Arial Bold" : "Arial");
+   bool numericValueLabel =
+      (StringFind(n,"K64_Value")==0 ||
+       StringFind(n,"K64_PerfValue")==0 ||
+       StringFind(n,"K64_RiskMoneyValue")==0 ||
+       StringFind(n,"K64_RiskPercentValue")==0 ||
+       StringFind(n,"K64_AccountTradesValue")==0 ||
+       StringFind(n,"K64_AccountNetValue")==0 ||
+       StringFind(n,"K64_AccountWinRateValue")==0 ||
+       StringFind(n,"K64_AccountFactorValue")==0 ||
+       StringFind(n,"K64_AccountWinsValue")==0 ||
+       StringFind(n,"K64_AccountLossesValue")==0 ||
+       StringFind(n,"K64_ProfitBarValue")==0 ||
+       StringFind(n,"K64_LossBarValue")==0);
+   string labelFont = (numericValueLabel && bold) ? "Consolas Bold" :
+                      (bold ? "Tahoma Bold" : "Tahoma");
+   ObjectSetString(0,n,OBJPROP_FONT,labelFont);
    ObjectSetInteger(0,n,OBJPROP_FONTSIZE,fs);
    ObjectSetInteger(0,n,OBJPROP_COLOR,c);
    ObjectSetInteger(0,n,OBJPROP_SELECTABLE,false);
@@ -3464,7 +3479,7 @@ bool K64CreateButton(string n,int x,int y,int w,int h,string t,color tc,color bg
    ObjectSetInteger(0,n,OBJPROP_XSIZE,w);
    ObjectSetInteger(0,n,OBJPROP_YSIZE,h);
    ObjectSetString(0,n,OBJPROP_TEXT,t);
-   ObjectSetString(0,n,OBJPROP_FONT,"Arial Bold");
+   ObjectSetString(0,n,OBJPROP_FONT,"Tahoma Bold");
    ObjectSetInteger(0,n,OBJPROP_FONTSIZE,fs);
    ObjectSetInteger(0,n,OBJPROP_COLOR,tc);
    ObjectSetInteger(0,n,OBJPROP_BGCOLOR,bg);
@@ -3551,7 +3566,7 @@ void K64CreatePanel()
    K64CreateRect("K64_Main",px,py,pw,ph,K64_PANEL_BG,K64_PANEL_BORDER);
 
    K64CreateLabel("K64_Brand",px+K64ScaleX(20),py+K64ScaleY(20),"KIA64",K64ScaleFont(10),K64_PANEL_AQUA,true);
-   ObjectSetString(0,"K64_Brand",OBJPROP_FONT,"Arial Black");
+   ObjectSetString(0,"K64_Brand",OBJPROP_FONT,"Tahoma Bold");
    int zoomButtonSize=MathMax(1,K64ScaleX(24));
     K64CreateButton("K64_ZoomIn",px+K64ScaleX(300),py+K64ScaleY(13),zoomButtonSize,zoomButtonSize,"+",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_GREEN,K64ScaleFont(8));
     K64CreateButton("K64_ZoomOut",px+K64ScaleX(330),py+K64ScaleY(13),zoomButtonSize,zoomButtonSize,"-",K64_PANEL_TEXT,C'48,43,62',K64_PANEL_GREEN,K64ScaleFont(8));
